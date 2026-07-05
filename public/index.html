@@ -249,6 +249,21 @@ body::before{
   box-shadow:0 0 14px rgba(0,184,255,0.35);transition:transform 0.18s,box-shadow 0.18s;
 }
 .btn-gradient-sm:hover{transform:translateY(-1px);box-shadow:0 0 22px rgba(0,184,255,0.5);}
+.btn-soon{
+  flex:1.6;padding:9px;border:1px solid rgba(255,200,0,0.3);border-radius:12px;
+  font-size:11px;font-weight:700;cursor:default;color:#FFC800;
+  background:rgba(255,200,0,0.06);
+}
+.coming-soon-banner{
+  text-align:center;padding:28px 20px;
+  background:rgba(255,200,0,0.05);border:1px solid rgba(255,200,0,0.2);
+  border-radius:20px;margin-bottom:20px;
+}
+.coming-soon-banner .cs-icon{font-size:32px;margin-bottom:8px;}
+.coming-soon-banner h3{
+  font-size:18px;font-weight:900;color:#FFC800;margin-bottom:6px;
+}
+.coming-soon-banner p{font-size:13px;color:var(--muted);}
 .no-results{grid-column:1/-1;text-align:center;padding:48px 20px;color:var(--muted);font-size:15px;}
 
 /* ── Badges ── */
@@ -699,7 +714,7 @@ textarea.form-input{height:90px;padding:12px 14px;resize:none;line-height:1.5;}
       <span class="bundle-label" data-i18n="bundleDiscount">Жинақ бағасы</span>
       <span class="bundle-price">3 500 ₸</span>
       <span class="bundle-original">5 030 ₸</span>
-      <button class="btn-gradient-sm" style="margin-top:10px;padding:10px 20px;" onclick="openBuy()" data-i18n="bundleBtn">Буманы алу</button>
+      <button class="btn-soon" style="margin-top:10px;padding:10px 20px;">Жақында ашылады</button>
     </div>
   </div>
 </section>
@@ -709,6 +724,11 @@ textarea.form-input{height:90px;padding:12px 14px;resize:none;line-height:1.5;}
   <div class="section-header">
     <div class="section-title" data-i18n="comboTitle">Worksheet + Анимация</div>
     <div class="section-sub" data-i18n="comboSub">Дайын жұмыс парағы + бейнекод — мұғалімдерге арналған</div>
+  </div>
+  <div class="coming-soon-banner">
+    <div class="cs-icon">🔒</div>
+    <h3>Жақында ашылады</h3>
+    <p>Worksheet + Анимация комболары дайындалуда. Жақында қол жетімді болады.</p>
   </div>
   <div class="combos-grid" id="combosGrid"></div>
 </section>
@@ -880,7 +900,7 @@ textarea.form-input{height:90px;padding:12px 14px;resize:none;line-height:1.5;}
     <div class="detail-preview" id="detailPreview"></div>
     <div class="detail-meta" id="detailMeta"></div>
     <div class="detail-desc" id="detailDesc"></div>
-    <button class="btn-main" style="width:100%;display:block;text-align:center;" onclick="closeDetail();openBuy();" data-i18n="btnBuy">Сатып алу</button>
+    <button class="btn-soon" style="width:100%;padding:13px;font-size:14px;">Жақында ашылады</button>
   </div>
 </div>
 
@@ -984,9 +1004,8 @@ function renderProducts(){
       ?`<div class="badge-free">${t.freeBadge}</div>`
       :p.isNew?`<div class="badge-new">${t.newBadge}</div>`:"";
     const topicPos=(p.free||p.isNew)?`style="left:auto;right:12px;"`:``
-    const actionBtn=p.free
-      ?`<button class="btn-gradient-sm" style="background:linear-gradient(90deg,#00C853,#00B8FF);" onclick="openFree()">${t.btnFree}</button>`
-      :`<button class="btn-gradient-sm" onclick="openBuy()">${t.btnBuy}</button>`;
+    const soonLabel=getLang()==='kk'?'Жақында ашылады':'Скоро откроется';
+    const actionBtn=`<button class="btn-soon">${soonLabel}</button>`;
     return`<div class="product-card">
       <div class="card-preview">
         ${cardVideoHtml(p.video)}
@@ -1034,7 +1053,7 @@ function renderCombos(){
         <p>${c['desc_'+lang]||''}</p>
         <div class="card-actions">
           <button class="btn-outline-sm" onclick="openDetail_combo(${c.id})">${t.btnDetails}</button>
-          <button class="btn-gradient-sm" onclick="openBuy()">${t.btnBuy}</button>
+          <button class="btn-soon">${getLang()==='kk'?'Жақында ашылады':'Скоро откроется'}</button>
         </div>
       </div>
     </div>
