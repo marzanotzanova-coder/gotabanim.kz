@@ -714,7 +714,7 @@ textarea.form-input{height:90px;padding:12px 14px;resize:none;line-height:1.5;}
       <span class="bundle-label" data-i18n="bundleDiscount">Жинақ бағасы</span>
       <span class="bundle-price">3 500 ₸</span>
       <span class="bundle-original">5 030 ₸</span>
-      <button class="btn-soon" style="margin-top:10px;padding:10px 20px;">Жақында ашылады</button>
+      <button class="btn-gradient-sm" style="margin-top:10px;padding:10px 20px;" onclick="openBuy()" data-i18n="bundleBtn">Буманы алу</button>
     </div>
   </div>
 </section>
@@ -900,7 +900,7 @@ textarea.form-input{height:90px;padding:12px 14px;resize:none;line-height:1.5;}
     <div class="detail-preview" id="detailPreview"></div>
     <div class="detail-meta" id="detailMeta"></div>
     <div class="detail-desc" id="detailDesc"></div>
-    <button class="btn-soon" style="width:100%;padding:13px;font-size:14px;">Жақында ашылады</button>
+    <button class="btn-main" style="width:100%;display:block;text-align:center;" onclick="closeDetail();openBuy();" data-i18n="btnBuy">Сатып алу</button>
   </div>
 </div>
 
@@ -1009,8 +1009,9 @@ function renderProducts(){
       ?`<div class="badge-free">${t.freeBadge}</div>`
       :p.isNew?`<div class="badge-new">${t.newBadge}</div>`:"";
     const topicPos=(p.free||p.isNew)?`style="left:auto;right:12px;"`:``
-    const soonLabel=getLang()==='kk'?'Жақында ашылады':'Скоро откроется';
-    const actionBtn=`<button class="btn-soon">${soonLabel}</button>`;
+    const actionBtn=p.free
+      ?`<button class="btn-gradient-sm" style="background:linear-gradient(90deg,#00C853,#00B8FF);" onclick="openFree()">${t.btnFree}</button>`
+      :`<button class="btn-gradient-sm" onclick="openBuy()">${t.btnBuy}</button>`;
     return`<div class="product-card">
       <div class="card-preview">
         ${cardVideoHtml(p.video)}
