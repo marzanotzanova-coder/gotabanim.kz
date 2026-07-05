@@ -1034,27 +1034,18 @@ function renderProducts(){
 
 // ── Render combos ──
 function renderCombos(){
-  const lang=getLang(), t=T[lang];
+  const lang=getLang();
   const grid=document.getElementById("combosGrid");
   if(!grid)return;
-  grid.innerHTML=_combos.map(c=>`
-    <div class="combo-card">
-      <div class="combo-preview">
-        ${cardVideoHtml(c.video)}
-        <div class="combo-preview-overlay"></div>
-        <div class="combo-icons">
-          <span class="combo-tag">▶ Анимация</span>
-          <span class="combo-tag ws">📄 Worksheet</span>
-        </div>
-        <div class="combo-price-badge">${c.price}</div>
+  const soonLabel=lang==='kk'?'Жақында ашылады':'Скоро откроется';
+  grid.innerHTML=_combos.map(()=>`
+    <div class="combo-card" style="opacity:0.6;pointer-events:none;">
+      <div class="combo-preview" style="background:#020818;display:flex;align-items:center;justify-content:center;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="rgba(0,184,255,0.25)"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
       </div>
-      <div class="combo-body">
-        <h3>${c['title_'+lang]||''}</h3>
-        <p>${c['desc_'+lang]||''}</p>
-        <div class="card-actions">
-          <button class="btn-outline-sm" onclick="openDetail_combo(${c.id})">${t.btnDetails}</button>
-          <button class="btn-soon">${getLang()==='kk'?'Жақында ашылады':'Скоро откроется'}</button>
-        </div>
+      <div class="combo-body" style="align-items:center;justify-content:center;text-align:center;padding:20px;">
+        <div style="font-size:13px;font-weight:800;color:rgba(255,255,255,0.4);margin-bottom:8px;">—</div>
+        <button class="btn-soon" style="width:100%;">${soonLabel}</button>
       </div>
     </div>
   `).join("");
