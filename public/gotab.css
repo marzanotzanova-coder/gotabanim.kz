@@ -154,6 +154,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .payment-label{font-size:13px;color:var(--muted)}
 .payment-value{font-size:14px;font-weight:700;color:var(--text)}
 .payment-phone{font-size:20px;font-weight:900;color:var(--primary);letter-spacing:1px}
+.kaspi-badge{display:flex;align-items:center}
 
 .btn-whatsapp{width:100%;padding:14px;background:linear-gradient(135deg,#25D366,#128C7E);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s}
 .btn-whatsapp:hover{opacity:.9}
