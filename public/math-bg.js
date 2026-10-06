@@ -15,10 +15,10 @@
   ];
 
   const COLORS = [
-    'rgba(26,86,219,',
-    'rgba(8,145,178,',
-    'rgba(99,102,241,',
-    'rgba(14,165,233,',
+    'rgba(15,58,180,',
+    'rgba(6,100,160,',
+    'rgba(67,56,202,',
+    'rgba(10,120,200,',
   ];
 
   let particles = [];
@@ -44,7 +44,7 @@
       phase: rand(0, Math.PI * 2),
       speed: rand(0.004, 0.012),
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      baseOp: rand(0.10, 0.28),
+      baseOp: rand(0.30, 0.60),
     };
   }
 
@@ -57,7 +57,7 @@
       size: rand(11, 20),
       speedX: rand(-0.06, 0.06),
       speedY: rand(-0.14, -0.05),
-      opacity: rand(0.07, 0.18),
+      opacity: rand(0.14, 0.28),
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
       rotation: rand(-0.15, 0.15),
       rotSpeed: rand(-0.0004, 0.0004),
