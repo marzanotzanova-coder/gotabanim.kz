@@ -8,9 +8,9 @@
 <style>
 /* ── TOP PAYMENT BAR ── */
 .pay-bar{
-  background:linear-gradient(135deg,rgba(14,165,233,.12),rgba(6,182,212,.08));
-  border-bottom:1px solid rgba(14,165,233,.2);
-  padding:12px 24px;
+  background:linear-gradient(135deg,rgba(14,165,233,.10),rgba(6,182,212,.07));
+  border-bottom:1px solid rgba(14,165,233,.18);
+  padding:11px 24px;
   display:flex;align-items:center;justify-content:center;gap:14px;
   flex-wrap:wrap;
   position:sticky;top:57px;z-index:90;
@@ -18,25 +18,22 @@
 }
 .pay-bar-text{font-size:13px;color:#94a3b8;font-weight:500}
 .btn-pay-top{
-  padding:9px 24px;
+  padding:9px 22px;
   background:linear-gradient(135deg,#0ea5e9,#06b6d4);
   border:none;border-radius:100px;
   color:#fff;font-size:13px;font-weight:700;
-  font-family:'Inter',sans-serif;
-  cursor:pointer;
-  box-shadow:0 4px 16px rgba(14,165,233,.35);
+  font-family:'Inter',sans-serif;cursor:pointer;
+  box-shadow:0 4px 14px rgba(14,165,233,.35);
   transition:opacity .2s,transform .15s;
-  display:flex;align-items:center;gap:6px;
-  white-space:nowrap;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
 }
 .btn-pay-top:hover{opacity:.9;transform:translateY(-1px)}
 
-/* ── CONTENT WRAPPER ── */
-.content-page{min-height:100vh;padding:28px 20px 60px}
-
+/* ── CONTENT PAGE ── */
+.content-page{min-height:100vh;padding:28px 20px 70px}
 .content-header{
   display:flex;align-items:center;gap:16px;
-  max-width:860px;margin:0 auto 32px;
+  max-width:1200px;margin:0 auto 28px;
   padding-bottom:20px;border-bottom:1px solid var(--border);
 }
 .content-header-info h2{font-size:20px;font-weight:800;color:var(--text)}
@@ -49,105 +46,204 @@
 }
 .content-header-back:hover{color:var(--text);border-color:var(--primary)}
 
-/* ── LESSONS LIST ── */
-.lessons-list{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+/* ── LESSONS GRID ── */
+.lessons-grid{
+  max-width:1200px;margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(270px, 1fr));
+  gap:20px;
+}
 
-/* ── LESSON CARD ── */
-.lesson-card{
+/* ── LESSON UNIT (one lesson = ppt + qmj + video) ── */
+.lesson-unit{
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:18px;
   overflow:hidden;
-  transition:border-color .2s,transform .15s;
+  transition:border-color .2s,transform .2s,box-shadow .2s;
+  display:flex;flex-direction:column;
 }
-.lesson-card:hover{border-color:rgba(14,165,233,.35);transform:translateY(-1px)}
-
-.lesson-header{
-  padding:16px 20px 14px;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;
-}
-.lesson-num{
-  font-size:11px;font-weight:700;letter-spacing:.8px;
-  color:#38bdf8;text-transform:uppercase;
-  background:rgba(14,165,233,.1);
-  padding:3px 10px;border-radius:100px;
-  white-space:nowrap;
-}
-.lesson-title{font-size:16px;font-weight:700;color:var(--text)}
-
-/* ── MATERIALS GRID ── */
-.lesson-materials{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:0;
-}
-.material-item{
-  padding:18px 20px 16px;
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;gap:6px;
-}
-.material-item:last-child{border-right:none}
-
-.material-type-label{
-  display:flex;align-items:center;gap:7px;
-  font-size:12px;font-weight:700;letter-spacing:.4px;
-}
-.mat-icon{font-size:16px}
-
-.type-ppt .material-type-label{color:#fca5a5}
-.type-qmj .material-type-label{color:#6ee7b7}
-.type-vid .material-type-label{color:#c4b5fd}
-
-.material-meta-text{
-  font-size:12px;color:var(--muted);
-  flex:1;
-  padding-bottom:2px;
+.lesson-unit:hover{
+  border-color:rgba(14,165,233,.4);
+  transform:translateY(-3px);
+  box-shadow:0 16px 40px rgba(0,0,0,.35);
 }
 
-.btn-dl{
-  margin-top:4px;
-  padding:8px 14px;
-  border:1.5px solid rgba(14,165,233,.35);
+/* ── PRESENTATION SECTION (top) ── */
+.ppt-section{}
+
+.ppt-preview{
+  width:100%;height:160px;
+  background:linear-gradient(135deg,#0f1e3e,#0d1b35);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.ppt-preview::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 40%,rgba(14,165,233,.18),transparent 60%),
+             radial-gradient(ellipse at 70% 70%,rgba(139,92,246,.12),transparent 55%);
+}
+.ppt-slide-mock{
+  position:relative;z-index:1;
+  width:130px;height:82px;
+  background:rgba(13,27,53,.8);
+  border:1px solid rgba(14,165,233,.25);
   border-radius:8px;
-  color:#38bdf8;
-  background:transparent;
-  font-size:12px;font-weight:700;
-  font-family:'Inter',sans-serif;
-  cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  text-decoration:none;
-  transition:all .2s;
-  width:100%;
-}
-.btn-dl:hover{
-  background:rgba(14,165,233,.1);
-  border-color:#0ea5e9;
-}
-.btn-dl.locked{
-  color:var(--muted);
-  border-color:var(--border);
-  cursor:default;
-  opacity:.6;
-}
-.btn-dl.locked:hover{background:transparent;border-color:var(--border)}
-
-/* ── EMPTY STATE ── */
-.material-empty{
-  padding:18px 20px 16px;
-  border-right:1px solid var(--border);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:6px;color:var(--muted);font-size:12px;opacity:.5;
+  gap:6px;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);
 }
-.material-empty:last-child{border-right:none}
+.ppt-slide-mock .slide-icon{font-size:26px;opacity:.85}
+.ppt-slide-mock .slide-lines{display:flex;flex-direction:column;gap:4px;width:80px}
+.slide-line{height:3px;border-radius:2px;background:rgba(14,165,233,.35)}
+.slide-line.short{width:55%}
+.slide-line.medium{width:80%}
+
+.lesson-badge{
+  position:absolute;top:10px;left:10px;
+  background:rgba(14,165,233,.2);
+  border:1px solid rgba(14,165,233,.35);
+  border-radius:100px;
+  padding:3px 10px;
+  font-size:10px;font-weight:700;color:#38bdf8;letter-spacing:.5px;
+  text-transform:uppercase;z-index:2;
+}
+
+.ppt-body{padding:12px 14px 10px}
+.ppt-title{font-size:14px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:3px}
+.ppt-meta{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.ppt-meta .badge-ppt{
+  padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;
+  background:rgba(239,68,68,.12);color:#fca5a5;border:1px solid rgba(239,68,68,.25);
+}
+.ppt-footer{padding:0 14px 12px}
+
+/* ── DIVIDER ── */
+.unit-divider{
+  height:1px;background:var(--border);margin:0;
+}
+
+/* ── SUB CARDS (ҚМЖ + Video) ── */
+.sub-row{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:0;flex:1;
+}
+
+.sub-card{
+  padding:12px 12px 10px;
+  display:flex;flex-direction:column;gap:6px;
+  border-top:1px solid var(--border);
+}
+.sub-card:first-child{border-right:1px solid var(--border)}
+
+.sub-preview{
+  width:100%;height:90px;
+  border-radius:8px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.sub-preview.qmj-preview{
+  background:linear-gradient(135deg,#0d2c1a,#0d1b35);
+}
+.sub-preview.video-preview{
+  background:linear-gradient(135deg,#1a0d35,#0d1b35);
+  cursor:pointer;
+}
+.sub-preview-icon{font-size:28px;opacity:.7;position:relative;z-index:1}
+
+/* Video inside preview */
+.sub-preview video{
+  width:100%;height:100%;object-fit:cover;
+  border-radius:8px;
+}
+.play-overlay{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  z-index:2;
+  background:rgba(0,0,0,.2);
+  border-radius:8px;
+  transition:background .2s;
+}
+.play-overlay .play-btn{
+  width:32px;height:32px;
+  background:rgba(255,255,255,.2);
+  backdrop-filter:blur(6px);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+.sub-preview:hover .play-overlay{background:rgba(0,0,0,.1)}
+
+/* Pulsing ring for "video coming" */
+.video-coming{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  position:relative;z-index:1;
+}
+.video-ring{
+  width:36px;height:36px;border-radius:50%;
+  border:2px solid rgba(139,92,246,.4);
+  display:flex;align-items:center;justify-content:center;
+  animation:ring-pulse 2s ease-in-out infinite;
+}
+@keyframes ring-pulse{
+  0%,100%{border-color:rgba(139,92,246,.3);box-shadow:0 0 0 0 rgba(139,92,246,.2)}
+  50%{border-color:rgba(139,92,246,.7);box-shadow:0 0 0 6px rgba(139,92,246,.0)}
+}
+.video-ring svg{opacity:.8}
+.video-coming span{font-size:9px;color:rgba(196,181,253,.6);font-weight:600;letter-spacing:.3px}
+
+/* ҚМЖ doc mock */
+.qmj-doc{
+  display:flex;flex-direction:column;gap:4px;padding:8px 10px;
+  width:80px;
+  background:rgba(16,185,129,.06);
+  border:1px solid rgba(16,185,129,.15);
+  border-radius:6px;
+}
+.qmj-doc-line{height:2.5px;border-radius:2px;background:rgba(16,185,129,.3)}
+.qmj-doc-line.short{width:50%}
+.qmj-doc-line.long{width:90%}
+
+.sub-type-label{
+  font-size:11px;font-weight:700;
+  display:flex;align-items:center;gap:5px;
+}
+.sub-type-label.qmj-label{color:#6ee7b7}
+.sub-type-label.vid-label{color:#c4b5fd}
+.sub-meta{font-size:10px;color:var(--muted);flex:1}
+
+/* ── DOWNLOAD BUTTONS ── */
+.btn-download{
+  padding:7px 10px;
+  background:linear-gradient(135deg,var(--primary),var(--cyan));
+  border:none;border-radius:8px;
+  color:#fff;font-size:12px;font-weight:700;
+  font-family:'Inter',sans-serif;
+  cursor:pointer;width:100%;
+  transition:opacity .2s;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.btn-download:hover{opacity:.85}
+
+.btn-dl-sub{
+  padding:6px 10px;
+  background:transparent;
+  border:1.5px solid rgba(14,165,233,.3);
+  border-radius:7px;
+  color:#38bdf8;font-size:11px;font-weight:700;
+  font-family:'Inter',sans-serif;
+  cursor:pointer;width:100%;
+  transition:all .2s;
+}
+.btn-dl-sub:hover{background:rgba(14,165,233,.08);border-color:#0ea5e9}
+.btn-dl-sub.done{
+  color:var(--muted);border-color:var(--border);
+  cursor:default;
+}
+.btn-dl-sub.done:hover{background:transparent;border-color:var(--border)}
 
 /* ── RESPONSIVE ── */
-@media(max-width:600px){
-  .lesson-materials{grid-template-columns:1fr}
-  .material-item{border-right:none;border-bottom:1px solid var(--border)}
-  .material-item:last-child{border-bottom:none}
-  .material-empty{border-right:none;border-bottom:1px solid var(--border)}
-  .pay-bar{padding:10px 16px}
+@media(max-width:480px){
+  .lessons-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -165,7 +261,7 @@
 <div class="pay-bar">
   <span class="pay-bar-text">Барлық материалдарға толық қол жеткізу</span>
   <button class="btn-pay-top" onclick="openModal()">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
     Төлем жасау — 4 990 ₸/ай
   </button>
 </div>
@@ -179,24 +275,19 @@
     <a href="dashboard.html" class="content-header-back">← Артқа</a>
   </div>
 
-  <div class="lessons-list" id="lessonsList">
-    <!-- Lesson cards injected by JS -->
-  </div>
+  <div class="lessons-grid" id="lessonsGrid"></div>
 </div>
 
 <!-- PAYMENT MODAL -->
 <div class="modal-overlay" id="payModal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal()">✕</button>
-
     <div class="modal-title">GoTAB Premium</div>
     <div class="modal-sub">Барлық материалдарға толық қол жеткізу</div>
-
     <div class="price-tag">
       <div class="price-amount">4 990 ₸</div>
       <div class="price-period">1 айға жазылу</div>
     </div>
-
     <div class="payment-info">
       <div class="payment-info-row">
         <span class="payment-label">Каспи арқылы аудару</span>
@@ -210,7 +301,6 @@
         <span class="payment-value">Гульмира К.</span>
       </div>
     </div>
-
     <button class="btn-whatsapp" onclick="sendReceipt()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -229,10 +319,10 @@ if (!user) window.location.href = 'login.html';
 else document.getElementById('userName').textContent = user.name || user.email;
 
 const params = new URLSearchParams(location.search);
-const grade = parseInt(params.get('grade')) || 5;
+const grade   = parseInt(params.get('grade')) || 5;
 const subject = params.get('subject') || 'math';
 
-document.getElementById('pageTitle').textContent = `${GRADES_LABEL[grade]} — ${SUBJECT_LABEL[subject]}`;
+document.getElementById('pageTitle').textContent   = `${GRADES_LABEL[grade]} — ${SUBJECT_LABEL[subject]}`;
 document.title = `GoTAB — ${GRADES_LABEL[grade]} ${SUBJECT_LABEL[subject]}`;
 
 function logout() {
@@ -240,224 +330,234 @@ function logout() {
   window.location.href = 'index.html';
 }
 
-// ── Content data: each lesson has ppt + qmj + video ──
+// ── Content data ──
 const CONTENT = {
   5: { math: { lessons: [
-    {title:'Натурал сандар',     ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
-    {title:'Бөлшектер',          ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
-    {title:'Геометриялық фигуралар', ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
-    {title:'Теңдеулер',          ppt:{meta:'14 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'40 сек',src:null}},
+    {title:'Натурал сандар',          ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
+    {title:'Бөлшектер',               ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
+    {title:'Геометриялық фигуралар',  ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
+    {title:'Теңдеулер',               ppt:{meta:'14 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'40 сек',src:null}},
   ]}},
   6: { math: { lessons: [
-    {title:'Теріс сандар',       ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
-    {title:'Рационал сандар',    ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'55 сек',src:null}},
-    {title:'Пропорция',          ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'40 сек',src:null}},
-    {title:'Координаталық жазықтық', ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'55 сек',src:null}},
+    {title:'Теріс сандар',            ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
+    {title:'Рационал сандар',         ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'55 сек',src:null}},
+    {title:'Пропорция',               ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'40 сек',src:null}},
+    {title:'Координаталық жазықтық',  ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'55 сек',src:null}},
   ]}},
   7: {
     algebra: { lessons: [
-      {title:'Сызықтық теңдеулер', ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'50 сек',src:null}},
-      {title:'Функция ұғымы',      ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'60 сек',src:null}},
-      {title:'Сызықтық функция',   ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
-      {title:'Теңдеулер жүйесі',   ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'55 сек',src:null}},
+      {title:'Сызықтық теңдеулер',    ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'50 сек',src:null}},
+      {title:'Функция ұғымы',         ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'60 сек',src:null}},
+      {title:'Сызықтық функция',      ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
+      {title:'Теңдеулер жүйесі',      ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'55 сек',src:null}},
     ]},
     geometry: { lessons: [
-      {title:'Үшбұрыш белгілері',  ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
-      {title:'Паралель түзулер',   ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
-      {title:'Тіктөртбұрыш',      ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'65 сек',src:null}},
-      {title:'Теорема дәлелдеу',  ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'65 сек',src:null}},
+      {title:'Үшбұрыш белгілері',     ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
+      {title:'Паралель түзулер',      ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
+      {title:'Тіктөртбұрыш',         ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'65 сек',src:null}},
+      {title:'Теорема дәлелдеу',      ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'65 сек',src:null}},
     ]},
   },
   8: {
     algebra: { lessons: [
-      {title:'Квадрат теңдеу',     ppt:{meta:'26 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'55 сек',src:null}},
-      {title:'Дискриминант',       ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
-      {title:'Квадрат функция',    ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
-      {title:'Иррационал теңдеулер', ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
+      {title:'Квадрат теңдеу',        ppt:{meta:'26 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'55 сек',src:null}},
+      {title:'Дискриминант',          ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
+      {title:'Квадрат функция',       ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
+      {title:'Иррационал теңдеулер',  ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
     ]},
     geometry: { lessons: [
-      {title:'Дөңгелек және шеңбер', ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
-      {title:'Пифагор теоремасы', ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
-      {title:'Ауданды есептеу',   ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
-      {title:'Ұқсас үшбұрыштар',  ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
+      {title:'Дөңгелек және шеңбер',  ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
+      {title:'Пифагор теоремасы',     ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
+      {title:'Ауданды есептеу',       ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
+      {title:'Ұқсас үшбұрыштар',      ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
     ]},
   },
   9: {
     algebra: { lessons: [
-      {title:'Прогрессиялар',      ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'50 сек',src:null}},
-      {title:'Тригонометрия',      ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 6 бет',src:null}, video:{meta:'65 сек',src:null}},
-      {title:'Синус, косинус',     ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
-      {title:'Тригонометриялық теңдеу', ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
+      {title:'Прогрессиялар',         ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'50 сек',src:null}},
+      {title:'Тригонометрия',         ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 6 бет',src:null}, video:{meta:'65 сек',src:null}},
+      {title:'Синус, косинус',        ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
+      {title:'Тригонометриялық теңдеу',ppt:{meta:'18 слайд',src:null},qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
     ]},
     geometry: { lessons: [
-      {title:'Многоугольниктер',   ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
-      {title:'Вектор ұғымы',      ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
-      {title:'Координаталар геометриясы', ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'45 сек',src:null}},
-      {title:'Декарт жүйесі',     ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
+      {title:'Многоугольниктер',      ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
+      {title:'Вектор ұғымы',         ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
+      {title:'Координаталар геометриясы',ppt:{meta:'22 слайд',src:null},qmj:{meta:'Word · 5 бет',src:null},video:{meta:'45 сек',src:null}},
+      {title:'Декарт жүйесі',        ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
     ]},
   },
   10: {
     algebra: { lessons: [
-      {title:'Логарифм',           ppt:{meta:'26 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
-      {title:'Дәреже функциясы',   ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'55 сек',src:null}},
-      {title:'Туынды',             ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 6 бет',src:null}, video:{meta:'65 сек',src:null}},
-      {title:'Интеграл кіріспе',   ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
+      {title:'Логарифм',              ppt:{meta:'26 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
+      {title:'Дәреже функциясы',      ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'55 сек',src:null}},
+      {title:'Туынды',                ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 6 бет',src:null}, video:{meta:'65 сек',src:null}},
+      {title:'Интеграл кіріспе',      ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
     ]},
     geometry: { lessons: [
-      {title:'Кеңістіктегі фигуралар', ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
-      {title:'Призма',             ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
-      {title:'Пирамида',           ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
-      {title:'Көлемді есептеу',    ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'65 сек',src:null}},
+      {title:'Кеңістіктегі фигуралар',ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
+      {title:'Призма',                ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
+      {title:'Пирамида',              ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
+      {title:'Көлемді есептеу',       ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'65 сек',src:null}},
     ]},
   },
   11: {
     algebra: { lessons: [
-      {title:'Интеграл',           ppt:{meta:'28 слайд',src:null}, qmj:{meta:'Word · 6 бет',src:null}, video:{meta:'65 сек',src:null}},
-      {title:'Дифференциалдық теңдеу', ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
-      {title:'Комбинаторика',      ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'55 сек',src:null}},
-      {title:'Ықтималдық',         ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
+      {title:'Интеграл',              ppt:{meta:'28 слайд',src:null}, qmj:{meta:'Word · 6 бет',src:null}, video:{meta:'65 сек',src:null}},
+      {title:'Дифференциалдық теңдеу',ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
+      {title:'Комбинаторика',         ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'55 сек',src:null}},
+      {title:'Ықтималдық',            ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
     ]},
     geometry: { lessons: [
-      {title:'Шар және конус',     ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 6 бет',src:null}, video:{meta:'55 сек',src:null}},
-      {title:'Цилиндр',            ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
-      {title:'Беттер мен көлемдер', ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'65 сек',src:null}},
-      {title:'ҰБТ дайындық',       ppt:{meta:'30 слайд',src:null}, qmj:{meta:'Word · 8 бет',src:null}, video:{meta:'70 сек',src:null}},
+      {title:'Шар және конус',        ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 6 бет',src:null}, video:{meta:'55 сек',src:null}},
+      {title:'Цилиндр',               ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
+      {title:'Беттер мен көлемдер',   ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'65 сек',src:null}},
+      {title:'ҰБТ дайындық',          ppt:{meta:'30 слайд',src:null}, qmj:{meta:'Word · 8 бет',src:null}, video:{meta:'70 сек',src:null}},
     ]},
   },
 };
 
-// ── Daily access tracking ──
+// ── Daily download tracking ──
 const TODAY = new Date().toISOString().slice(0, 10);
+function dlKey(idx, type) { return `gotab_dl_${grade}_${subject}_${idx}_${type}`; }
+function wasDownloadedToday(idx, type) { return localStorage.getItem(dlKey(idx, type)) === TODAY; }
+function markDone(idx, type) { localStorage.setItem(dlKey(idx, type), TODAY); }
 
-function dlKey(lessonIdx, type) {
-  return `gotab_dl_${grade}_${subject}_${lessonIdx}_${type}`;
-}
-
-function canDownloadToday(lessonIdx, type) {
-  return localStorage.getItem(dlKey(lessonIdx, type)) !== TODAY;
-}
-
-function markDownloaded(lessonIdx, type) {
-  localStorage.setItem(dlKey(lessonIdx, type), TODAY);
-}
-
-// ── Download handler ──
-function handleDownload(btn, lessonIdx, type, src) {
-  if (!canDownloadToday(lessonIdx, type)) return;
-
-  if (src) {
-    const a = document.createElement('a');
-    a.href = src;
-    a.download = '';
-    a.click();
-  } else {
-    // File not uploaded yet — show payment modal
-    openModal();
-    return;
-  }
-
-  markDownloaded(lessonIdx, type);
-  btn.textContent = '✓ Жүктелді';
-  btn.classList.add('locked');
-}
-
-// ── Render lessons ──
+// ── Render ──
 function render() {
   const subjectData = (CONTENT[grade] || CONTENT[5])[subject]
     || Object.values(CONTENT[grade] || CONTENT[5])[0];
-  const lessons = subjectData.lessons || [];
-
-  const list = document.getElementById('lessonsList');
+  const lessons = (subjectData && subjectData.lessons) || [];
+  const grid = document.getElementById('lessonsGrid');
 
   if (!lessons.length) {
-    list.innerHTML = `<div style="text-align:center;color:var(--muted);padding:60px 20px;font-size:15px">
-      Материалдар жақын арада қосылады
-    </div>`;
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:60px;font-size:15px">Материалдар жақын арада қосылады</div>`;
     return;
   }
 
-  list.innerHTML = lessons.map((lesson, i) => {
-    const pptBtn  = makeDownloadBtn(i, 'ppt',   lesson.ppt);
-    const qmjBtn  = makeDownloadBtn(i, 'qmj',   lesson.qmj);
-    const vidBtn  = makeDownloadBtn(i, 'video',  lesson.video);
+  grid.innerHTML = lessons.map((lesson, i) => {
+    const pptDone  = wasDownloadedToday(i, 'ppt');
+    const qmjDone  = wasDownloadedToday(i, 'qmj');
+    const vidDone  = wasDownloadedToday(i, 'video');
 
-    return `<div class="lesson-card">
-      <div class="lesson-header">
-        <span class="lesson-num">Сабақ ${i + 1}</span>
-        <span class="lesson-title">${lesson.title}</span>
+    const videoPrev = lesson.video && lesson.video.src
+      ? `<video src="${lesson.video.src}" autoplay muted loop playsinline></video>
+         <div class="play-overlay">
+           <div class="play-btn">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+           </div>
+         </div>`
+      : `<div class="video-coming">
+           <div class="video-ring">
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+           </div>
+           <span>ЖАҚЫНДА</span>
+         </div>`;
+
+    return `
+    <div class="lesson-unit">
+
+      <!-- PRESENTATION -->
+      <div class="ppt-section">
+        <div class="ppt-preview">
+          <span class="lesson-badge">Сабақ ${i + 1}</span>
+          <div class="ppt-slide-mock">
+            <span class="slide-icon">📊</span>
+            <div class="slide-lines">
+              <div class="slide-line medium"></div>
+              <div class="slide-line short"></div>
+              <div class="slide-line medium"></div>
+            </div>
+          </div>
+        </div>
+        <div class="ppt-body">
+          <div class="ppt-title">${lesson.title}</div>
+          <div class="ppt-meta">
+            <span class="badge-ppt">PPT</span>
+            ${lesson.ppt ? lesson.ppt.meta : ''}
+          </div>
+        </div>
+        <div class="ppt-footer">
+          <button class="btn-download ${pptDone ? 'done' : ''}"
+            data-idx="${i}" data-type="ppt" data-src="${lesson.ppt && lesson.ppt.src ? lesson.ppt.src : ''}">
+            ${pptDone ? '✓ Жүктелді' : '⬇ Жүктеу'}
+          </button>
+        </div>
       </div>
-      <div class="lesson-materials">
 
-        <div class="material-item type-ppt">
-          <div class="material-type-label">
-            <span class="mat-icon">📊</span>
-            Презентация
+      <div class="unit-divider"></div>
+
+      <!-- ҚМЖ + VIDEO -->
+      <div class="sub-row">
+
+        <!-- ҚМЖ -->
+        <div class="sub-card">
+          <div class="sub-preview qmj-preview">
+            <div class="qmj-doc">
+              <div class="qmj-doc-line long"></div>
+              <div class="qmj-doc-line short"></div>
+              <div class="qmj-doc-line long"></div>
+              <div class="qmj-doc-line short"></div>
+              <div class="qmj-doc-line medium" style="width:70%"></div>
+            </div>
           </div>
-          <div class="material-meta-text">${lesson.ppt ? lesson.ppt.meta : '—'}</div>
-          ${pptBtn}
+          <div class="sub-type-label qmj-label">
+            <span>📄</span> ҚМЖ
+          </div>
+          <div class="sub-meta">${lesson.qmj ? lesson.qmj.meta : '—'}</div>
+          <button class="btn-dl-sub ${qmjDone ? 'done' : ''}"
+            data-idx="${i}" data-type="qmj" data-src="${lesson.qmj && lesson.qmj.src ? lesson.qmj.src : ''}">
+            ${qmjDone ? '✓ Жүктелді' : '⬇ Жүктеу'}
+          </button>
         </div>
 
-        <div class="material-item type-qmj">
-          <div class="material-type-label">
-            <span class="mat-icon">📄</span>
-            ҚМЖ
+        <!-- ANIMATION VIDEO -->
+        <div class="sub-card">
+          <div class="sub-preview video-preview">${videoPrev}</div>
+          <div class="sub-type-label vid-label">
+            <span>🎬</span> Анимация
           </div>
-          <div class="material-meta-text">${lesson.qmj ? lesson.qmj.meta : '—'}</div>
-          ${qmjBtn}
-        </div>
-
-        <div class="material-item type-vid">
-          <div class="material-type-label">
-            <span class="mat-icon">🎬</span>
-            Анимация
-          </div>
-          <div class="material-meta-text">${lesson.video ? lesson.video.meta : '—'}</div>
-          ${vidBtn}
+          <div class="sub-meta">${lesson.video ? lesson.video.meta : '—'}</div>
+          <button class="btn-dl-sub ${vidDone ? 'done' : ''}"
+            data-idx="${i}" data-type="video" data-src="${lesson.video && lesson.video.src ? lesson.video.src : ''}">
+            ${vidDone ? '✓ Жүктелді' : '⬇ Жүктеу'}
+          </button>
         </div>
 
       </div>
     </div>`;
   }).join('');
 
-  // Attach click listeners to all download buttons
-  list.querySelectorAll('[data-dl]').forEach(btn => {
+  // Download click listeners
+  grid.querySelectorAll('[data-idx]').forEach(btn => {
     btn.addEventListener('click', function() {
-      const idx  = parseInt(this.dataset.dl);
+      if (this.classList.contains('done')) return;
+      const idx  = parseInt(this.dataset.idx);
       const type = this.dataset.type;
-      const src  = this.dataset.src || null;
-      handleDownload(this, idx, type, src);
+      const src  = this.dataset.src;
+
+      if (src) {
+        const a = document.createElement('a');
+        a.href = src; a.download = ''; a.click();
+        markDone(idx, type);
+        this.textContent = '✓ Жүктелді';
+        this.classList.add('done');
+      } else {
+        openModal();
+      }
     });
   });
-}
-
-function makeDownloadBtn(idx, type, mat) {
-  if (!mat) return '<div class="material-meta-text" style="opacity:.4">—</div>';
-
-  const downloaded = !canDownloadToday(idx, type);
-  const locked = downloaded ? ' locked' : '';
-  const label  = downloaded ? '✓ Жүктелді' : '⬇ Жүктеу';
-  const src    = mat.src ? `data-src="${mat.src}"` : '';
-
-  return `<button class="btn-dl${locked}" data-dl="${idx}" data-type="${type}" ${src}>${label}</button>`;
 }
 
 render();
 
 // ── Payment modal ──
-function openModal() {
-  document.getElementById('payModal').classList.add('open');
-}
-function closeModal() {
-  document.getElementById('payModal').classList.remove('open');
-}
-document.getElementById('payModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
+function openModal()  { document.getElementById('payModal').classList.add('open'); }
+function closeModal() { document.getElementById('payModal').classList.remove('open'); }
+document.getElementById('payModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
 
 function sendReceipt() {
-  const phone = '77055894347';
   const msg = encodeURIComponent('Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. Чекті жіберемін.');
-  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+  window.open(`https://wa.me/77055894347?text=${msg}`, '_blank');
 }
 </script>
 <script src="math-bg.js"></script>
