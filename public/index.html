@@ -4,18 +4,211 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GoTAB — Мұғалімдерге арналған платформа</title>
-<link rel="stylesheet" href="gotab.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  background:#060d1f;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  position:relative;
+}
+
+/* Фондық жарқыраулар */
+.bg-orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+.orb1{width:500px;height:500px;background:radial-gradient(circle,rgba(14,165,233,.18),transparent 70%);top:-100px;left:-100px}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,rgba(6,182,212,.14),transparent 70%);bottom:-80px;right:-80px}
+.orb3{width:300px;height:300px;background:radial-gradient(circle,rgba(139,92,246,.10),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)}
+
+/* Жұлдызшалар */
+.stars{position:fixed;inset:0;z-index:0;overflow:hidden}
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d) ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.1}50%{opacity:var(--op)}}
+
+.container{
+  position:relative;z-index:1;
+  width:100%;max-width:420px;
+  padding:20px;
+  display:flex;flex-direction:column;align-items:center;gap:0;
+}
+
+/* Жоғарғы тег */
+.top-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 16px;
+  background:rgba(14,165,233,.1);
+  border:1px solid rgba(14,165,233,.25);
+  border-radius:100px;
+  font-size:11px;font-weight:700;letter-spacing:1.5px;
+  color:#38bdf8;
+  text-transform:uppercase;
+  margin-bottom:28px;
+}
+.top-badge span{width:6px;height:6px;border-radius:50%;background:#38bdf8;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Логотип — фонсыз */
+.logo-wrap{
+  margin-bottom:32px;
+  position:relative;
+}
+.logo-wrap img{
+  height:72px;
+  mix-blend-mode:screen;
+  filter:brightness(1.3) contrast(1.1);
+  display:block;
+}
+
+/* Карточка */
+.card{
+  width:100%;
+  background:rgba(13,27,53,.7);
+  border:1px solid rgba(30,58,95,.8);
+  border-radius:24px;
+  padding:36px 32px 32px;
+  backdrop-filter:blur(20px);
+  box-shadow:0 32px 80px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.card-title{
+  font-size:22px;font-weight:800;
+  color:#e2e8f0;
+  text-align:center;
+  margin-bottom:6px;
+  letter-spacing:-.3px;
+}
+.card-sub{
+  font-size:13px;color:#64748b;
+  text-align:center;
+  margin-bottom:28px;
+  line-height:1.5;
+}
+
+/* Батырмалар */
+.btns{display:flex;flex-direction:column;gap:12px}
+
+.btn-login{
+  display:block;
+  padding:15px;
+  background:transparent;
+  border:2px solid rgba(14,165,233,.5);
+  border-radius:14px;
+  color:#38bdf8;
+  font-size:16px;font-weight:700;
+  font-family:'Inter',sans-serif;
+  text-align:center;text-decoration:none;
+  transition:all .2s;
+}
+.btn-login:hover{
+  background:rgba(14,165,233,.08);
+  border-color:#0ea5e9;
+  transform:translateY(-1px);
+}
+
+.btn-register{
+  display:block;
+  padding:15px;
+  background:linear-gradient(135deg,#0ea5e9,#06b6d4);
+  border:none;border-radius:14px;
+  color:#fff;
+  font-size:16px;font-weight:700;
+  font-family:'Inter',sans-serif;
+  text-align:center;text-decoration:none;
+  transition:all .2s;
+  box-shadow:0 8px 24px rgba(14,165,233,.3);
+}
+.btn-register:hover{
+  opacity:.92;transform:translateY(-1px);
+  box-shadow:0 12px 32px rgba(14,165,233,.4);
+}
+
+/* Бөлгіш */
+.divider{
+  display:flex;align-items:center;gap:12px;
+  margin:4px 0;color:#1e3a5f;font-size:12px;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#1e3a5f}
+
+/* Төменгі белгілер */
+.features{
+  display:flex;justify-content:center;gap:20px;
+  margin-top:24px;flex-wrap:wrap;
+}
+.feat{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;color:#475569;font-weight:600;
+}
+.feat svg{color:#0ea5e9}
+</style>
 </head>
 <body>
-<div class="landing">
-  <div class="landing-logo">
+
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+<div class="bg-orb orb3"></div>
+<div class="stars" id="stars"></div>
+
+<div class="container">
+
+  <!-- Жоғарғы тег -->
+  <div class="top-badge">
+    <span></span>
+    Мұғалімдерге арналған платформа
+  </div>
+
+  <!-- Логотип фонсыз -->
+  <div class="logo-wrap">
     <img src="gotab_logo.png" alt="GoTAB">
   </div>
-  <p class="landing-tagline">Мұғалімдерге арналған математика материалдары: презентация, ҚМЖ және анимация видеолар</p>
-  <div class="landing-btns">
-    <a href="login.html" class="btn-outline">Кіру</a>
-    <a href="register.html" class="btn-solid">Тіркелу</a>
+
+  <!-- Карточка -->
+  <div class="card">
+    <div class="card-title">Қош келдіңіз!</div>
+    <div class="card-sub">Презентация · ҚМЖ · Математика анимациялары</div>
+
+    <div class="btns">
+      <a href="register.html" class="btn-register">Тіркелу</a>
+      <div class="divider">немесе</div>
+      <a href="login.html" class="btn-login">Кіру</a>
+    </div>
   </div>
+
+  <!-- Белгілер -->
+  <div class="features">
+    <div class="feat">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      5–11 сынып
+    </div>
+    <div class="feat">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Тегін тіркелу
+    </div>
+    <div class="feat">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      HD Анимациялар
+    </div>
+  </div>
+
 </div>
+
+<script>
+// Жұлдызшалар
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 60; i++) {
+  const s = document.createElement('div');
+  const size = Math.random() * 2 + 1;
+  s.className = 'star';
+  s.style.cssText = `
+    width:${size}px;height:${size}px;
+    left:${Math.random()*100}%;top:${Math.random()*100}%;
+    --d:${2+Math.random()*4}s;
+    --op:${0.3+Math.random()*0.5};
+    animation-delay:${Math.random()*4}s;
+  `;
+  starsEl.appendChild(s);
+}
+</script>
 </body>
 </html>
