@@ -19,14 +19,14 @@
 
     <form onsubmit="handleLogin(event)">
       <div class="form-group">
-        <label>Email немесе телефон нөмірі</label>
-        <input type="text" id="emailInput" placeholder="example@mail.com" required>
+        <label>Email</label>
+        <input type="email" id="emailInput" placeholder="example@mail.com" required>
       </div>
       <div class="form-group">
         <label>Пароль</label>
         <input type="password" id="passInput" placeholder="••••••••" required>
       </div>
-      <button type="submit" class="btn-primary">Кіру</button>
+      <button type="submit" class="btn-primary" id="submitBtn">Кіру</button>
     </form>
 
     <div class="auth-switch">
@@ -35,25 +35,30 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script>
-function handleLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
   const errMsg = document.getElementById('errMsg');
-  const email = document.getElementById('emailInput').value.trim().toLowerCase();
+  const btn    = document.getElementById('submitBtn');
+  const email  = document.getElementById('emailInput').value.trim().toLowerCase();
   const password = document.getElementById('passInput').value;
 
   errMsg.style.display = 'none';
+  btn.textContent = 'Жүктелуде...';
+  btn.disabled = true;
 
-  const users = JSON.parse(localStorage.getItem('gotab_users') || '{}');
-  const user = users[email];
+  const { error } = await sb.auth.signInWithPassword({ email, password });
 
-  if (!user || user.password !== password) {
+  if (error) {
     errMsg.textContent = 'Email немесе пароль қате';
     errMsg.style.display = 'block';
+    btn.textContent = 'Кіру';
+    btn.disabled = false;
     return;
   }
 
-  localStorage.setItem('gotab_user', JSON.stringify({ name: user.name, email: user.email }));
   window.location.href = 'dashboard.html';
 }
 </script>

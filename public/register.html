@@ -38,7 +38,7 @@
         <label>Парольді растаңыз</label>
         <input type="password" id="pass2Input" placeholder="Парольді қайталаңыз" required>
       </div>
-      <button type="submit" class="btn-primary">Тіркелу</button>
+      <button type="submit" class="btn-primary" id="submitBtn">Тіркелу</button>
     </form>
 
     <div class="auth-switch">
@@ -47,15 +47,18 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script>
-function handleRegister(e) {
+async function handleRegister(e) {
   e.preventDefault();
-  const errMsg = document.getElementById('errMsg');
-  const name = document.getElementById('nameInput').value.trim();
-  const email = document.getElementById('emailInput').value.trim().toLowerCase();
-  const phone = document.getElementById('phoneInput').value.trim();
+  const errMsg  = document.getElementById('errMsg');
+  const btn     = document.getElementById('submitBtn');
+  const name    = document.getElementById('nameInput').value.trim();
+  const email   = document.getElementById('emailInput').value.trim().toLowerCase();
+  const phone   = document.getElementById('phoneInput').value.trim();
   const password = document.getElementById('passInput').value;
-  const pass2 = document.getElementById('pass2Input').value;
+  const pass2   = document.getElementById('pass2Input').value;
 
   errMsg.style.display = 'none';
 
@@ -65,17 +68,24 @@ function handleRegister(e) {
     return;
   }
 
-  const users = JSON.parse(localStorage.getItem('gotab_users') || '{}');
+  btn.textContent = 'Жүктелуде...';
+  btn.disabled = true;
 
-  if (users[email]) {
-    errMsg.textContent = 'Бұл email тіркелген';
+  const { error } = await sb.auth.signUp({
+    email,
+    password,
+    options: { data: { name, phone } }
+  });
+
+  if (error) {
+    errMsg.textContent = error.message === 'User already registered'
+      ? 'Бұл email тіркелген' : 'Қате болды, қайталап көріңіз';
     errMsg.style.display = 'block';
+    btn.textContent = 'Тіркелу';
+    btn.disabled = false;
     return;
   }
 
-  users[email] = { name, email, phone, password };
-  localStorage.setItem('gotab_users', JSON.stringify(users));
-  localStorage.setItem('gotab_user', JSON.stringify({ name, email }));
   window.location.href = 'dashboard.html';
 }
 </script>

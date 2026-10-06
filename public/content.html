@@ -311,19 +311,21 @@
 const GRADES_LABEL = {5:'5-сынып',6:'6-сынып',7:'7-сынып',8:'8-сынып',9:'9-сынып',10:'10-сынып',11:'11-сынып'};
 const SUBJECT_LABEL = {math:'Математика',algebra:'Алгебра',geometry:'Геометрия'};
 
-const user = JSON.parse(localStorage.getItem('gotab_user') || 'null');
-if (!user) window.location.href = 'login.html';
-else document.getElementById('userName').textContent = user.name || user.email;
-
-const params = new URLSearchParams(location.search);
+const params  = new URLSearchParams(location.search);
 const grade   = parseInt(params.get('grade')) || 5;
 const subject = params.get('subject') || 'math';
 
-document.getElementById('pageTitle').textContent   = `${GRADES_LABEL[grade]} — ${SUBJECT_LABEL[subject]}`;
+document.getElementById('pageTitle').textContent = `${GRADES_LABEL[grade]} — ${SUBJECT_LABEL[subject]}`;
 document.title = `GoTAB — ${GRADES_LABEL[grade]} ${SUBJECT_LABEL[subject]}`;
 
-function logout() {
-  localStorage.removeItem('gotab_user');
+(async () => {
+  const user = await requireAuth();
+  if (!user) return;
+  document.getElementById('userName').textContent = user.user_metadata?.name || user.email;
+})();
+
+async function logout() {
+  await sb.auth.signOut();
   window.location.href = 'index.html';
 }
 
@@ -548,6 +550,8 @@ function sendReceipt() {
   window.open(`https://wa.me/77055894347?text=${msg}`, '_blank');
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script src="math-bg.js"></script>
 </body>
 </html>
