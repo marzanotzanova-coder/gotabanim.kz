@@ -32,14 +32,14 @@
   function rand(min, max) { return Math.random() * (max - min) + min; }
 
   function createParticle() {
-    const op = rand(0.07, 0.16);
+    const op = rand(0.12, 0.28);
     return {
       x: rand(0, W),
       y: rand(0, H),
       text: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-      size: rand(12, 20),
+      size: rand(13, 22),
       speedX: rand(-0.08, 0.08),
-      speedY: rand(-0.18, -0.07),  // баяу жоғарыға
+      speedY: rand(-0.18, -0.07),
       opacity: op,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
       rotation: rand(-0.2, 0.2),
