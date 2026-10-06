@@ -38,6 +38,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script>
+redirectIfLoggedIn();
+
 async function handleLogin(e) {
   e.preventDefault();
   const errMsg = document.getElementById('errMsg');
@@ -59,7 +61,8 @@ async function handleLogin(e) {
     return;
   }
 
-  window.location.href = 'dashboard.html';
+  const last = localStorage.getItem('gotab_last_page') || 'dashboard.html';
+  window.location.href = last;
 }
 </script>
 <script src="math-bg.js"></script>

@@ -241,9 +241,31 @@
   border-top:1px solid var(--border);
 }
 
+/* ── GRADE/SUBJECT SWITCHER ── */
+.content-switcher{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.sel-grade,.sel-subject{
+  padding:9px 32px 9px 13px;
+  background:var(--surface2);
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  color:var(--text);
+  font-size:14px;font-weight:700;
+  font-family:'Inter',sans-serif;
+  cursor:pointer;outline:none;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  transition:border-color .2s;
+}
+.sel-grade:focus,.sel-subject:focus{border-color:var(--primary)}
+
 /* ── RESPONSIVE ── */
 @media(max-width:480px){
   .lessons-grid{grid-template-columns:1fr}
+  .sel-grade,.sel-subject{font-size:13px;padding:8px 28px 8px 10px}
+  .content-header{flex-wrap:wrap;gap:10px}
+  .content-header-back{margin-left:0}
 }
 </style>
 </head>
@@ -268,9 +290,17 @@
 
 <div class="content-page">
   <div class="content-header">
-    <div class="content-header-info">
-      <h2 id="pageTitle">Материалдар</h2>
-      <p id="pageSubtitle">Презентация · ҚМЖ · Анимация — әр сабаққа</p>
+    <div class="content-switcher">
+      <select id="gradeSel" class="sel-grade" onchange="changeGrade()">
+        <option value="5">5-сынып</option>
+        <option value="6">6-сынып</option>
+        <option value="7">7-сынып</option>
+        <option value="8">8-сынып</option>
+        <option value="9">9-сынып</option>
+        <option value="10">10-сынып</option>
+        <option value="11">11-сынып</option>
+      </select>
+      <select id="subjectSel" class="sel-subject" onchange="changeSubject()"></select>
     </div>
     <a href="dashboard.html" class="content-header-back">← Артқа</a>
   </div>
@@ -324,8 +354,24 @@ const params  = new URLSearchParams(location.search);
 const grade   = parseInt(params.get('grade')) || 5;
 const subject = params.get('subject') || 'math';
 
-document.getElementById('pageTitle').textContent = `${GRADES_LABEL[grade]} — ${SUBJECT_LABEL[subject]}`;
 document.title = `GoTAB — ${GRADES_LABEL[grade]} ${SUBJECT_LABEL[subject]}`;
+
+function initSwitcher() {
+  document.getElementById('gradeSel').value = grade;
+  const isLower = grade <= 6;
+  document.getElementById('subjectSel').innerHTML = isLower
+    ? '<option value="math">Математика</option>'
+    : '<option value="algebra">Алгебра</option><option value="geometry">Геометрия</option>';
+  document.getElementById('subjectSel').value = subject;
+}
+function changeGrade() {
+  const g = parseInt(document.getElementById('gradeSel').value);
+  window.location.href = `content.html?grade=${g}&subject=${g <= 6 ? 'math' : 'algebra'}`;
+}
+function changeSubject() {
+  window.location.href = `content.html?grade=${grade}&subject=${document.getElementById('subjectSel').value}`;
+}
+initSwitcher();
 
 (async () => {
   const user = await requireAuth();
