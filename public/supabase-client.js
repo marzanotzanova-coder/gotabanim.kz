@@ -1,6 +1,6 @@
 const SUPABASE_URL = 'https://eknjslyvcwtusbqvygxx.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_4AKv-8WUdjo_ZdYvlHPC4w_v-aNINNL';
-const ADMIN_EMAIL  = 'marzanotzanova@gmail.com';
+const ADMIN_EMAIL  = 'admin@gotab.kz';
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
