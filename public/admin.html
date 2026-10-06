@@ -6,67 +6,78 @@
 <title>GoTAB — Админ панель</title>
 <link rel="stylesheet" href="gotab.css">
 <style>
-.admin-page{min-height:100vh;padding:28px 20px 60px;max-width:1100px;margin:0 auto}
+.admin-page{min-height:100vh;padding:20px 16px 60px;max-width:1100px;margin:0 auto}
 
-.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:32px}
-.stat-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:16px;padding:22px 24px;
-  box-shadow:0 2px 8px rgba(26,86,219,.06);
-}
-.stat-label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
-.stat-value{font-size:36px;font-weight:900;background:linear-gradient(135deg,var(--primary),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.stat-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
+@media(min-width:600px){.stats-row{grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}}
 
-.admin-section{margin-bottom:40px}
-.admin-section-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:0 2px 8px rgba(26,86,219,.06)}
+.stat-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px}
+.stat-value{font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--primary),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+@media(min-width:600px){.stat-value{font-size:36px}}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:3px}
 
-.search-row{margin-bottom:14px}
+.admin-section{margin-bottom:32px}
+.admin-section-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:14px}
+
 .search-input{
-  width:100%;max-width:340px;padding:10px 16px;
+  width:100%;padding:10px 14px;
   background:#f8fafc;border:1.5px solid var(--border);
   border-radius:10px;color:var(--text);font-size:14px;
   font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;
+  margin-bottom:14px;
 }
 .search-input:focus{border-color:var(--primary)}
 .search-input::placeholder{color:#b0bec5}
 
-.users-table-wrap{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:16px;overflow:hidden;
-  box-shadow:0 2px 8px rgba(26,86,219,.06);
-}
+/* Desktop table */
+.users-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(26,86,219,.06)}
 table{width:100%;border-collapse:collapse}
 thead{background:var(--surface2)}
-th{padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--border)}
-td{padding:12px 16px;font-size:13px;color:var(--text);border-bottom:1px solid #f1f5f9}
+th{padding:11px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:11px 14px;font-size:13px;color:var(--text);border-bottom:1px solid #f1f5f9;white-space:nowrap}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#f8faff}
+.table-empty{padding:36px;text-align:center;color:var(--muted);font-size:14px}
 
-.td-name{font-weight:600}
-.td-email{color:var(--muted)}
+/* Mobile cards instead of table */
+@media(max-width:640px){
+  .users-table-wrap{background:transparent;border:none;box-shadow:none;overflow:visible}
+  table,thead,tbody,tr,th,td{display:block}
+  thead{display:none}
+  tbody tr{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:14px;margin-bottom:12px;padding:14px 16px;
+    box-shadow:0 2px 8px rgba(26,86,219,.05);
+  }
+  td{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:5px 0;border:none;font-size:13px;white-space:normal;
+  }
+  td::before{
+    content:attr(data-label);
+    font-size:11px;font-weight:700;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.4px;
+    flex-shrink:0;margin-right:12px;
+  }
+  td:first-child{display:none}
+}
+
+.td-name{font-weight:700}
+.td-email{color:var(--muted);font-size:12px}
 .td-phone{color:var(--primary);font-weight:600}
 .td-date{color:var(--muted);font-size:12px}
 
-.badge-paid{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;background:rgba(16,185,129,.1);color:#059669;border:1px solid rgba(16,185,129,.25)}
-.badge-unpaid{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0}
+.badge-paid{padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700;background:rgba(16,185,129,.1);color:#059669;border:1px solid rgba(16,185,129,.25)}
+.badge-unpaid{padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700;background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0}
 
-.btn-toggle-paid{
-  padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;
-  font-family:'Inter',sans-serif;cursor:pointer;border:none;transition:all .2s;
-}
-.btn-toggle-paid.make-paid{background:rgba(16,185,129,.1);color:#059669}
-.btn-toggle-paid.make-paid:hover{background:rgba(16,185,129,.2)}
+.btn-toggle-paid{padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;border:none;transition:all .2s}
+.btn-toggle-paid.make-paid{background:rgba(16,185,129,.12);color:#059669}
+.btn-toggle-paid.make-paid:hover{background:rgba(16,185,129,.22)}
 .btn-toggle-paid.make-unpaid{background:rgba(239,68,68,.08);color:#dc2626}
-.btn-toggle-paid.make-unpaid:hover{background:rgba(239,68,68,.15)}
+.btn-toggle-paid.make-unpaid:hover{background:rgba(239,68,68,.16)}
 
-.table-empty{padding:40px;text-align:center;color:var(--muted);font-size:14px}
-
-.admin-nav-badge{
-  padding:3px 10px;border-radius:100px;
-  background:rgba(26,86,219,.08);border:1px solid rgba(26,86,219,.2);
-  font-size:11px;font-weight:700;color:var(--primary);
-}
+.admin-nav-badge{padding:3px 10px;border-radius:100px;background:rgba(26,86,219,.08);border:1px solid rgba(26,86,219,.2);font-size:11px;font-weight:700;color:var(--primary)}
 </style>
 </head>
 <body>
@@ -74,8 +85,7 @@ tr:hover td{background:#f8faff}
 <nav class="top-nav">
   <img src="gotab_logo.png" alt="GoTAB">
   <div class="nav-user">
-    <span class="admin-nav-badge">Админ панель</span>
-    <span class="nav-user-name" id="userName"></span>
+    <span class="admin-nav-badge">Админ</span>
     <button class="btn-logout" onclick="logout()">Шығу</button>
   </div>
 </nav>
@@ -86,7 +96,7 @@ tr:hover td{background:#f8faff}
     <div class="stat-card">
       <div class="stat-label">Барлық мұғалімдер</div>
       <div class="stat-value" id="statTotal">—</div>
-      <div class="stat-sub">тіркелген пайдаланушы</div>
+      <div class="stat-sub">тіркелген</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Сатып алғандар</div>
@@ -107,9 +117,7 @@ tr:hover td{background:#f8faff}
 
   <div class="admin-section">
     <div class="admin-section-title">👥 Тіркелген мұғалімдер</div>
-    <div class="search-row">
-      <input class="search-input" id="searchInput" placeholder="Аты немесе email бойынша іздеу..." oninput="filterUsers()">
-    </div>
+    <input class="search-input" id="searchInput" placeholder="Аты немесе email бойынша іздеу..." oninput="filterUsers()">
     <div class="users-table-wrap">
       <table>
         <thead>
@@ -118,7 +126,7 @@ tr:hover td{background:#f8faff}
             <th>Аты-жөні</th>
             <th>Email</th>
             <th>Телефон</th>
-            <th>Тіркелген күні</th>
+            <th>Тіркелген</th>
             <th>Жазылым</th>
             <th>Әрекет</th>
           </tr>
@@ -151,7 +159,6 @@ const MONTHS = ['қаңтар','ақпан','наурыз','сәуір','мам�
     return;
   }
 
-  document.getElementById('userName').textContent = user.user_metadata?.name || user.email;
   await loadUsers();
 })();
 
@@ -162,7 +169,6 @@ async function loadUsers() {
       `<tr><td colspan="7" class="table-empty">Қате: ${error.message}</td></tr>`;
     return;
   }
-  // Filter out admin
   allUsers = (data || []).filter(u => u.email !== ADMIN_EMAIL);
   updateStats(allUsers);
   renderTable(allUsers);
@@ -172,10 +178,9 @@ function updateStats(users) {
   const today   = new Date().toISOString().slice(0, 10);
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
   const d = new Date();
-
   document.getElementById('statTotal').textContent = users.length;
   document.getElementById('statPaid').textContent  = users.filter(u => u.is_paid).length;
-  document.getElementById('statToday').textContent = users.filter(u => u.created_at?.slice(0, 10) === today).length;
+  document.getElementById('statToday').textContent = users.filter(u => u.created_at?.slice(0,10) === today).length;
   document.getElementById('statWeek').textContent  = users.filter(u => u.created_at >= weekAgo).length;
   document.getElementById('statDate').textContent  = `${d.getDate()} ${MONTHS[d.getMonth()]}`;
 }
@@ -188,22 +193,22 @@ function renderTable(users) {
   }
   tbody.innerHTML = users.map((u, i) => {
     const date = u.created_at
-      ? new Date(u.created_at).toLocaleDateString('ru-RU', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
+      ? new Date(u.created_at).toLocaleDateString('ru-RU', {day:'2-digit',month:'2-digit',year:'numeric'})
       : '—';
     const paidBadge = u.is_paid
       ? `<span class="badge-paid">✓ Төленді</span>`
       : `<span class="badge-unpaid">Төленбеген</span>`;
     const toggleBtn = u.is_paid
-      ? `<button class="btn-toggle-paid make-unpaid" onclick="togglePaid('${u.id}', false)">Болдырмау</button>`
-      : `<button class="btn-toggle-paid make-paid" onclick="togglePaid('${u.id}', true)">Белгілеу ✓</button>`;
+      ? `<button class="btn-toggle-paid make-unpaid" onclick="togglePaid('${u.id}',false)">Болдырмау</button>`
+      : `<button class="btn-toggle-paid make-paid" onclick="togglePaid('${u.id}',true)">✓ Белгілеу</button>`;
     return `<tr>
-      <td style="color:var(--muted);font-size:12px">${i + 1}</td>
-      <td class="td-name">${u.name || '—'}</td>
-      <td class="td-email">${u.email || '—'}</td>
-      <td class="td-phone">${u.phone || '—'}</td>
-      <td class="td-date">${date}</td>
-      <td>${paidBadge}</td>
-      <td>${toggleBtn}</td>
+      <td data-label="#">${i+1}</td>
+      <td data-label="Аты-жөні" class="td-name">${u.name||'—'}</td>
+      <td data-label="Email" class="td-email">${u.email||'—'}</td>
+      <td data-label="Телефон" class="td-phone">${u.phone||'—'}</td>
+      <td data-label="Тіркелген" class="td-date">${date}</td>
+      <td data-label="Жазылым">${paidBadge}</td>
+      <td data-label="Әрекет">${toggleBtn}</td>
     </tr>`;
   }).join('');
 }
@@ -217,9 +222,9 @@ async function togglePaid(userId, paid) {
 function filterUsers() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   renderTable(q ? allUsers.filter(u =>
-    (u.name || '').toLowerCase().includes(q) ||
-    (u.email || '').toLowerCase().includes(q) ||
-    (u.phone || '').includes(q)
+    (u.name||'').toLowerCase().includes(q) ||
+    (u.email||'').toLowerCase().includes(q) ||
+    (u.phone||'').includes(q)
   ) : allUsers);
 }
 
