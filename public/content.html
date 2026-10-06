@@ -116,7 +116,6 @@
   padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;
   background:rgba(239,68,68,.12);color:#fca5a5;border:1px solid rgba(239,68,68,.25);
 }
-.ppt-footer{padding:0 14px 12px}
 
 /* ── DIVIDER ── */
 .unit-divider{
@@ -225,6 +224,12 @@
 .btn-download.done{background:rgba(16,185,129,.12);color:#6ee7b7;cursor:default}
 .btn-download.done:hover{opacity:1}
 
+
+/* ── LESSON DOWNLOAD FOOTER ── */
+.lesson-dl-footer{
+  padding:12px 14px 16px;
+  border-top:1px solid var(--border);
+}
 
 /* ── RESPONSIVE ── */
 @media(max-width:480px){
@@ -459,11 +464,6 @@ function render() {
             ${lesson.ppt ? lesson.ppt.meta : ''}
           </div>
         </div>
-        <div class="ppt-footer">
-          <button class="btn-download ${done ? 'done' : ''}" data-idx="${i}">
-            ${done ? '✓ Жүктелді' : '⬇ Жүктеу'}
-          </button>
-        </div>
       </div>
 
       <div class="unit-divider"></div>
@@ -498,6 +498,13 @@ function render() {
         </div>
 
       </div>
+
+      <div class="lesson-dl-footer">
+        <button class="btn-download ${done ? 'done' : ''}" data-idx="${i}">
+          ${done ? '✓ Жүктелді' : '⬇ Барлығын жүктеу'}
+        </button>
+      </div>
+
     </div>`;
   }).join('');
 
