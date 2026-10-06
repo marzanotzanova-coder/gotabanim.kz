@@ -13,10 +13,10 @@
   ];
 
   const COLORS = [
+    'rgba(26,86,219,',
+    'rgba(8,145,178,',
+    'rgba(99,102,241,',
     'rgba(14,165,233,',
-    'rgba(6,182,212,',
-    'rgba(139,92,246,',
-    'rgba(99,179,237,',
   ];
 
   let particles = [];
@@ -32,7 +32,7 @@
   function rand(min, max) { return Math.random() * (max - min) + min; }
 
   function createParticle() {
-    const op = rand(0.12, 0.28);
+    const op = rand(0.06, 0.14);
     return {
       x: rand(0, W),
       y: rand(0, H),
@@ -55,32 +55,25 @@
 
   function draw() {
     ctx.clearRect(0, 0, W, H);
-
     for (const p of particles) {
       p.x += p.speedX;
       p.y += p.speedY;
       p.rotation += p.rotSpeed;
 
-      if (p.y < -40) {
-        p.y = H + 20;
-        p.x = rand(0, W);
-        p.text = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
-      }
+      if (p.y < -40) { p.y = H + 20; p.x = rand(0, W); p.text = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]; }
       if (p.x < -60) p.x = W + 20;
       if (p.x > W + 60) p.x = -20;
 
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rotation);
-      ctx.shadowBlur = 0;
       ctx.globalAlpha = p.opacity;
       ctx.fillStyle = p.color + p.opacity + ')';
-      ctx.font = `500 ${p.size}px 'Inter', monospace`;
+      ctx.font = `600 ${p.size}px 'Inter', monospace`;
       ctx.textAlign = 'center';
       ctx.fillText(p.text, 0, 0);
       ctx.restore();
     }
-
     requestAnimationFrame(draw);
   }
   draw();
