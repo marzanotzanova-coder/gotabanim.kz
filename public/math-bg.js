@@ -9,7 +9,9 @@
   const SYMBOLS = [
     'π','∑','∫','√','∞','α','β','γ','Δ','θ',
     'λ','μ','σ','φ','ω','±','sin','cos','tan',
-    'log','f(x)','dy/dx','a²+b²','∂','∇','x²','e',
+    'log','f(x)','dy/dx','a²+b²','∂','∇','x²','eˣ',
+    '2x+1','x²+y²','∫dx','Σn','lim','Δx','∂f/∂x',
+    '42','3.14','√2','2π','e²',
   ];
 
   const COLORS = [
@@ -20,7 +22,9 @@
   ];
 
   let particles = [];
+  let stars = [];
   let W, H;
+  let t = 0;
 
   function resize() {
     W = canvas.width  = window.innerWidth;
@@ -31,85 +35,86 @@
 
   function rand(min, max) { return Math.random() * (max - min) + min; }
 
-  // ── Wave shapes (like the GoTAB brand image) ──
-  function drawWaves() {
-    // Back wave — lighter, higher up
-    const g1 = ctx.createLinearGradient(0, H * 0.4, W, H);
-    g1.addColorStop(0, 'rgba(26,86,219,0.13)');
-    g1.addColorStop(1, 'rgba(8,145,178,0.07)');
-
-    ctx.beginPath();
-    ctx.moveTo(-100, H * 0.68);
-    ctx.bezierCurveTo(
-      W * 0.12, H * 0.44,
-      W * 0.40, H * 0.80,
-      W * 0.65, H * 0.57
-    );
-    ctx.bezierCurveTo(
-      W * 0.86, H * 0.40,
-      W * 1.05, H * 0.64,
-      W + 100,  H * 0.50
-    );
-    ctx.lineTo(W + 100, H + 50);
-    ctx.lineTo(-100, H + 50);
-    ctx.closePath();
-    ctx.fillStyle = g1;
-    ctx.fill();
-
-    // Front wave — slightly darker, lower
-    const g2 = ctx.createLinearGradient(0, H * 0.55, W, H);
-    g2.addColorStop(0, 'rgba(26,86,219,0.16)');
-    g2.addColorStop(1, 'rgba(8,145,178,0.10)');
-
-    ctx.beginPath();
-    ctx.moveTo(-100, H * 0.82);
-    ctx.bezierCurveTo(
-      W * 0.20, H * 0.58,
-      W * 0.48, H * 0.94,
-      W * 0.76, H * 0.70
-    );
-    ctx.bezierCurveTo(
-      W * 0.94, H * 0.55,
-      W * 1.08, H * 0.78,
-      W + 100,  H * 0.63
-    );
-    ctx.lineTo(W + 100, H + 50);
-    ctx.lineTo(-100, H + 50);
-    ctx.closePath();
-    ctx.fillStyle = g2;
-    ctx.fill();
+  // ── Blue stars ──
+  function createStar() {
+    return {
+      x: rand(0, W),
+      y: rand(0, H),
+      r: rand(1, 2.8),
+      phase: rand(0, Math.PI * 2),
+      speed: rand(0.004, 0.012),
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      baseOp: rand(0.10, 0.28),
+    };
   }
 
-  // ── Particles ──
+  // ── Floating math symbols ──
   function createParticle() {
-    const op = rand(0.06, 0.14);
     return {
       x: rand(0, W),
       y: rand(0, H),
       text: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-      size: rand(13, 22),
-      speedX: rand(-0.08, 0.08),
-      speedY: rand(-0.18, -0.07),
-      opacity: op,
+      size: rand(11, 20),
+      speedX: rand(-0.06, 0.06),
+      speedY: rand(-0.14, -0.05),
+      opacity: rand(0.07, 0.18),
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      rotation: rand(-0.2, 0.2),
-      rotSpeed: rand(-0.0005, 0.0005),
+      rotation: rand(-0.15, 0.15),
+      rotSpeed: rand(-0.0004, 0.0004),
     };
   }
 
   function init() {
-    const count = Math.min(Math.floor((W * H) / 22000), 40);
-    particles = Array.from({ length: count }, createParticle);
+    const starCount   = Math.min(Math.floor((W * H) / 8000), 120);
+    const symbolCount = Math.min(Math.floor((W * H) / 24000), 36);
+    stars     = Array.from({ length: starCount },   createStar);
+    particles = Array.from({ length: symbolCount }, createParticle);
   }
   init();
 
+  // ── Waves ──
+  function drawWaves() {
+    const g1 = ctx.createLinearGradient(0, H * 0.4, W, H);
+    g1.addColorStop(0, 'rgba(26,86,219,0.13)');
+    g1.addColorStop(1, 'rgba(8,145,178,0.07)');
+    ctx.beginPath();
+    ctx.moveTo(-100, H * 0.68);
+    ctx.bezierCurveTo(W*0.12, H*0.44, W*0.40, H*0.80, W*0.65, H*0.57);
+    ctx.bezierCurveTo(W*0.86, H*0.40, W*1.05, H*0.64, W+100, H*0.50);
+    ctx.lineTo(W+100, H+50); ctx.lineTo(-100, H+50);
+    ctx.closePath(); ctx.fillStyle = g1; ctx.fill();
+
+    const g2 = ctx.createLinearGradient(0, H * 0.55, W, H);
+    g2.addColorStop(0, 'rgba(26,86,219,0.16)');
+    g2.addColorStop(1, 'rgba(8,145,178,0.10)');
+    ctx.beginPath();
+    ctx.moveTo(-100, H * 0.82);
+    ctx.bezierCurveTo(W*0.20, H*0.58, W*0.48, H*0.94, W*0.76, H*0.70);
+    ctx.bezierCurveTo(W*0.94, H*0.55, W*1.08, H*0.78, W+100, H*0.63);
+    ctx.lineTo(W+100, H+50); ctx.lineTo(-100, H+50);
+    ctx.closePath(); ctx.fillStyle = g2; ctx.fill();
+  }
+
   function draw() {
     ctx.clearRect(0, 0, W, H);
+    t += 0.008;
 
-    // Draw waves first (background)
+    // 1. Waves
     drawWaves();
 
-    // Draw floating symbols on top
+    // 2. Twinkling blue stars
+    for (const s of stars) {
+      const op = s.baseOp * (0.5 + 0.5 * Math.sin(t * (s.speed / 0.008) + s.phase));
+      ctx.save();
+      ctx.globalAlpha = op;
+      ctx.fillStyle = s.color + '1)';
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 3. Floating math symbols
     for (const p of particles) {
       p.x += p.speedX;
       p.y += p.speedY;
