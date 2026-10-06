@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoTAB — Материалдар</title>
+<link rel="stylesheet" href="gotab.css">
+</head>
+<body>
+
+<nav class="top-nav">
+  <img src="gotab_logo.png" alt="GoTAB">
+  <div class="nav-user">
+    <span class="nav-user-name" id="userName"></span>
+    <button class="btn-logout" onclick="logout()">Шығу</button>
+  </div>
+</nav>
+
+<div class="content-page">
+  <div class="content-header">
+    <img src="gotab_logo.png" alt="GoTAB">
+    <div class="content-header-info">
+      <h2 id="pageTitle">Материалдар</h2>
+      <p id="pageSubtitle"></p>
+    </div>
+    <a href="dashboard.html" class="content-header-back">← Артқа</a>
+  </div>
+
+  <!-- PRESENTATIONS -->
+  <div class="content-section">
+    <div class="content-section-title">
+      📊 Презентациялар
+      <span class="badge badge-ppt">PowerPoint</span>
+    </div>
+    <div class="cards-grid" id="pptGrid">
+      <!-- Cards injected by JS -->
+    </div>
+  </div>
+
+  <!-- LESSON PLANS / ҚМЖ -->
+  <div class="content-section">
+    <div class="content-section-title">
+      📄 Қысқа мерзімді жоспарлар (ҚМЖ)
+      <span class="badge badge-qmj">Word</span>
+    </div>
+    <div class="cards-grid qmj-grid" id="qmjGrid">
+      <!-- Cards injected by JS -->
+    </div>
+  </div>
+
+  <!-- ANIMATION VIDEOS -->
+  <div class="content-section">
+    <div class="content-section-title">
+      🎬 Математика анимация видеолары
+      <span class="badge badge-video">MP4</span>
+    </div>
+    <div class="cards-grid video-grid" id="videoGrid">
+      <!-- Cards injected by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+
+    <div class="modal-title">Жүктеу үшін жазылу</div>
+    <div class="modal-sub">GoTAB Premium — барлық материалдарға толық қол жеткізу</div>
+
+    <div class="price-tag">
+      <div class="price-amount">4 990 ₸</div>
+      <div class="price-period">1 айға жазылу</div>
+    </div>
+
+    <div class="payment-info">
+      <div class="payment-info-row">
+        <span class="payment-label">Каспи арқылы аудару</span>
+      </div>
+      <div class="payment-info-row">
+        <span class="payment-label">Телефон нөмірі</span>
+        <span class="payment-phone">+7 705 251 9022</span>
+      </div>
+      <div class="payment-info-row">
+        <span class="payment-label">Аты</span>
+        <span class="payment-value">Гульмира К.</span>
+      </div>
+    </div>
+
+    <button class="btn-whatsapp" onclick="sendReceipt()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      Чекті WhatsApp арқылы жіберу
+    </button>
+  </div>
+</div>
+
+<script>
+const GRADES_LABEL = {5:'5-сынып',6:'6-сынып',7:'7-сынып',8:'8-сынып',9:'9-сынып',10:'10-сынып',11:'11-сынып'};
+const SUBJECT_LABEL = {math:'Математика',algebra:'Алгебра',geometry:'Геометрия'};
+
+// Auth check
+const user = JSON.parse(localStorage.getItem('gotab_user') || 'null');
+if (!user) window.location.href = 'login.html';
+else document.getElementById('userName').textContent = user.name || user.email;
+
+const params = new URLSearchParams(location.search);
+const grade = parseInt(params.get('grade')) || 5;
+const subject = params.get('subject') || 'math';
+
+document.getElementById('pageTitle').textContent = `${GRADES_LABEL[grade]} — ${SUBJECT_LABEL[subject]}`;
+document.getElementById('pageSubtitle').textContent = 'Барлық материалдар бір жерде';
+document.title = `GoTAB — ${GRADES_LABEL[grade]} ${SUBJECT_LABEL[subject]}`;
+
+function logout() {
+  localStorage.removeItem('gotab_user');
+  window.location.href = 'index.html';
+}
+
+// ── Card builders ──
+
+function makePptCard(title, meta) {
+  return `<div class="content-card">
+    <div class="card-preview ppt-preview">
+      <span class="card-preview-icon">📊</span>
+    </div>
+    <div class="card-body">
+      <div class="card-title">${title}</div>
+      <div class="card-meta">${meta}</div>
+    </div>
+    <div class="card-footer">
+      <button class="btn-download" onclick="openModal()">Жүктеу</button>
+    </div>
+  </div>`;
+}
+
+function makeQmjCard(title, meta) {
+  return `<div class="content-card">
+    <div class="card-preview qmj-preview">
+      <span class="card-preview-icon">📄</span>
+    </div>
+    <div class="card-body">
+      <div class="card-title">${title}</div>
+      <div class="card-meta">${meta}</div>
+    </div>
+    <div class="card-footer">
+      <button class="btn-download" onclick="openModal()">Жүктеу</button>
+    </div>
+  </div>`;
+}
+
+function makeVideoCard(title, meta, videoSrc) {
+  if (videoSrc) {
+    return `<div class="content-card">
+      <div class="card-preview video-preview" onclick="toggleVideo(this)">
+        <video src="${videoSrc}" loop preload="metadata"></video>
+        <div class="play-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${title}</div>
+        <div class="card-meta">${meta}</div>
+      </div>
+      <div class="card-footer">
+        <button class="btn-download" onclick="openModal()">Жүктеу</button>
+      </div>
+    </div>`;
+  }
+  return `<div class="content-card">
+    <div class="card-preview video-preview">
+      <span class="card-preview-icon">🎬</span>
+    </div>
+    <div class="card-body">
+      <div class="card-title">${title}</div>
+      <div class="card-meta">${meta}</div>
+    </div>
+    <div class="card-footer">
+      <button class="btn-download" onclick="openModal()">Жүктеу</button>
+    </div>
+  </div>`;
+}
+
+function makeEmptyCard(label) {
+  return `<div class="card-empty">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
+    <span>${label}</span>
+  </div>`;
+}
+
+// ── Content data per grade/subject ──
+
+const CONTENT = {
+  5: {
+    math: {
+      ppt: [
+        {title:'Натурал сандар', meta:'Сабақ 1 · 20 слайд'},
+        {title:'Бөлшектер', meta:'Сабақ 2 · 18 слайд'},
+        {title:'Геометриялық фигуралар', meta:'Сабақ 3 · 16 слайд'},
+        {title:'Теңдеулер', meta:'Сабақ 4 · 14 слайд'},
+      ],
+      qmj: [
+        {title:'ҚМЖ — Натурал сандар', meta:'Word · 4 бет'},
+        {title:'ҚМЖ — Бөлшектер', meta:'Word · 5 бет'},
+        {title:'ҚМЖ — Геометрия', meta:'Word · 4 бет'},
+      ],
+      videos: [
+        {title:'Натурал сандар анимациясы', meta:'45 сек'},
+        {title:'Бөлшектер түсіндірме', meta:'60 сек'},
+        {title:'Геометрия негіздері', meta:'50 сек'},
+      ]
+    }
+  },
+  6: {
+    math: {
+      ppt: [
+        {title:'Теріс сандар', meta:'Сабақ 1 · 22 слайд'},
+        {title:'Рационал сандар', meta:'Сабақ 2 · 20 слайд'},
+        {title:'Пропорция', meta:'Сабақ 3 · 18 слайд'},
+        {title:'Координаталық жазықтық', meta:'Сабақ 4 · 16 слайд'},
+      ],
+      qmj: [
+        {title:'ҚМЖ — Теріс сандар', meta:'Word · 4 бет'},
+        {title:'ҚМЖ — Рационал сандар', meta:'Word · 5 бет'},
+        {title:'ҚМЖ — Пропорция', meta:'Word · 4 бет'},
+      ],
+      videos: [
+        {title:'Теріс сандар анимациясы', meta:'45 сек'},
+        {title:'Координаталар жүйесі', meta:'55 сек'},
+        {title:'Пропорция видео', meta:'40 сек'},
+      ]
+    }
+  },
+  7: {
+    algebra: {
+      ppt: [
+        {title:'Сызықтық теңдеулер', meta:'Сабақ 1 · 24 слайд'},
+        {title:'Функция ұғымы', meta:'Сабақ 2 · 20 слайд'},
+        {title:'Сызықтық функция', meta:'Сабақ 3 · 18 слайд'},
+        {title:'Теңдеулер жүйесі', meta:'Сабақ 4 · 22 слайд'},
+      ],
+      qmj: [
+        {title:'ҚМЖ — Сызықтық теңдеулер', meta:'Word · 5 бет'},
+        {title:'ҚМЖ — Функция', meta:'Word · 4 бет'},
+        {title:'ҚМЖ — Теңдеулер жүйесі', meta:'Word · 5 бет'},
+      ],
+      videos: [
+        {title:'Сызықтық теңдеу анимациясы', meta:'50 сек'},
+        {title:'Функция графигі', meta:'60 сек'},
+        {title:'Теңдеулер жүйесі видео', meta:'55 сек'},
+      ]
+    },
+    geometry: {
+      ppt: [
+        {title:'Үшбұрыш белгілері', meta:'Сабақ 1 · 20 слайд'},
+        {title:'Паралель түзулер', meta:'Сабақ 2 · 18 слайд'},
+        {title:'Тіктөртбұрыш', meta:'Сабақ 3 · 16 слайд'},
+        {title:'Теорема дәлелдеу', meta:'Сабақ 4 · 22 слайд'},
+      ],
+      qmj: [
+        {title:'ҚМЖ — Үшбұрыш', meta:'Word · 4 бет'},
+        {title:'ҚМЖ — Паралель түзулер', meta:'Word · 4 бет'},
+        {title:'ҚМЖ — Тіктөртбұрыш', meta:'Word · 5 бет'},
+      ],
+      videos: [
+        {title:'Үшбұрыш анимациясы', meta:'45 сек'},
+        {title:'Паралель түзулер видео', meta:'50 сек'},
+        {title:'Геометрия дәлелдеу', meta:'65 сек'},
+      ]
+    }
+  },
+  8: {
+    algebra: {
+      ppt: [
+        {title:'Квадрат теңдеу', meta:'Сабақ 1 · 26 слайд'},
+        {title:'Дискриминант', meta:'Сабақ 2 · 22 слайд'},
+        {title:'Квадрат функция', meta:'Сабақ 3 · 20 слайд'},
+        {title:'Иррационал теңдеулер', meta:'Сабақ 4 · 18 слайд'},
+      ],
+      qmj: [
+        {title:'ҚМЖ — Квадрат теңдеу', meta:'Word · 5 бет'},
+        {title:'ҚМЖ — Дискриминант', meta:'Word · 4 бет'},
+        {title:'ҚМЖ — Квадрат функция', meta:'Word · 5 бет'},
+      ],
+      videos: [
+        {title:'Квадрат теңдеу анимациясы', meta:'55 сек'},
+        {title:'Дискриминант видео', meta:'45 сек'},
+        {title:'Парабола графигі', meta:'60 сек'},
+      ]
+    },
+    geometry: {
+      ppt: [
+        {title:'Дөңгелек және шеңбер', meta:'Сабақ 1 · 20 слайд'},
+        {title:'Пифагор теоремасы', meta:'Сабақ 2 · 24 слайд'},
+        {title:'Ауданды есептеу', meta:'Сабақ 3 · 18 слайд'},
+        {title:'Ұқсас үшбұрыштар', meta:'Сабақ 4 · 20 слайд'},
+      ],
+      qmj: [
+        {title:'ҚМЖ — Дөңгелек', meta:'Word · 4 бет'},
+        {title:'ҚМЖ — Пифагор теоремасы', meta:'Word · 5 бет'},
+        {title:'ҚМЖ — Ауданды есептеу', meta:'Word · 4 бет'},
+      ],
+      videos: [
+        {title:'Пифагор теоремасы анимациясы', meta:'60 сек'},
+        {title:'Дөңгелек видео', meta:'45 сек'},
+        {title:'Ұқсас үшбұрыштар', meta:'55 сек'},
+      ]
+    }
+  },
+  9: {
+    algebra: {
+      ppt: [
+        {title:'Прогрессиялар', meta:'Сабақ 1 · 24 слайд'},
+        {title:'Тригонометрия кіріспе', meta:'Сабақ 2 · 22 слайд'},
+        {title:'Синус, косинус', meta:'Сабақ 3 · 20 слайд'},
+        {title:'Тригонометриялық теңдеу', meta:'Сабақ 4 · 18 слайд'},
+      ],
+      qmj: [
+        {title:'ҚМЖ — Прогрессиялар', meta:'Word · 5 бет'},
+        {title:'ҚМЖ — Тригонометрия', meta:'Word · 6 бет'},
+        {title:'ҚМЖ — Синус/Косинус', meta:'Word · 4 бет'},
+      ],
+      videos: [
+        {title:'Прогрессия анимациясы', meta:'50 сек'},
+        {title:'Тригонометрия бірлік шеңбері', meta:'65 сек'},
+        {title:'Синус функциясы графигі', meta:'55 сек'},
+      ]
+    },
+    geometry: {
+      ppt: [
+        {title:'Многоугольниктер', meta:'Сабақ 1 · 20 слайд'},
+        {title:'Вектор ұғымы', meta:'Сабақ 2 · 18 слайд'},
+        {title:'Координаталар геометриясы', meta:'Сабақ 3 · 22 слайд'},
+        {title:'Декарт жүйесі', meta:'Сабақ 4 · 16 слайд'},
+      ],
+      qmj: [
+        {title:'ҚМЖ — Векторлар', meta:'Word · 4 бет'},
+        {title:'ҚМЖ — Координаталар', meta:'Word · 5 бет'},
+        {title:'ҚМЖ — Многоугольник', meta:'Word · 4 бет'},
+      ],
+      videos: [
+        {title:'Вектор анимациясы', meta:'50 сек'},
+        {title:'Координаталар жүйесі', meta:'45 сек'},
+        {title:'Геометрия векторлар', meta:'55 сек'},
+      ]
+    }
+  },
+  10: {
+    algebra: {
+      ppt: [
+        {title:'Логарифм', meta:'Сабақ 1 · 26 слайд'},
+        {title:'Дәреже функциясы', meta:'Сабақ 2 · 22 слайд'},
+        {title:'Туынды', meta:'Сабақ 3 · 24 слайд'},
+        {title:'Интеграл кіріспе', meta:'Сабақ 4 · 20 слайд'},
+      ],
+      qmj: [
+        {title:'ҚМЖ — Логарифм', meta:'Word · 5 бет'},
+        {title:'ҚМЖ — Туынды', meta:'Word · 6 бет'},
+        {title:'ҚМЖ — Дәреже функциясы', meta:'Word · 5 бет'},
+      ],
+      videos: [
+        {title:'Логарифм анимациясы', meta:'60 сек'},
+        {title:'Туынды графикалық', meta:'65 сек'},
+        {title:'Дәреже функциясы', meta:'55 сек'},
+      ]
+    },
+    geometry: {
+      ppt: [
+        {title:'Кеңістіктегі фигуралар', meta:'Сабақ 1 · 24 слайд'},
+        {title:'Прizma', meta:'Сабақ 2 · 20 слайд'},
+        {title:'Пирамида', meta:'Сабақ 3 · 22 слайд'},
+        {title:'Көлемді есептеу', meta:'Сабақ 4 · 18 слайд'},
+      ],
+      qmj: [
+        {title:'ҚМЖ — Кеңістік фигуралар', meta:'Word · 5 бет'},
+        {title:'ҚМЖ — Пирамида', meta:'Word · 4 бет'},
+        {title:'ҚМЖ — Көлем', meta:'Word · 5 бет'},
+      ],
+      videos: [
+        {title:'3D фигуралар анимациясы', meta:'60 сек'},
+        {title:'Пирамида видео', meta:'55 сек'},
+        {title:'Кеңістік геометрия', meta:'65 сек'},
+      ]
+    }
+  },
+  11: {
+    algebra: {
+      ppt: [
+        {title:'Интеграл', meta:'Сабақ 1 · 28 слайд'},
+        {title:'Дифференциалдық теңдеу', meta:'Сабақ 2 · 24 слайд'},
+        {title:'Комбинаторика', meta:'Сабақ 3 · 22 слайд'},
+        {title:'Ықтималдық', meta:'Сабақ 4 · 20 слайд'},
+      ],
+      qmj: [
+        {title:'ҚМЖ — Интеграл', meta:'Word · 6 бет'},
+        {title:'ҚМЖ — Комбинаторика', meta:'Word · 5 бет'},
+        {title:'ҚМЖ — Ықтималдық', meta:'Word · 5 бет'},
+      ],
+      videos: [
+        {title:'Интеграл анимациясы', meta:'65 сек'},
+        {title:'Комбинаторика видео', meta:'55 сек'},
+        {title:'Ықтималдық графигі', meta:'60 сек'},
+      ]
+    },
+    geometry: {
+      ppt: [
+        {title:'Шар және конус', meta:'Сабақ 1 · 22 слайд'},
+        {title:'Цилиндр', meta:'Сабақ 2 · 20 слайд'},
+        {title:'Беттер мен көлемдер', meta:'Сабақ 3 · 24 слайд'},
+        {title:'ҰБТ дайындық', meta:'Сабақ 4 · 30 слайд'},
+      ],
+      qmj: [
+        {title:'ҚМЖ — Шар/Конус/Цилиндр', meta:'Word · 6 бет'},
+        {title:'ҚМЖ — Беттер', meta:'Word · 5 бет'},
+        {title:'ҚМЖ — ҰБТ дайындық', meta:'Word · 8 бет'},
+      ],
+      videos: [
+        {title:'Шар анимациясы', meta:'55 сек'},
+        {title:'Цилиндр/конус видео', meta:'60 сек'},
+        {title:'3D ҰБТ геометрия', meta:'70 сек'},
+      ]
+    }
+  }
+};
+
+// ── Render content ──
+function render() {
+  const data = (CONTENT[grade] || CONTENT[5])[subject] || Object.values(CONTENT[grade] || CONTENT[5])[0];
+
+  // PPT cards
+  const pptGrid = document.getElementById('pptGrid');
+  if (data.ppt && data.ppt.length) {
+    pptGrid.innerHTML = data.ppt.map(c => makePptCard(c.title, c.meta)).join('') +
+      makeEmptyCard('Презентация қосу');
+  } else {
+    pptGrid.innerHTML = [1,2,3].map(() => makeEmptyCard('Презентация қосылмаған')).join('');
+  }
+
+  // ҚМЖ cards
+  const qmjGrid = document.getElementById('qmjGrid');
+  if (data.qmj && data.qmj.length) {
+    qmjGrid.innerHTML = data.qmj.map(c => makeQmjCard(c.title, c.meta)).join('') +
+      makeEmptyCard('ҚМЖ қосу');
+  } else {
+    qmjGrid.innerHTML = [1,2].map(() => makeEmptyCard('ҚМЖ қосылмаған')).join('');
+  }
+
+  // Video cards
+  const videoGrid = document.getElementById('videoGrid');
+  if (data.videos && data.videos.length) {
+    videoGrid.innerHTML = data.videos.map(c => makeVideoCard(c.title, c.meta, c.src)).join('') +
+      makeEmptyCard('Видео қосу');
+  } else {
+    videoGrid.innerHTML = [1,2].map(() => makeEmptyCard('Видео қосылмаған')).join('');
+  }
+}
+
+render();
+
+// ── Video toggle ──
+function toggleVideo(previewEl) {
+  const video = previewEl.querySelector('video');
+  const playBtn = previewEl.querySelector('.play-btn');
+  if (!video) return;
+  if (video.paused) {
+    video.play();
+    if (playBtn) playBtn.style.display = 'none';
+  } else {
+    video.pause();
+    if (playBtn) playBtn.style.display = 'flex';
+  }
+}
+
+// ── Payment modal ──
+function openModal() {
+  document.getElementById('payModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('payModal').classList.remove('open');
+}
+
+document.getElementById('payModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function sendReceipt() {
+  const phone = '77055894347';
+  const msg = encodeURIComponent('Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. Чекті жіберемін.');
+  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+}
+</script>
+</body>
+</html>

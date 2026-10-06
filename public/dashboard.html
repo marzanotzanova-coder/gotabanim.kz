@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoTAB — Сынып таңдаңыз</title>
+<link rel="stylesheet" href="gotab.css">
+</head>
+<body>
+<nav class="top-nav">
+  <img src="gotab_logo.png" alt="GoTAB">
+  <div class="nav-user">
+    <span class="nav-user-name" id="userName"></span>
+    <button class="btn-logout" onclick="logout()">Шығу</button>
+  </div>
+</nav>
+
+<div class="dash-page">
+  <div class="dash-header">
+    <img src="gotab_logo.png" alt="GoTAB">
+    <h1>GoTAB мұғалімдерге</h1>
+    <p>Сынып пен пәнді таңдап, материалдарға кіріңіз</p>
+  </div>
+
+  <!-- Grade selection -->
+  <div class="dash-section">
+    <div class="dash-section-title">Сынып таңдаңыз</div>
+    <div class="grade-grid">
+      <button class="grade-btn" onclick="selectGrade(5)">5-сынып</button>
+      <button class="grade-btn" onclick="selectGrade(6)">6-сынып</button>
+      <button class="grade-btn" onclick="selectGrade(7)">7-сынып</button>
+      <button class="grade-btn" onclick="selectGrade(8)">8-сынып</button>
+      <button class="grade-btn" onclick="selectGrade(9)">9-сынып</button>
+      <button class="grade-btn" onclick="selectGrade(10)">10-сынып</button>
+      <button class="grade-btn" onclick="selectGrade(11)">11-сынып</button>
+    </div>
+  </div>
+
+  <!-- Subject selection (shown after grade pick) -->
+  <div class="dash-section subject-section" id="subjectSection">
+    <div class="dash-section-title">Пән таңдаңыз</div>
+
+    <!-- Grades 5-6: only Математика -->
+    <div class="subject-grid" id="subjectsMath56" style="display:none">
+      <button class="subject-btn" onclick="selectSubject('math')">Математика</button>
+    </div>
+
+    <!-- Grades 7-11: Алгебра + Геометрия -->
+    <div class="subject-grid" id="subjectsAlgGeo" style="display:none">
+      <button class="subject-btn" onclick="selectSubject('algebra')">Алгебра</button>
+      <button class="subject-btn" onclick="selectSubject('geometry')">Геометрия</button>
+    </div>
+  </div>
+
+  <!-- Continue button -->
+  <div class="dash-continue">
+    <button id="continueBtn" onclick="goToContent()" disabled>Жалғастыру →</button>
+  </div>
+</div>
+
+<script>
+let selectedGrade = null;
+let selectedSubject = null;
+
+// Auth check
+const user = JSON.parse(localStorage.getItem('gotab_user') || 'null');
+if (!user) window.location.href = 'login.html';
+else document.getElementById('userName').textContent = user.name || user.email;
+
+function logout() {
+  localStorage.removeItem('gotab_user');
+  window.location.href = 'index.html';
+}
+
+function selectGrade(grade) {
+  selectedGrade = grade;
+  selectedSubject = null;
+
+  // Highlight selected grade button
+  document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  // Reset subject
+  document.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('active'));
+
+  // Show subject section
+  const subjectSection = document.getElementById('subjectSection');
+  subjectSection.classList.add('visible');
+
+  const math56 = document.getElementById('subjectsMath56');
+  const algGeo = document.getElementById('subjectsAlgGeo');
+
+  if (grade <= 6) {
+    math56.style.display = 'flex';
+    algGeo.style.display = 'none';
+  } else {
+    math56.style.display = 'none';
+    algGeo.style.display = 'flex';
+  }
+
+  document.getElementById('continueBtn').disabled = true;
+}
+
+function selectSubject(subject) {
+  selectedSubject = subject;
+  document.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('continueBtn').disabled = false;
+}
+
+function goToContent() {
+  if (!selectedGrade || !selectedSubject) return;
+  window.location.href = `content.html?grade=${selectedGrade}&subject=${selectedSubject}`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoTAB — Кіру</title>
+<link rel="stylesheet" href="gotab.css">
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <a href="index.html"><img src="gotab_logo.png" alt="GoTAB"></a>
+    </div>
+    <h1 class="auth-title">Жүйеге кіру</h1>
+    <p class="auth-sub">GoTAB мұғалімдер платформасына қош келдіңіз</p>
+
+    <div class="error-msg" id="errMsg"></div>
+
+    <form onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>Email немесе телефон нөмірі</label>
+        <input type="text" id="emailInput" placeholder="example@mail.com" required>
+      </div>
+      <div class="form-group">
+        <label>Пароль</label>
+        <input type="password" id="passInput" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-primary">Кіру</button>
+    </form>
+
+    <div class="auth-switch">
+      Аккаунт жоқ па? <a href="register.html">Тіркелу</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function handleLogin(e) {
+  e.preventDefault();
+  const errMsg = document.getElementById('errMsg');
+  const email = document.getElementById('emailInput').value.trim().toLowerCase();
+  const password = document.getElementById('passInput').value;
+
+  errMsg.style.display = 'none';
+
+  const users = JSON.parse(localStorage.getItem('gotab_users') || '{}');
+  const user = users[email];
+
+  if (!user || user.password !== password) {
+    errMsg.textContent = 'Email немесе пароль қате';
+    errMsg.style.display = 'block';
+    return;
+  }
+
+  localStorage.setItem('gotab_user', JSON.stringify({ name: user.name, email: user.email }));
+  window.location.href = 'dashboard.html';
+}
+</script>
+</body>
+</html>
