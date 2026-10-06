@@ -26,9 +26,26 @@
   let W, H;
   let t = 0;
 
+  let cardZone = null;
+
+  function getCardZone() {
+    const el = document.querySelector('.card, .auth-card');
+    if (!el) { cardZone = null; return; }
+    const r = el.getBoundingClientRect();
+    const pad = 18;
+    cardZone = { x: r.left - pad, y: r.top - pad, w: r.width + pad*2, h: r.height + pad*2 };
+  }
+
+  function inCard(x, y) {
+    if (!cardZone) return false;
+    return x >= cardZone.x && x <= cardZone.x + cardZone.w &&
+           y >= cardZone.y && y <= cardZone.y + cardZone.h;
+  }
+
   function resize() {
     W = canvas.width  = window.innerWidth;
     H = canvas.height = window.innerHeight;
+    getCardZone();
   }
   resize();
   window.addEventListener('resize', () => { resize(); init(); });
@@ -103,7 +120,9 @@
     drawWaves();
 
     // 2. Twinkling blue stars
+    getCardZone();
     for (const s of stars) {
+      if (inCard(s.x, s.y)) continue;
       const op = s.baseOp * (0.5 + 0.5 * Math.sin(t * (s.speed / 0.008) + s.phase));
       ctx.save();
       ctx.globalAlpha = op;
@@ -124,6 +143,7 @@
       if (p.x < -60) p.x = W + 20;
       if (p.x > W + 60) p.x = -20;
 
+      if (inCard(p.x, p.y)) continue;
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rotation);
