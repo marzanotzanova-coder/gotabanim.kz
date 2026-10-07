@@ -387,7 +387,7 @@ async function logout() {
 // ── Content data ──
 const CONTENT = {
   5: { math: { lessons: [
-    {title:'Натурал сандар',          ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
+    {title:'ЕҮОБ және ЕКОЕ',          ppt:{meta:'12 слайд',src:'/materials/GoTAB_5сынып_final.pptx'}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
     {title:'Бөлшектер',               ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
     {title:'Геометриялық фигуралар',  ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
     {title:'Теңдеулер',               ppt:{meta:'14 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'40 сек',src:null}},
@@ -505,6 +505,8 @@ function render() {
            <span>ЖАҚЫНДА</span>
          </div>`;
 
+    const hasPpt = lesson.ppt && lesson.ppt.src;
+
     return `
     <div class="lesson-unit">
 
@@ -512,7 +514,7 @@ function render() {
       <div class="ppt-section">
         <div class="ppt-preview">
           <span class="lesson-badge">Сабақ ${i + 1}</span>
-          <span class="soon-badge">Жақында</span>
+          ${!hasPpt ? '<span class="soon-badge">Жақында</span>' : ''}
           <div class="ppt-slide-mock">
             <span class="slide-icon">📊</span>
             <div class="slide-lines">
@@ -565,29 +567,32 @@ function render() {
       </div>
 
       <div class="lesson-dl-footer">
-        <button class="btn-download ${done ? 'done' : ''}" data-idx="${i}">
-          ${done ? '✓ Жүктелді' : '⬇ Барлығын жүктеу'}
-        </button>
+        ${hasPpt
+          ? `<a class="btn-download ${done ? 'done' : ''}" href="${lesson.ppt.src}" download data-idx="${i}">
+               ${done ? '✓ Жүктелді' : '⬇ PPT жүктеу'}
+             </a>`
+          : `<button class="btn-download" data-idx="${i}">⬇ Барлығын жүктеу</button>`
+        }
       </div>
 
     </div>`;
   }).join('');
 
   // Download click listeners
-  grid.querySelectorAll('[data-idx]').forEach(btn => {
-    btn.addEventListener('click', function() {
+  grid.querySelectorAll('[data-idx]').forEach(el => {
+    el.addEventListener('click', function(e) {
       if (this.classList.contains('done')) return;
       const idx = parseInt(this.dataset.idx);
       const lesson = lessons[idx];
       const hasSrc = lesson.ppt && lesson.ppt.src;
 
       if (hasSrc) {
-        const a = document.createElement('a');
-        a.href = lesson.ppt.src; a.download = ''; a.click();
+        // <a download> handles the actual download; just mark done
         markDone(idx);
         this.textContent = '✓ Жүктелді';
         this.classList.add('done');
       } else {
+        e.preventDefault();
         openModal();
       }
     });
