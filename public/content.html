@@ -283,6 +283,104 @@
 }
 .sel-grade:focus,.sel-subject:focus{border-color:var(--primary)}
 
+/* ── FOOTER TWO BUTTONS ── */
+.lesson-dl-footer{display:flex;gap:8px;padding:12px 14px 16px;border-top:1px solid var(--border)}
+.btn-preview{
+  flex:0 0 auto;
+  padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;
+  font-family:'Inter',sans-serif;cursor:pointer;border:none;
+  background:rgba(255,255,255,.06);border:1px solid var(--border);
+  color:var(--muted);transition:all .2s;white-space:nowrap;
+}
+.btn-preview:hover{background:rgba(255,255,255,.12);color:var(--text)}
+.btn-download{flex:1}
+
+/* ── PREVIEW MODAL ── */
+.preview-modal-overlay{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(14px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.preview-modal-overlay.open{opacity:1;pointer-events:all}
+
+.preview-modal{
+  width:min(860px,95vw);
+  background:#0d1b35;
+  border:1px solid rgba(14,165,233,.2);
+  border-radius:20px;overflow:hidden;
+  box-shadow:0 40px 80px rgba(0,0,0,.6);
+  display:flex;flex-direction:column;
+  max-height:92vh;
+}
+.preview-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.07);
+}
+.preview-title{font-size:14px;font-weight:800;color:#e2e8f0}
+.preview-lesson-badge{
+  font-size:10px;font-weight:700;color:#38bdf8;
+  background:rgba(14,165,233,.15);border:1px solid rgba(14,165,233,.3);
+  border-radius:100px;padding:3px 10px;margin-right:8px;
+}
+.preview-close{
+  width:30px;height:30px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(255,255,255,.08);color:#94a3b8;font-size:18px;
+  display:flex;align-items:center;justify-content:center;transition:background .2s;
+}
+.preview-close:hover{background:rgba(255,255,255,.15);color:#fff}
+
+/* Carousel */
+.preview-carousel{position:relative;overflow:hidden;background:#000;flex:1}
+.carousel-track{
+  display:flex;transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+.carousel-slide{
+  flex:0 0 100%;
+  display:flex;align-items:center;justify-content:center;
+}
+.carousel-slide img{
+  width:100%;max-height:62vh;object-fit:contain;display:block;
+}
+.carousel-btn{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.15);color:#fff;font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;z-index:10;
+}
+.carousel-btn:hover{background:rgba(0,0,0,.8)}
+.carousel-btn.prev{left:14px}
+.carousel-btn.next{right:14px}
+.carousel-dots{
+  display:flex;gap:6px;justify-content:center;padding:14px;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.carousel-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:rgba(255,255,255,.25);border:none;cursor:pointer;
+  padding:0;transition:background .2s,transform .2s;
+}
+.carousel-dot.active{background:#38bdf8;transform:scale(1.3)}
+
+/* Lock strip */
+.preview-lock-strip{
+  padding:14px 20px;
+  background:linear-gradient(135deg,rgba(14,165,233,.08),rgba(139,92,246,.06));
+  border-top:1px solid rgba(255,255,255,.07);
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.lock-strip-text{font-size:12px;color:#94a3b8;flex:1}
+.lock-strip-text b{color:#e2e8f0}
+.btn-lock-buy{
+  padding:9px 22px;border-radius:100px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#0ea5e9,#06b6d4);
+  color:#fff;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;
+  white-space:nowrap;transition:opacity .2s;
+}
+.btn-lock-buy:hover{opacity:.85}
+
 /* ── RESPONSIVE ── */
 @media(max-width:480px){
   .lessons-grid{grid-template-columns:1fr}
@@ -369,6 +467,31 @@
   </div>
 </div>
 
+<!-- PREVIEW MODAL -->
+<div class="preview-modal-overlay" id="previewModal" onclick="if(event.target===this)closePreview()">
+  <div class="preview-modal">
+    <div class="preview-header">
+      <div style="display:flex;align-items:center">
+        <span class="preview-lesson-badge" id="previewBadge">Сабақ 1</span>
+        <span class="preview-title" id="previewTitle"></span>
+      </div>
+      <button class="preview-close" onclick="closePreview()">✕</button>
+    </div>
+    <div class="preview-carousel">
+      <div class="carousel-track" id="carouselTrack"></div>
+      <button class="carousel-btn prev" onclick="carouselMove(-1)">‹</button>
+      <button class="carousel-btn next" onclick="carouselMove(1)">›</button>
+    </div>
+    <div class="carousel-dots" id="carouselDots"></div>
+    <div class="preview-lock-strip">
+      <div class="lock-strip-text">
+        👁 <b>Алдын ала қарау</b> — тек алғашқы 3 слайд. Барлық материалды жүктеу үшін жазылым қажет.
+      </div>
+      <button class="btn-lock-buy" onclick="closePreview();openModal()">Сатып алу — 4 990 ₸/ай</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const GRADES_LABEL = {5:'5-сынып',6:'6-сынып',7:'7-сынып',8:'8-сынып',9:'9-сынып',10:'10-сынып',11:'11-сынып'};
 const SUBJECT_LABEL = {math:'Математика',algebra:'Алгебра',geometry:'Геометрия'};
@@ -395,11 +518,17 @@ function changeSubject() {
   window.location.href = `content.html?grade=${grade}&subject=${document.getElementById('subjectSel').value}`;
 }
 initSwitcher();
+render(); // жылдам алдын ала жүктеу
+
+let userIsPaid = false;
 
 (async () => {
   const user = await requireAuth();
   if (!user) return;
   document.getElementById('userName').textContent = user.user_metadata?.name || user.email;
+  const { data: profile } = await sb.from('profiles').select('is_paid').eq('id', user.id).single();
+  userIsPaid = profile?.is_paid || false;
+  render(); // is_paid мәні белгілі болған соң қайта render
 })();
 
 async function logout() {
@@ -410,7 +539,7 @@ async function logout() {
 // ── Content data ──
 const CONTENT = {
   5: { math: { lessons: [
-    {title:'ЕҮОБ және ЕКОЕ',          ppt:{meta:'12 слайд',src:'/materials/GoTAB_5сынып_final.pptx',thumb:'/materials/lesson-5-1-thumb.jpeg'}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
+    {title:'ЕҮОБ және ЕКОЕ',          ppt:{meta:'12 слайд',src:'/materials/GoTAB_5сынып_final.pptx',thumb:'/materials/lesson-5-1-slide1.jpeg'}, slides:['/materials/lesson-5-1-slide1.jpeg','/materials/lesson-5-1-slide2.jpeg','/materials/lesson-5-1-slide3.jpeg'], qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
     {title:'Бөлшектер',               ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
     {title:'Геометриялық фигуралар',  ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
     {title:'Теңдеулер',               ppt:{meta:'14 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'40 сек',src:null}},
@@ -598,34 +727,41 @@ function render() {
       </div>
 
       <div class="lesson-dl-footer">
-        ${hasPpt
-          ? `<a class="btn-download ${done ? 'done' : ''}" href="${lesson.ppt.src}" download data-idx="${i}">
-               ${done ? '✓ Жүктелді' : '⬇ PPT жүктеу'}
-             </a>`
-          : `<button class="btn-download" data-idx="${i}">⬇ Барлығын жүктеу</button>`
-        }
+        ${lesson.slides ? `<button class="btn-preview" data-preview="${i}">👁 Алдын ала</button>` : ''}
+        <button class="btn-download ${done ? 'done' : ''}" data-idx="${i}">
+          ${done ? '✓ Жүктелді' : '⬇ PPT жүктеу'}
+        </button>
       </div>
 
     </div>`;
   }).join('');
 
-  // Download click listeners
+  // Download buttons
   grid.querySelectorAll('[data-idx]').forEach(el => {
     el.addEventListener('click', function(e) {
+      e.preventDefault();
       if (this.classList.contains('done')) return;
       const idx = parseInt(this.dataset.idx);
       const lesson = lessons[idx];
       const hasSrc = lesson.ppt && lesson.ppt.src;
 
-      if (hasSrc) {
-        // <a download> handles the actual download; just mark done
+      if (hasSrc && userIsPaid) {
+        const a = document.createElement('a');
+        a.href = lesson.ppt.src; a.download = ''; a.click();
         markDone(idx);
         this.textContent = '✓ Жүктелді';
         this.classList.add('done');
       } else {
-        e.preventDefault();
         openModal();
       }
+    });
+  });
+
+  // Preview buttons
+  grid.querySelectorAll('[data-preview]').forEach(el => {
+    el.addEventListener('click', function() {
+      const idx = parseInt(this.dataset.preview);
+      openPreview(lessons[idx], idx);
     });
   });
 }
@@ -641,6 +777,63 @@ function sendReceipt() {
   const msg = encodeURIComponent('Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. Чекті жіберемін.');
   window.open(`https://wa.me/77055894347?text=${msg}`, '_blank');
 }
+
+// ── Preview modal + carousel ──
+let carouselIdx = 0;
+let carouselSlides = [];
+
+function openPreview(lesson, lessonNum) {
+  carouselSlides = lesson.slides || [];
+  carouselIdx = 0;
+
+  document.getElementById('previewBadge').textContent = `Сабақ ${lessonNum + 1}`;
+  document.getElementById('previewTitle').textContent = lesson.title;
+
+  const track = document.getElementById('carouselTrack');
+  track.innerHTML = carouselSlides.map((src, i) =>
+    `<div class="carousel-slide">
+       <img src="${src}" alt="Слайд ${i+1}" loading="${i===0?'eager':'lazy'}">
+     </div>`
+  ).join('');
+
+  const dots = document.getElementById('carouselDots');
+  dots.innerHTML = carouselSlides.map((_, i) =>
+    `<button class="carousel-dot ${i===0?'active':''}" onclick="carouselGo(${i})"></button>`
+  ).join('');
+
+  carouselDraw();
+  document.getElementById('previewModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePreview() {
+  document.getElementById('previewModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function carouselMove(dir) {
+  carouselIdx = (carouselIdx + dir + carouselSlides.length) % carouselSlides.length;
+  carouselDraw();
+}
+
+function carouselGo(idx) {
+  carouselIdx = idx;
+  carouselDraw();
+}
+
+function carouselDraw() {
+  document.getElementById('carouselTrack').style.transform = `translateX(-${carouselIdx * 100}%)`;
+  document.querySelectorAll('.carousel-dot').forEach((d, i) =>
+    d.classList.toggle('active', i === carouselIdx)
+  );
+}
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('previewModal').classList.contains('open')) return;
+  if (e.key === 'ArrowRight') carouselMove(1);
+  if (e.key === 'ArrowLeft')  carouselMove(-1);
+  if (e.key === 'Escape')     closePreview();
+});
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
