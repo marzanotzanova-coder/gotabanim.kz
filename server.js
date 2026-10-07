@@ -82,5 +82,44 @@ app.delete('/api/combos/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Lessons API ──
+const LESSONS_FILE = path.join(__dirname, 'data', 'lessons.json');
+function readLessons() {
+  if (!fs.existsSync(LESSONS_FILE)) return { lessons: [] };
+  return JSON.parse(fs.readFileSync(LESSONS_FILE, 'utf8'));
+}
+function writeLessons(data) {
+  fs.writeFileSync(LESSONS_FILE, JSON.stringify(data, null, 2));
+}
+
+app.get('/api/lessons', (_req, res) => res.json(readLessons()));
+
+app.post('/api/lessons', (req, res) => {
+  if (!auth(req, res)) return;
+  const data = readLessons();
+  const lesson = { ...req.body, id: `${req.body.grade}-${req.body.lesson_num}-${Date.now()}` };
+  data.lessons.push(lesson);
+  writeLessons(data);
+  res.json(lesson);
+});
+
+app.put('/api/lessons/:id', (req, res) => {
+  if (!auth(req, res)) return;
+  const data = readLessons();
+  const i = data.lessons.findIndex(l => l.id === req.params.id);
+  if (i < 0) return res.status(404).json({ error: 'Not found' });
+  data.lessons[i] = { ...data.lessons[i], ...req.body };
+  writeLessons(data);
+  res.json(data.lessons[i]);
+});
+
+app.delete('/api/lessons/:id', (req, res) => {
+  if (!auth(req, res)) return;
+  const data = readLessons();
+  data.lessons = data.lessons.filter(l => l.id !== req.params.id);
+  writeLessons(data);
+  res.json({ ok: true });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`GoTabAnim running on http://localhost:${PORT}`));

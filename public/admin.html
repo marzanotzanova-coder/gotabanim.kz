@@ -78,6 +78,99 @@ tr:hover td{background:#f8faff}
 .btn-toggle-paid.make-unpaid:hover{background:rgba(239,68,68,.16)}
 
 .admin-nav-badge{padding:3px 10px;border-radius:100px;background:rgba(26,86,219,.08);border:1px solid rgba(26,86,219,.2);font-size:11px;font-weight:700;color:var(--primary)}
+
+/* ── Lesson cards ── */
+.lessons-grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:600px){.lessons-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:900px){.lessons-grid{grid-template-columns:repeat(3,1fr)}}
+
+.lesson-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:18px 20px;box-shadow:0 2px 10px rgba(26,86,219,.07);
+  display:flex;flex-direction:column;gap:10px;position:relative;
+}
+.lesson-card-header{display:flex;align-items:center;gap:10px}
+.lesson-grade-badge{
+  padding:4px 12px;border-radius:100px;font-size:11px;font-weight:800;
+  background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff;
+  white-space:nowrap;flex-shrink:0;
+}
+.lesson-num{font-size:12px;color:var(--muted);font-weight:600}
+.lesson-title{font-size:15px;font-weight:800;color:var(--text);line-height:1.3}
+.lesson-topic{font-size:12px;color:var(--muted)}
+.lesson-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.btn-ppt{
+  padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;
+  background:rgba(26,86,219,.1);color:var(--primary);border:1px solid rgba(26,86,219,.2);
+  text-decoration:none;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s;
+}
+.btn-ppt:hover{background:rgba(26,86,219,.18)}
+.btn-video-link{
+  padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;
+  background:rgba(16,185,129,.1);color:#059669;border:1px solid rgba(16,185,129,.25);
+  text-decoration:none;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s;
+}
+.btn-video-link:hover{background:rgba(16,185,129,.2)}
+.btn-lesson-del{
+  padding:7px 12px;border-radius:9px;font-size:12px;font-weight:700;
+  background:rgba(239,68,68,.07);color:#dc2626;border:1px solid rgba(239,68,68,.15);
+  cursor:pointer;font-family:'Inter',sans-serif;border:none;margin-left:auto;transition:background .2s;
+}
+.btn-lesson-del:hover{background:rgba(239,68,68,.15)}
+.lesson-video-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.video-status-dot{width:7px;height:7px;border-radius:50%;background:#d1d5db;flex-shrink:0}
+.video-status-dot.has-video{background:#10b981}
+
+/* ── Add lesson form ── */
+.add-lesson-form{
+  background:var(--surface2);border:1.5px dashed var(--border);border-radius:14px;
+  padding:20px;display:none;flex-direction:column;gap:12px;margin-bottom:16px;
+}
+.add-lesson-form.open{display:flex}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:500px){.form-row{grid-template-columns:1fr}}
+.form-input{
+  padding:10px 14px;background:#fff;border:1.5px solid var(--border);border-radius:10px;
+  font-size:13px;font-family:'Inter',sans-serif;color:var(--text);outline:none;
+  transition:border-color .2s;
+}
+.form-input:focus{border-color:var(--primary)}
+.form-input::placeholder{color:#b0bec5}
+.btn-add-save{
+  padding:10px 22px;border-radius:10px;font-size:13px;font-weight:700;
+  background:var(--primary);color:#fff;border:none;cursor:pointer;
+  font-family:'Inter',sans-serif;align-self:flex-start;transition:opacity .2s;
+}
+.btn-add-save:hover{opacity:.85}
+.btn-form-cancel{
+  padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;
+  background:transparent;color:var(--muted);border:1.5px solid var(--border);cursor:pointer;
+  font-family:'Inter',sans-serif;transition:background .2s;
+}
+.btn-form-cancel:hover{background:var(--surface2)}
+
+/* ── Video upload section ── */
+.upload-zone{
+  border:2px dashed var(--border);border-radius:14px;padding:28px 20px;
+  text-align:center;cursor:pointer;transition:border-color .2s,background .2s;
+  background:#fafbff;
+}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--primary);background:rgba(26,86,219,.03)}
+.upload-icon{font-size:32px;margin-bottom:8px}
+.upload-hint{font-size:13px;color:var(--muted)}
+.upload-hint b{color:var(--primary);cursor:pointer}
+.upload-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+@media(max-width:500px){.upload-fields{grid-template-columns:1fr}}
+.progress-bar-wrap{height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;display:none;margin-top:8px}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));width:0%;transition:width .3s;border-radius:3px}
+.upload-result{font-size:12px;margin-top:8px;display:none;padding:8px 12px;border-radius:8px;font-weight:600}
+.upload-result.ok{background:rgba(16,185,129,.1);color:#059669}
+.upload-result.err{background:rgba(239,68,68,.08);color:#dc2626}
+.section-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.btn-show-form{
+  padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;
+  background:var(--primary);color:#fff;border:none;cursor:pointer;font-family:'Inter',sans-serif;
+}
 </style>
 </head>
 <body>
@@ -138,6 +231,63 @@ tr:hover td{background:#f8faff}
     </div>
   </div>
 
+  <!-- ── Сынып материалдары ── -->
+  <div class="admin-section">
+    <div class="section-top-row">
+      <div class="admin-section-title" style="margin-bottom:0">📚 Сынып материалдары</div>
+      <button class="btn-show-form" onclick="toggleAddForm()">➕ Сабақ қосу</button>
+    </div>
+
+    <div class="add-lesson-form" id="addLessonForm">
+      <div class="form-row">
+        <input class="form-input" id="fGrade" type="number" placeholder="Сынып (5, 6, 7...)" min="1" max="12">
+        <input class="form-input" id="fLessonNum" type="number" placeholder="Сабақ №" min="1">
+      </div>
+      <input class="form-input" id="fTitle" placeholder="Тақырып атауы (мыс. ЕҮОБ және ЕКОЕ)">
+      <input class="form-input" id="fTopic" placeholder="Тақырып (мыс. Негізгі ұғымдарды қайталау)">
+      <input class="form-input" id="fPptUrl" placeholder="PPT сілтемесі (мыс. /materials/file.pptx)">
+      <div style="display:flex;gap:10px">
+        <button class="btn-add-save" onclick="saveLesson()">Сақтау</button>
+        <button class="btn-form-cancel" onclick="toggleAddForm()">Болдырмау</button>
+      </div>
+    </div>
+
+    <div class="lessons-grid" id="lessonsGrid">
+      <div style="color:var(--muted);font-size:14px;padding:20px 0">Жүктелуде...</div>
+    </div>
+  </div>
+
+  <!-- ── Бейне материал жүктеу ── -->
+  <div class="admin-section">
+    <div class="admin-section-title">📤 Бейне материал жүктеу</div>
+
+    <div class="upload-fields">
+      <select class="form-input" id="upGrade">
+        <option value="">Сынып...</option>
+        <option value="5">5-сынып</option>
+        <option value="6">6-сынып</option>
+        <option value="7">7-сынып</option>
+        <option value="8">8-сынып</option>
+        <option value="9">9-сынып</option>
+        <option value="10">10-сынып</option>
+        <option value="11">11-сынып</option>
+      </select>
+      <input class="form-input" id="upLessonNum" type="number" placeholder="Сабақ №" min="1">
+    </div>
+
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('videoFileInput').click()"
+         ondragover="event.preventDefault();this.classList.add('drag')"
+         ondragleave="this.classList.remove('drag')"
+         ondrop="handleDrop(event)">
+      <div class="upload-icon">🎬</div>
+      <div class="upload-hint">Бейнені осыған сүйреңіз немесе <b>файл таңдаңыз</b></div>
+      <div class="upload-hint" style="margin-top:4px;font-size:11px">MP4, MOV · 500 MB дейін</div>
+      <input type="file" id="videoFileInput" accept="video/*,.mp4,.mov" style="display:none" onchange="handleFileSelect(this.files[0])">
+    </div>
+    <div class="progress-bar-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="upload-result" id="uploadResult"></div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -160,6 +310,7 @@ const MONTHS = ['қаңтар','ақпан','наурыз','сәуір','мам�
   }
 
   await loadUsers();
+  await loadLessons();
 })();
 
 async function loadUsers() {
@@ -231,6 +382,153 @@ function filterUsers() {
 async function logout() {
   await sb.auth.signOut();
   window.location.href = 'index.html';
+}
+
+// ── Lessons ──
+const ADMIN_PASS = 'gotab2026';
+let allLessons = [];
+
+async function loadLessons() {
+  const res = await fetch('/api/lessons');
+  const data = await res.json();
+  allLessons = data.lessons || [];
+  renderLessons();
+}
+
+function renderLessons() {
+  const grid = document.getElementById('lessonsGrid');
+  if (!allLessons.length) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:20px 0">Материалдар жоқ</div>';
+    return;
+  }
+  const sorted = [...allLessons].sort((a,b) => a.grade - b.grade || a.lesson_num - b.lesson_num);
+  grid.innerHTML = sorted.map(l => `
+    <div class="lesson-card">
+      <div class="lesson-card-header">
+        <span class="lesson-grade-badge">${l.grade}-сынып</span>
+        <span class="lesson-num">${l.lesson_num}-сабақ</span>
+        <button class="btn-lesson-del" title="Жою" onclick="deleteLesson('${l.id}')">✕</button>
+      </div>
+      <div class="lesson-title">${l.title_kk || '—'}</div>
+      ${l.topic_kk ? `<div class="lesson-topic">${l.topic_kk}</div>` : ''}
+      <div class="lesson-video-row">
+        <div class="video-status-dot ${l.video_url ? 'has-video' : ''}"></div>
+        <span>${l.video_url ? 'Бейне бар' : 'Бейне жоқ'}</span>
+      </div>
+      <div class="lesson-actions">
+        ${l.ppt_url ? `<a class="btn-ppt" href="${l.ppt_url}" download>⬇ PPT жүктеу</a>` : ''}
+        ${l.video_url ? `<a class="btn-video-link" href="${l.video_url}" target="_blank">▶ Бейне</a>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleAddForm() {
+  const f = document.getElementById('addLessonForm');
+  f.classList.toggle('open');
+}
+
+async function saveLesson() {
+  const grade = parseInt(document.getElementById('fGrade').value);
+  const lesson_num = parseInt(document.getElementById('fLessonNum').value);
+  const title_kk = document.getElementById('fTitle').value.trim();
+  const topic_kk = document.getElementById('fTopic').value.trim();
+  const ppt_url = document.getElementById('fPptUrl').value.trim();
+
+  if (!grade || !lesson_num || !title_kk) { alert('Сынып, сабақ № және тақырып атауын толтырыңыз'); return; }
+
+  const res = await fetch('/api/lessons', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-pass': ADMIN_PASS },
+    body: JSON.stringify({ grade, lesson_num, subject: 'math', title_kk, topic_kk, ppt_url: ppt_url || null, video_url: null })
+  });
+  if (!res.ok) { alert('Қате сақталды'); return; }
+  ['fGrade','fLessonNum','fTitle','fTopic','fPptUrl'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('addLessonForm').classList.remove('open');
+  await loadLessons();
+}
+
+async function deleteLesson(id) {
+  if (!confirm('Сабақты жою?')) return;
+  await fetch(`/api/lessons/${id}`, { method: 'DELETE', headers: { 'x-admin-pass': ADMIN_PASS } });
+  await loadLessons();
+}
+
+// ── Video upload via Supabase Storage ──
+let pendingFile = null;
+
+function handleFileSelect(file) {
+  if (!file) return;
+  pendingFile = file;
+  const zone = document.getElementById('uploadZone');
+  zone.querySelector('.upload-hint').innerHTML = `📎 <b>${file.name}</b> (${(file.size/1024/1024).toFixed(1)} MB)`;
+  uploadVideo();
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFileSelect(file);
+}
+
+async function uploadVideo() {
+  const grade = document.getElementById('upGrade').value;
+  const lessonNum = document.getElementById('upLessonNum').value;
+  if (!grade || !lessonNum) { alert('Сынып пен сабақ нөмірін таңдаңыз'); return; }
+  if (!pendingFile) return;
+
+  const result = document.getElementById('uploadResult');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressBar = document.getElementById('progressBar');
+
+  result.style.display = 'none';
+  progressWrap.style.display = 'block';
+  progressBar.style.width = '10%';
+
+  const ext = pendingFile.name.split('.').pop().toLowerCase();
+  const filename = `grade${grade}/lesson${lessonNum}/${Date.now()}.${ext}`;
+
+  progressBar.style.width = '40%';
+
+  const { data, error } = await sb.storage
+    .from('lesson-videos')
+    .upload(filename, pendingFile, { upsert: true, contentType: pendingFile.type });
+
+  if (error) {
+    progressWrap.style.display = 'none';
+    result.className = 'upload-result err';
+    result.textContent = '✕ Қате: ' + (error.message || 'Supabase Storage bucket жасалмаған');
+    result.style.display = 'block';
+    return;
+  }
+
+  progressBar.style.width = '80%';
+
+  const { data: urlData } = sb.storage.from('lesson-videos').getPublicUrl(filename);
+  const publicUrl = urlData.publicUrl;
+
+  // Save video_url to the matching lesson
+  const lesson = allLessons.find(l => l.grade == grade && l.lesson_num == lessonNum);
+  if (lesson) {
+    await fetch(`/api/lessons/${lesson.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'x-admin-pass': ADMIN_PASS },
+      body: JSON.stringify({ video_url: publicUrl })
+    });
+    await loadLessons();
+  }
+
+  progressBar.style.width = '100%';
+  setTimeout(() => { progressWrap.style.display = 'none'; progressBar.style.width = '0%'; }, 600);
+
+  result.className = 'upload-result ok';
+  result.innerHTML = `✓ Жүктелді! <a href="${publicUrl}" target="_blank" style="color:inherit">Ашу →</a>`;
+  result.style.display = 'block';
+  pendingFile = null;
+
+  document.getElementById('uploadZone').querySelector('.upload-hint').innerHTML =
+    'Бейнені осыған сүйреңіз немесе <b>файл таңдаңыз</b>';
 }
 </script>
 <script src="math-bg.js"></script>
