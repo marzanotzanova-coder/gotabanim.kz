@@ -518,7 +518,6 @@ function changeSubject() {
   window.location.href = `content.html?grade=${grade}&subject=${document.getElementById('subjectSel').value}`;
 }
 initSwitcher();
-render(); // жылдам алдын ала жүктеу
 
 let userIsPaid = false;
 
@@ -526,12 +525,20 @@ let userIsPaid = false;
   const user = await requireAuth();
   if (!user) return;
   document.getElementById('userName').textContent = user.user_metadata?.name || user.email;
-  const { data: profile } = await sb.from('profiles').select('is_paid').eq('id', user.id).single();
-  userIsPaid = profile?.is_paid || false;
-  render(); // is_paid мәні белгілі болған соң қайта render
+
+  // is_paid — 3 секундтан аспасын, не болса false
+  try {
+    const timer = new Promise(r => setTimeout(() => r(null), 3000));
+    const query = sb.from('profiles').select('is_paid').eq('id', user.id).single();
+    const { data: profile } = await Promise.race([query, timer.then(() => ({ data: null }))]);
+    userIsPaid = profile?.is_paid || false;
+  } catch (_) { userIsPaid = false; }
+
+  render();
 })();
 
 async function logout() {
+  localStorage.removeItem('gotab_last_page');
   await sb.auth.signOut();
   window.location.href = 'index.html';
 }

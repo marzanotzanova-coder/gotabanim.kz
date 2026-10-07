@@ -70,6 +70,7 @@ let selectedGrade = null, selectedSubject = null;
 })();
 
 async function logout() {
+  localStorage.removeItem('gotab_last_page');
   await sb.auth.signOut();
   window.location.href = 'index.html';
 }

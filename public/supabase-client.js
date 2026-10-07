@@ -10,9 +10,10 @@ async function requireAuth() {
     window.location.href = 'login.html';
     return null;
   }
-  // Remember last visited page for auto-return
+  // Remember last visited page for auto-return (admin pages excluded)
   const here = location.pathname.split('/').pop() + location.search;
-  if (here && here !== 'login.html' && here !== 'index.html' && here !== 'register.html') {
+  const excluded = ['login.html', 'index.html', 'register.html', 'admin.html'];
+  if (here && !excluded.includes(here.split('?')[0])) {
     localStorage.setItem('gotab_last_page', here);
   }
   return session.user;
