@@ -173,7 +173,7 @@
 }
 .sub-preview.qmj-preview{
   background:linear-gradient(135deg,#0d2c1a,#0d1b35);
-  height:90px;
+  height:140px;
 }
 .sub-preview.video-preview{
   background:linear-gradient(135deg,#1a0d35,#0d1b35);
@@ -546,7 +546,7 @@ async function logout() {
 // ── Content data ──
 const CONTENT = {
   5: { math: { lessons: [
-    {title:'ЕҮОБ және ЕКОЕ',          ppt:{meta:'12 слайд',src:'/materials/GoTAB_5сынып_final.pptx',thumb:'/materials/lesson-5-1-slide1.jpeg'}, slides:['/materials/lesson-5-1-slide1.jpeg','/materials/lesson-5-1-slide2.jpeg','/materials/lesson-5-1-slide3.jpeg'], qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'16x9 · MP4',src:'/videos/5-synyp-EUOB-EKOE.mp4'}},
+    {title:'ЕҮОБ және ЕКОЕ',          ppt:{meta:'12 слайд',src:'/materials/GoTAB_5сынып_final.pptx',thumb:'/materials/lesson-5-1-slide1.jpeg'}, slides:['/materials/lesson-5-1-slide1.jpeg','/materials/lesson-5-1-slide2.jpeg','/materials/lesson-5-1-slide3.jpeg'], qmj:{meta:'Word · 4 бет',src:'/materials/lesson-5-1-qmj.docx',thumb:'/materials/lesson-5-1-qmj-thumb.jpeg'}, video:{meta:'16x9 · MP4',src:'/videos/5-synyp-EUOB-EKOE.mp4'}},
     {title:'Бөлшектер',               ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
     {title:'Геометриялық фигуралар',  ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
     {title:'Теңдеулер',               ppt:{meta:'14 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'40 сек',src:null}},
@@ -651,17 +651,22 @@ function render() {
     const done = wasDownloadedToday(i);
 
     const videoPrev = lesson.video && lesson.video.src
-      ? `<video src="${lesson.video.src}" autoplay muted loop playsinline></video>
-         <div class="play-overlay">
-           <div class="play-btn">
-             <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-           </div>
-         </div>`
+      ? `<video src="${lesson.video.src}" autoplay muted loop playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block"></video>`
       : `<div class="video-coming">
            <div class="video-ring">
              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
            </div>
            <span>ЖАҚЫНДА</span>
+         </div>`;
+
+    const qmjPrev = lesson.qmj && lesson.qmj.thumb
+      ? `<img src="${lesson.qmj.thumb}" alt="ҚМЖ алдын ала" style="width:100%;height:100%;object-fit:cover;object-position:top;border-radius:6px;display:block">`
+      : `<div class="qmj-doc">
+           <div class="qmj-doc-line long"></div>
+           <div class="qmj-doc-line short"></div>
+           <div class="qmj-doc-line long"></div>
+           <div class="qmj-doc-line short"></div>
+           <div class="qmj-doc-line medium" style="width:70%"></div>
          </div>`;
 
     const hasPpt   = lesson.ppt && lesson.ppt.src;
@@ -707,19 +712,14 @@ function render() {
 
         <!-- ҚМЖ -->
         <div class="sub-card">
-          <div class="sub-preview qmj-preview">
-            <div class="qmj-doc">
-              <div class="qmj-doc-line long"></div>
-              <div class="qmj-doc-line short"></div>
-              <div class="qmj-doc-line long"></div>
-              <div class="qmj-doc-line short"></div>
-              <div class="qmj-doc-line medium" style="width:70%"></div>
-            </div>
+          <div class="sub-preview qmj-preview" style="${lesson.qmj && lesson.qmj.thumb ? 'background:#fff;padding:0;overflow:hidden' : ''}">
+            ${qmjPrev}
           </div>
           <div class="sub-type-label qmj-label">
             <span>📄</span> ҚМЖ
           </div>
           <div class="sub-meta">${lesson.qmj ? lesson.qmj.meta : '—'}</div>
+          ${lesson.qmj && lesson.qmj.src ? `<button class="btn-download" style="margin-top:4px;font-size:11px;padding:6px 10px" data-qmj="${i}">⬇ ҚМЖ жүктеу</button>` : ''}
         </div>
 
         <!-- ANIMATION VIDEO -->
@@ -756,6 +756,24 @@ function render() {
         const a = document.createElement('a');
         a.href = lesson.ppt.src; a.download = ''; a.click();
         markDone(idx);
+        this.textContent = '✓ Жүктелді';
+        this.classList.add('done');
+      } else {
+        openModal();
+      }
+    });
+  });
+
+  // QMJ download buttons
+  grid.querySelectorAll('[data-qmj]').forEach(el => {
+    el.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (this.classList.contains('done')) return;
+      const idx = parseInt(this.dataset.qmj);
+      const lesson = lessons[idx];
+      if (lesson.qmj && lesson.qmj.src && userIsPaid) {
+        const a = document.createElement('a');
+        a.href = lesson.qmj.src; a.download = ''; a.click();
         this.textContent = '✓ Жүктелді';
         this.classList.add('done');
       } else {
