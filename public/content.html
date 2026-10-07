@@ -73,7 +73,7 @@
 .ppt-section{}
 
 .ppt-preview{
-  width:100%;height:160px;
+  width:100%;height:180px;
   background:linear-gradient(135deg,#0f1e3e,#0d1b35);
   display:flex;align-items:center;justify-content:center;
   position:relative;overflow:hidden;
@@ -83,6 +83,29 @@
   background:radial-gradient(ellipse at 30% 40%,rgba(14,165,233,.18),transparent 60%),
              radial-gradient(ellipse at 70% 70%,rgba(139,92,246,.12),transparent 55%);
 }
+/* Real slide thumbnail */
+.ppt-preview .slide-thumb{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center top;
+  transition:transform .35s ease;
+}
+.lesson-unit:hover .slide-thumb{transform:scale(1.04)}
+.ppt-preview .slide-thumb-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to bottom,rgba(0,0,0,.08) 0%,rgba(0,0,0,.35) 100%);
+  z-index:1;
+}
+/* Hover play hint for slides with real thumb */
+.ppt-preview .slide-dl-hint{
+  position:absolute;bottom:10px;right:10px;z-index:3;
+  background:rgba(255,255,255,.15);backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:20px;padding:4px 10px;
+  font-size:10px;font-weight:700;color:#fff;letter-spacing:.3px;
+  opacity:0;transition:opacity .2s;
+}
+.lesson-unit:hover .slide-dl-hint{opacity:1}
+/* Generic mock for lessons without thumb */
 .ppt-slide-mock{
   position:relative;z-index:1;
   width:130px;height:82px;
@@ -387,7 +410,7 @@ async function logout() {
 // ── Content data ──
 const CONTENT = {
   5: { math: { lessons: [
-    {title:'ЕҮОБ және ЕКОЕ',          ppt:{meta:'12 слайд',src:'/materials/GoTAB_5сынып_final.pptx'}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
+    {title:'ЕҮОБ және ЕКОЕ',          ppt:{meta:'12 слайд',src:'/materials/GoTAB_5сынып_final.pptx',thumb:'/materials/lesson-5-1-thumb.jpeg'}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
     {title:'Бөлшектер',               ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
     {title:'Геометриялық фигуралар',  ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
     {title:'Теңдеулер',               ppt:{meta:'14 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'40 сек',src:null}},
@@ -505,7 +528,24 @@ function render() {
            <span>ЖАҚЫНДА</span>
          </div>`;
 
-    const hasPpt = lesson.ppt && lesson.ppt.src;
+    const hasPpt   = lesson.ppt && lesson.ppt.src;
+    const hasThumb = lesson.ppt && lesson.ppt.thumb;
+
+    const previewInner = hasThumb
+      ? `<img class="slide-thumb" src="${lesson.ppt.thumb}" alt="${lesson.title}" loading="lazy">
+         <div class="slide-thumb-overlay"></div>
+         <span class="lesson-badge" style="z-index:3">Сабақ ${i + 1}</span>
+         <span class="slide-dl-hint">⬇ PPT жүктеу</span>`
+      : `<span class="lesson-badge">Сабақ ${i + 1}</span>
+         ${!hasPpt ? '<span class="soon-badge">Жақында</span>' : ''}
+         <div class="ppt-slide-mock">
+           <span class="slide-icon">📊</span>
+           <div class="slide-lines">
+             <div class="slide-line medium"></div>
+             <div class="slide-line short"></div>
+             <div class="slide-line medium"></div>
+           </div>
+         </div>`;
 
     return `
     <div class="lesson-unit">
@@ -513,16 +553,7 @@ function render() {
       <!-- PRESENTATION -->
       <div class="ppt-section">
         <div class="ppt-preview">
-          <span class="lesson-badge">Сабақ ${i + 1}</span>
-          ${!hasPpt ? '<span class="soon-badge">Жақында</span>' : ''}
-          <div class="ppt-slide-mock">
-            <span class="slide-icon">📊</span>
-            <div class="slide-lines">
-              <div class="slide-line medium"></div>
-              <div class="slide-line short"></div>
-              <div class="slide-line medium"></div>
-            </div>
-          </div>
+          ${previewInner}
         </div>
         <div class="ppt-body">
           <div class="ppt-title">${lesson.title}</div>
