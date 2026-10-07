@@ -546,7 +546,7 @@ async function logout() {
 // ── Content data ──
 const CONTENT = {
   5: { math: { lessons: [
-    {title:'ЕҮОБ және ЕКОЕ',          ppt:{meta:'12 слайд',src:'/materials/GoTAB_5сынып_final.pptx',thumb:'/materials/lesson-5-1-slide1.jpeg'}, slides:['/materials/lesson-5-1-slide1.jpeg','/materials/lesson-5-1-slide2.jpeg','/materials/lesson-5-1-slide3.jpeg'], qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
+    {title:'ЕҮОБ және ЕКОЕ',          ppt:{meta:'12 слайд',src:'/materials/GoTAB_5сынып_final.pptx',thumb:'/materials/lesson-5-1-slide1.jpeg'}, slides:['/materials/lesson-5-1-slide1.jpeg','/materials/lesson-5-1-slide2.jpeg','/materials/lesson-5-1-slide3.jpeg'], qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'16x9 · MP4',src:'/videos/5-synyp-EUOB-EKOE.mp4'}},
     {title:'Бөлшектер',               ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
     {title:'Геометриялық фигуралар',  ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
     {title:'Теңдеулер',               ppt:{meta:'14 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'40 сек',src:null}},
@@ -734,7 +734,7 @@ function render() {
       </div>
 
       <div class="lesson-dl-footer">
-        ${lesson.slides ? `<button class="btn-preview" data-preview="${i}">👁 Алдын ала</button>` : ''}
+        ${lesson.slides ? `<button class="btn-preview" data-preview="${i}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Алдын ала</button>` : ''}
         <button class="btn-download ${done ? 'done' : ''}" data-idx="${i}">
           ${done ? '✓ Жүктелді' : '⬇ PPT жүктеу'}
         </button>
