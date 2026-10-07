@@ -283,17 +283,38 @@
 }
 .sel-grade:focus,.sel-subject:focus{border-color:var(--primary)}
 
-/* ── FOOTER TWO BUTTONS ── */
-.lesson-dl-footer{display:flex;gap:8px;padding:12px 14px 16px;border-top:1px solid var(--border)}
+/* ── SECTION DOWNLOAD BUTTONS ── */
+.btn-dl-sm{
+  width:100%;padding:7px 10px;border-radius:8px;
+  font-size:11px;font-weight:700;font-family:'Inter',sans-serif;
+  cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:opacity .2s;margin-top:6px;
+}
+.btn-dl-sm:hover{opacity:.82}
+.btn-dl-sm.done{opacity:.55;cursor:default}
+.btn-dl-ppt{background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff}
+.btn-dl-qmj{background:rgba(16,185,129,.15);color:#6ee7b7;border:1px solid rgba(16,185,129,.25)}
+.btn-dl-vid{background:rgba(139,92,246,.15);color:#c4b5fd;border:1px solid rgba(139,92,246,.25)}
+
+/* ── FOOTER: preview + жалпы жүктеу ── */
+.lesson-dl-footer{display:flex;gap:8px;padding:10px 14px 14px;border-top:1px solid var(--border)}
 .btn-preview{
   flex:0 0 auto;
-  padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;
-  font-family:'Inter',sans-serif;cursor:pointer;border:none;
+  padding:7px 13px;border-radius:8px;font-size:12px;font-weight:700;
+  font-family:'Inter',sans-serif;cursor:pointer;
   background:rgba(255,255,255,.06);border:1px solid var(--border);
-  color:var(--muted);transition:all .2s;white-space:nowrap;
+  color:var(--muted);transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:5px;
 }
 .btn-preview:hover{background:rgba(255,255,255,.12);color:var(--text)}
-.btn-download{flex:1}
+.btn-dl-all{
+  flex:1;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:800;
+  font-family:'Inter',sans-serif;cursor:pointer;border:none;
+  background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:opacity .2s;
+}
+.btn-dl-all:hover{opacity:.87}
+.btn-dl-all.done{background:rgba(16,185,129,.15);color:#6ee7b7;cursor:default}
 
 /* ── PREVIEW MODAL ── */
 .preview-modal-overlay{
@@ -688,6 +709,11 @@ function render() {
            </div>
          </div>`;
 
+    const hasPptSrc  = lesson.ppt  && lesson.ppt.src;
+    const hasQmjSrc  = lesson.qmj  && lesson.qmj.src;
+    const hasVidSrc  = lesson.video && lesson.video.src;
+    const hasAnySrc  = hasPptSrc || hasQmjSrc || hasVidSrc;
+
     return `
     <div class="lesson-unit">
 
@@ -702,6 +728,7 @@ function render() {
             <span class="badge-ppt">PPT</span>
             ${lesson.ppt ? lesson.ppt.meta : ''}
           </div>
+          ${hasPptSrc ? `<button class="btn-dl-sm btn-dl-ppt" data-dl-ppt="${i}">⬇ PPT жүктеу</button>` : ''}
         </div>
       </div>
 
@@ -715,70 +742,88 @@ function render() {
           <div class="sub-preview qmj-preview" style="${lesson.qmj && lesson.qmj.thumb ? 'background:#fff;padding:0;overflow:hidden' : ''}">
             ${qmjPrev}
           </div>
-          <div class="sub-type-label qmj-label">
-            <span>📄</span> ҚМЖ
-          </div>
+          <div class="sub-type-label qmj-label"><span>📄</span> ҚМЖ</div>
           <div class="sub-meta">${lesson.qmj ? lesson.qmj.meta : '—'}</div>
-          ${lesson.qmj && lesson.qmj.src ? `<button class="btn-download" style="margin-top:4px;font-size:11px;padding:6px 10px" data-qmj="${i}">⬇ ҚМЖ жүктеу</button>` : ''}
+          ${hasQmjSrc ? `<button class="btn-dl-sm btn-dl-qmj" data-dl-qmj="${i}">⬇ ҚМЖ жүктеу</button>` : ''}
         </div>
 
         <!-- ANIMATION VIDEO -->
         <div class="sub-card">
           <div class="sub-preview video-preview">${videoPrev}</div>
-          <div class="sub-type-label vid-label">
-            <span>🎬</span> Анимация
-          </div>
+          <div class="sub-type-label vid-label"><span>🎬</span> Анимация</div>
           <div class="sub-meta">${lesson.video ? lesson.video.meta : '—'}</div>
+          ${hasVidSrc ? `<button class="btn-dl-sm btn-dl-vid" data-dl-vid="${i}">⬇ Видео жүктеу</button>` : ''}
         </div>
 
       </div>
 
       <div class="lesson-dl-footer">
         ${lesson.slides ? `<button class="btn-preview" data-preview="${i}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Алдын ала</button>` : ''}
-        <button class="btn-download ${done ? 'done' : ''}" data-idx="${i}">
-          ${done ? '✓ Жүктелді' : '⬇ PPT жүктеу'}
-        </button>
+        ${hasAnySrc
+          ? `<button class="btn-dl-all" data-dl-all="${i}">⬇ ${i + 1}-сабақ жалпы жүктеу</button>`
+          : `<button class="btn-dl-all" data-dl-all="${i}">⬇ Барлығын жүктеу</button>`
+        }
       </div>
 
     </div>`;
   }).join('');
 
-  // Download buttons
-  grid.querySelectorAll('[data-idx]').forEach(el => {
+  function dlFile(url, btn, label) {
+    if (!userIsPaid) { openModal(); return; }
+    const a = document.createElement('a');
+    a.href = url; a.download = ''; a.click();
+    if (btn) { btn.textContent = '✓ ' + label; btn.classList.add('done'); }
+  }
+
+  // PPT download
+  grid.querySelectorAll('[data-dl-ppt]').forEach(el => {
     el.addEventListener('click', function(e) {
       e.preventDefault();
       if (this.classList.contains('done')) return;
-      const idx = parseInt(this.dataset.idx);
-      const lesson = lessons[idx];
-      const hasSrc = lesson.ppt && lesson.ppt.src;
-
-      if (hasSrc && userIsPaid) {
-        const a = document.createElement('a');
-        a.href = lesson.ppt.src; a.download = ''; a.click();
-        markDone(idx);
-        this.textContent = '✓ Жүктелді';
-        this.classList.add('done');
-      } else {
-        openModal();
-      }
+      const lesson = lessons[parseInt(this.dataset.dlPpt)];
+      dlFile(lesson.ppt.src, this, 'Жүктелді');
     });
   });
 
-  // QMJ download buttons
-  grid.querySelectorAll('[data-qmj]').forEach(el => {
+  // QMJ download
+  grid.querySelectorAll('[data-dl-qmj]').forEach(el => {
     el.addEventListener('click', function(e) {
       e.preventDefault();
       if (this.classList.contains('done')) return;
-      const idx = parseInt(this.dataset.qmj);
-      const lesson = lessons[idx];
-      if (lesson.qmj && lesson.qmj.src && userIsPaid) {
-        const a = document.createElement('a');
-        a.href = lesson.qmj.src; a.download = ''; a.click();
-        this.textContent = '✓ Жүктелді';
-        this.classList.add('done');
-      } else {
-        openModal();
-      }
+      const lesson = lessons[parseInt(this.dataset.dlQmj)];
+      dlFile(lesson.qmj.src, this, 'Жүктелді');
+    });
+  });
+
+  // Video download
+  grid.querySelectorAll('[data-dl-vid]').forEach(el => {
+    el.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (this.classList.contains('done')) return;
+      const lesson = lessons[parseInt(this.dataset.dlVid)];
+      dlFile(lesson.video.src, this, 'Жүктелді');
+    });
+  });
+
+  // Download ALL (жалпы жүктеу)
+  grid.querySelectorAll('[data-dl-all]').forEach(el => {
+    el.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (this.classList.contains('done')) return;
+      if (!userIsPaid) { openModal(); return; }
+      const lesson = lessons[parseInt(this.dataset.dlAll)];
+      const files = [
+        lesson.ppt  && lesson.ppt.src,
+        lesson.qmj  && lesson.qmj.src,
+        lesson.video && lesson.video.src,
+      ].filter(Boolean);
+      if (!files.length) { openModal(); return; }
+      files.forEach((url, n) => setTimeout(() => {
+        const a = document.createElement('a'); a.href = url; a.download = ''; a.click();
+      }, n * 400));
+      this.textContent = '✓ Барлығы жүктелді';
+      this.classList.add('done');
+      markDone(parseInt(this.dataset.dlAll));
     });
   });
 
