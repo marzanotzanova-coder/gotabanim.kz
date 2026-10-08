@@ -6,6 +6,30 @@
 <title>GoTAB — Көрнекіліктер</title>
 <link rel="stylesheet" href="gotab.css">
 <style>
+/* ── PAYMENT BAR ── */
+.pay-bar{
+  background:linear-gradient(135deg,rgba(14,165,233,.10),rgba(6,182,212,.07));
+  border-bottom:1px solid rgba(14,165,233,.18);
+  padding:11px 24px;
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  flex-wrap:wrap;
+  position:sticky;top:57px;z-index:90;
+  backdrop-filter:blur(10px);
+}
+.pay-bar-text{font-size:13px;color:#94a3b8;font-weight:500}
+.btn-pay-top{
+  padding:9px 22px;
+  background:linear-gradient(135deg,#0ea5e9,#06b6d4);
+  border:none;border-radius:100px;
+  color:#fff;font-size:13px;font-weight:700;
+  font-family:'Inter',sans-serif;cursor:pointer;
+  box-shadow:0 4px 14px rgba(14,165,233,.35);
+  transition:opacity .2s,transform .15s;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
+}
+.btn-pay-top:hover{opacity:.9;transform:translateY(-1px)}
+
+/* ── PAGE ── */
 .visuals-page{min-height:100vh;padding:36px 20px 70px}
 
 .visuals-header{
@@ -23,7 +47,7 @@
 }
 .visuals-back:hover{color:var(--primary);border-color:var(--primary)}
 
-/* Grid */
+/* ── GRID ── */
 .visuals-grid{
   max-width:1100px;margin:0 auto;
   display:grid;
@@ -31,65 +55,16 @@
   gap:20px;
 }
 
-/* Card */
-.visual-card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:18px;overflow:hidden;
-  transition:border-color .2s,transform .2s,box-shadow .2s;
-  box-shadow:0 2px 10px rgba(26,86,219,.05);
-}
-.visual-card:hover{
-  border-color:rgba(26,86,219,.35);
-  transform:translateY(-3px);
-  box-shadow:0 12px 32px rgba(26,86,219,.12);
-}
-
-/* Thumbnail */
-.visual-thumb{
-  width:100%;height:190px;
-  background:linear-gradient(135deg,#eff6ff,#dbeafe);
-  display:flex;align-items:center;justify-content:center;
-  position:relative;overflow:hidden;
-}
-.visual-thumb img,
-.visual-thumb video{
-  width:100%;height:100%;object-fit:cover;display:block;
-}
-.visual-thumb-icon{font-size:40px;opacity:.55}
-
-/* Subject badge */
-.visual-badge{
-  position:absolute;top:10px;left:10px;
-  padding:3px 10px;border-radius:100px;
-  font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
-}
-.badge-algebra{background:rgba(14,165,233,.18);color:#0ea5e9;border:1px solid rgba(14,165,233,.3)}
-.badge-geometry{background:rgba(139,92,246,.18);color:#8b5cf6;border:1px solid rgba(139,92,246,.3)}
-.badge-math{background:rgba(16,185,129,.18);color:#10b981;border:1px solid rgba(16,185,129,.3)}
-
-/* Body */
-.visual-body{padding:14px 16px 16px}
-.visual-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.35}
-.visual-meta{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
-.visual-grade-tag{
-  padding:2px 8px;border-radius:100px;
-  font-size:10px;font-weight:700;
-  background:rgba(26,86,219,.08);color:var(--primary);
-  border:1px solid rgba(26,86,219,.18);
-}
-
-/* Sticker collection card */
+/* ── STICKER CARD ── */
 .sticker-card{
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:18px;overflow:hidden;
   box-shadow:0 2px 10px rgba(26,86,219,.05);
-  transition:border-color .2s,transform .2s,box-shadow .2s;
+  transition:border-color .2s,box-shadow .2s;
 }
 .sticker-card:hover{
   border-color:rgba(26,86,219,.35);
-  transform:translateY(-3px);
   box-shadow:0 12px 32px rgba(26,86,219,.12);
 }
 .sticker-card-header{
@@ -98,8 +73,19 @@
   display:flex;align-items:center;gap:10px;
 }
 .sticker-card-header h2{font-size:16px;font-weight:800;color:var(--text);margin:0}
-.sticker-card-header .visual-badge{position:static}
-.sticker-card-meta{font-size:12px;color:var(--muted);margin-left:auto}
+.sticker-card-meta{font-size:12px;color:var(--muted);margin-left:auto;white-space:nowrap}
+
+/* ── BADGE ── */
+.visual-badge{
+  padding:3px 10px;border-radius:100px;
+  font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+  flex-shrink:0;
+}
+.badge-algebra{background:rgba(14,165,233,.18);color:#0ea5e9;border:1px solid rgba(14,165,233,.3)}
+.badge-geometry{background:rgba(139,92,246,.18);color:#8b5cf6;border:1px solid rgba(139,92,246,.3)}
+.badge-math{background:rgba(16,185,129,.18);color:#10b981;border:1px solid rgba(16,185,129,.3)}
+
+/* ── STICKER GRID ── */
 .sticker-grid{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -112,17 +98,56 @@
   display:flex;align-items:center;justify-content:center;
   background:linear-gradient(135deg,#eff6ff,#dbeafe);
   cursor:pointer;
-  transition:background .2s;
+  position:relative;
+  overflow:hidden;
 }
-.sticker-item:hover{background:linear-gradient(135deg,#dbeafe,#bfdbfe)}
 .sticker-item:nth-child(4n){border-right:none}
 .sticker-item:nth-last-child(-n+4){border-bottom:none}
 .sticker-item img{
   width:100%;max-width:140px;height:auto;display:block;
   filter:drop-shadow(0 2px 6px rgba(0,0,0,.12));
+  transition:transform .2s;
+  position:relative;z-index:1;
 }
+.sticker-item:hover img{transform:scale(1.04)}
 
-/* Responsive */
+/* Download overlay on sticker */
+.sticker-overlay{
+  position:absolute;inset:0;
+  background:rgba(26,86,219,.55);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;
+  z-index:2;
+}
+.sticker-item:hover .sticker-overlay{opacity:1}
+.sticker-dl-btn{
+  background:#fff;color:var(--primary);
+  border:none;border-radius:8px;
+  padding:7px 14px;font-size:12px;font-weight:700;
+  font-family:'Inter',sans-serif;
+  cursor:pointer;display:flex;align-items:center;gap:5px;
+  box-shadow:0 2px 10px rgba(0,0,0,.2);
+  transition:transform .15s;
+}
+.sticker-dl-btn:hover{transform:scale(1.05)}
+
+/* Card footer download button */
+.sticker-card-footer{
+  padding:12px 16px 14px;
+  border-top:1px solid var(--border);
+}
+.btn-dl-set{
+  width:100%;padding:9px 12px;
+  background:linear-gradient(135deg,var(--primary),var(--cyan));
+  border:none;border-radius:10px;
+  color:#fff;font-size:13px;font-weight:700;
+  font-family:'Inter',sans-serif;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:opacity .2s;
+}
+.btn-dl-set:hover{opacity:.87}
+
+/* ── RESPONSIVE ── */
 @media(max-width:600px){
   .visuals-page{padding:20px 12px 60px}
   .visuals-header{gap:10px;margin-bottom:18px;padding-bottom:14px}
@@ -130,10 +155,6 @@
   .visuals-back{padding:7px 12px;font-size:12px}
   .visuals-grid{grid-template-columns:1fr}
   .sticker-grid{grid-template-columns:repeat(2,1fr) !important}
-  .sticker-item:nth-child(4n){border-right:1px solid var(--border)}
-  .sticker-item:nth-child(2n){border-right:none}
-  .sticker-item:nth-last-child(-n+4){border-bottom:1px solid var(--border)}
-  .sticker-item:nth-last-child(-n+2){border-bottom:none}
 }
 </style>
 </head>
@@ -147,6 +168,15 @@
   </div>
 </nav>
 
+<!-- PAYMENT BAR -->
+<div class="pay-bar" id="payBar" style="display:none">
+  <span class="pay-bar-text">Барлық материалдарға толық қол жеткізу</span>
+  <button class="btn-pay-top" onclick="openModal()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    Төлем жасау — 4 990 ₸/ай
+  </button>
+</div>
+
 <div class="visuals-page">
   <div class="visuals-header">
     <div class="visuals-header-info">
@@ -158,6 +188,7 @@
 
   <div class="visuals-grid" id="visualsGrid">
 
+    <!-- ТРИГОНОМЕТРИЯ -->
     <div class="sticker-card" style="grid-column:1/-1">
       <div class="sticker-card-header">
         <h2>Тригонометрия көрнекіліктері</h2>
@@ -165,21 +196,25 @@
         <span class="sticker-card-meta">12 стикер · 10–11 сынып</span>
       </div>
       <div class="sticker-grid">
-        <div class="sticker-item"><img src="visuals/sinus.png" alt="Синус"></div>
-        <div class="sticker-item"><img src="visuals/cosinus.png" alt="Косинус"></div>
-        <div class="sticker-item"><img src="visuals/tangens.png" alt="Тангенс"></div>
-        <div class="sticker-item"><img src="visuals/kotangens.png" alt="Котангенс"></div>
-        <div class="sticker-item"><img src="visuals/arksinus.png" alt="Арксинус"></div>
-        <div class="sticker-item"><img src="visuals/arkkosinys.png" alt="Арккосинус"></div>
-        <div class="sticker-item"><img src="visuals/arktangens.png" alt="Арктангенс"></div>
-        <div class="sticker-item"><img src="visuals/arkkotangens.png" alt="Арккотангенс"></div>
-        <div class="sticker-item"><img src="visuals/trig2_sin.png" alt="Синус"></div>
-        <div class="sticker-item"><img src="visuals/trig2_cot.png" alt="Котангенс"></div>
-        <div class="sticker-item"><img src="visuals/trig2_arccos.png" alt="Арккосинус"></div>
-        <div class="sticker-item"><img src="visuals/trig_keri.png" alt="Кері тригонометриялық функциялар"></div>
+        <div class="sticker-item" data-src="visuals/sinus.png"><img src="visuals/sinus.png" alt="Синус"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/cosinus.png"><img src="visuals/cosinus.png" alt="Косинус"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/tangens.png"><img src="visuals/tangens.png" alt="Тангенс"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/kotangens.png"><img src="visuals/kotangens.png" alt="Котангенс"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/arksinus.png"><img src="visuals/arksinus.png" alt="Арксинус"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/arkkosinys.png"><img src="visuals/arkkosinys.png" alt="Арккосинус"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/arktangens.png"><img src="visuals/arktangens.png" alt="Арктангенс"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/arkkotangens.png"><img src="visuals/arkkotangens.png" alt="Арккотангенс"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/trig2_sin.png"><img src="visuals/trig2_sin.png" alt="Синус"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/trig2_cot.png"><img src="visuals/trig2_cot.png" alt="Котангенс"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/trig2_arccos.png"><img src="visuals/trig2_arccos.png" alt="Арккосинус"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/trig_keri.png"><img src="visuals/trig_keri.png" alt="Кері тригонометриялық функциялар"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+      </div>
+      <div class="sticker-card-footer">
+        <button class="btn-dl-set" data-set="trig">⬇ Барлық тригонометрия стикерлерін жүктеу</button>
       </div>
     </div>
 
+    <!-- ЖЕКЕ КӨБЕЙТУ -->
     <div class="sticker-card" style="grid-column:1/-1">
       <div class="sticker-card-header">
         <h2>Жеке көбейту формулалары</h2>
@@ -187,12 +222,16 @@
         <span class="sticker-card-meta">3 стикер · 7–9 сынып</span>
       </div>
       <div class="sticker-grid" style="grid-template-columns:repeat(3,1fr)">
-        <div class="sticker-item"><img src="visuals/formula_qosyndy_kv.png" alt="Қосындының квадраты"></div>
-        <div class="sticker-item"><img src="visuals/formula_ayrma_kv.png" alt="Айырманың квадраты"></div>
-        <div class="sticker-item"><img src="visuals/formula_kv_ayrma.png" alt="Кваттар айырмасы"></div>
+        <div class="sticker-item" data-src="visuals/formula_qosyndy_kv.png"><img src="visuals/formula_qosyndy_kv.png" alt="Қосындының квадраты"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/formula_ayrma_kv.png"><img src="visuals/formula_ayrma_kv.png" alt="Айырманың квадраты"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/formula_kv_ayrma.png"><img src="visuals/formula_kv_ayrma.png" alt="Кваттар айырмасы"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+      </div>
+      <div class="sticker-card-footer">
+        <button class="btn-dl-set" data-set="formula">⬇ Барлық формула стикерлерін жүктеу</button>
       </div>
     </div>
 
+    <!-- ГЕОМЕТРИЯ -->
     <div class="sticker-card" style="grid-column:1/-1">
       <div class="sticker-card-header">
         <h2>Геометрия формулалары</h2>
@@ -200,12 +239,16 @@
         <span class="sticker-card-meta">3 стикер · 7–9 сынып</span>
       </div>
       <div class="sticker-grid" style="grid-template-columns:repeat(3,1fr)">
-        <div class="sticker-item"><img src="visuals/geom_pifagor.png" alt="Пифагор теоремасы"></div>
-        <div class="sticker-item"><img src="visuals/geom_triangle.png" alt="Үшбұрыш ауданы"></div>
-        <div class="sticker-item"><img src="visuals/geom_circle.png" alt="Дөңгелек ауданы"></div>
+        <div class="sticker-item" data-src="visuals/geom_pifagor.png"><img src="visuals/geom_pifagor.png" alt="Пифагор теоремасы"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/geom_triangle.png"><img src="visuals/geom_triangle.png" alt="Үшбұрыш ауданы"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/geom_circle.png"><img src="visuals/geom_circle.png" alt="Дөңгелек ауданы"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+      </div>
+      <div class="sticker-card-footer">
+        <button class="btn-dl-set" data-set="geom">⬇ Барлық геометрия стикерлерін жүктеу</button>
       </div>
     </div>
 
+    <!-- САБАҚ КЕЗЕҢДЕРІ -->
     <div class="sticker-card" style="grid-column:1/-1">
       <div class="sticker-card-header">
         <h2>Сабақ кезеңдері</h2>
@@ -213,14 +256,18 @@
         <span class="sticker-card-meta">5 стикер · есеп шешу алгоритмі</span>
       </div>
       <div class="sticker-grid" style="grid-template-columns:repeat(5,1fr)">
-        <div class="sticker-item"><img src="visuals/lesson_tusin1.png" alt="1 Түсін"></div>
-        <div class="sticker-item"><img src="visuals/lesson_tusin2.png" alt="1 Түсін"></div>
-        <div class="sticker-item"><img src="visuals/lesson_zhosparla.png" alt="2 Жоспарла"></div>
-        <div class="sticker-item"><img src="visuals/lesson_shesh.png" alt="3 Шеш"></div>
-        <div class="sticker-item"><img src="visuals/lesson_tekser.png" alt="4 Тексер"></div>
+        <div class="sticker-item" data-src="visuals/lesson_tusin1.png"><img src="visuals/lesson_tusin1.png" alt="1 Түсін"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/lesson_tusin2.png"><img src="visuals/lesson_tusin2.png" alt="1 Түсін"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/lesson_zhosparla.png"><img src="visuals/lesson_zhosparla.png" alt="2 Жоспарла"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/lesson_shesh.png"><img src="visuals/lesson_shesh.png" alt="3 Шеш"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/lesson_tekser.png"><img src="visuals/lesson_tekser.png" alt="4 Тексер"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+      </div>
+      <div class="sticker-card-footer">
+        <button class="btn-dl-set" data-set="lesson">⬇ Барлық сабақ кезеңі стикерлерін жүктеу</button>
       </div>
     </div>
 
+    <!-- АНИМЕ -->
     <div class="sticker-card" style="grid-column:1/-1">
       <div class="sticker-card-header">
         <h2>Аниме стилі</h2>
@@ -228,12 +275,16 @@
         <span class="sticker-card-meta">3 стикер · бірдей кейіпкерлер</span>
       </div>
       <div class="sticker-grid" style="grid-template-columns:repeat(3,1fr)">
-        <div class="sticker-item"><img src="visuals/anime_trig.png" alt="Тригонометриялық функциялар (аниме)"></div>
-        <div class="sticker-item"><img src="visuals/anime_algebra.png" alt="Алгебра (аниме)"></div>
-        <div class="sticker-item"><img src="visuals/anime_lesson.png" alt="Ашық сабақ рефлексиясы (аниме)"></div>
+        <div class="sticker-item" data-src="visuals/anime_trig.png"><img src="visuals/anime_trig.png" alt="Тригонометриялық функциялар (аниме)"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/anime_algebra.png"><img src="visuals/anime_algebra.png" alt="Алгебра (аниме)"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/anime_lesson.png"><img src="visuals/anime_lesson.png" alt="Ашық сабақ рефлексиясы (аниме)"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+      </div>
+      <div class="sticker-card-footer">
+        <button class="btn-dl-set" data-set="anime">⬇ Барлық аниме стикерлерін жүктеу</button>
       </div>
     </div>
 
+    <!-- АКВАРЕЛЬ -->
     <div class="sticker-card" style="grid-column:1/-1">
       <div class="sticker-card-header">
         <h2>Акварель стилі</h2>
@@ -241,12 +292,16 @@
         <span class="sticker-card-meta">3 стикер · бірдей кейіпкерлер</span>
       </div>
       <div class="sticker-grid" style="grid-template-columns:repeat(3,1fr)">
-        <div class="sticker-item"><img src="visuals/watercolor_trig.png" alt="Тригонометриялық функциялар (акварель)"></div>
-        <div class="sticker-item"><img src="visuals/watercolor_math.png" alt="Математика (акварель)"></div>
-        <div class="sticker-item"><img src="visuals/watercolor_lesson.png" alt="Ашық сабақ рефлексиясы (акварель)"></div>
+        <div class="sticker-item" data-src="visuals/watercolor_trig.png"><img src="visuals/watercolor_trig.png" alt="Тригонометриялық функциялар (акварель)"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/watercolor_math.png"><img src="visuals/watercolor_math.png" alt="Математика (акварель)"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/watercolor_lesson.png"><img src="visuals/watercolor_lesson.png" alt="Ашық сабақ рефлексиясы (акварель)"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+      </div>
+      <div class="sticker-card-footer">
+        <button class="btn-dl-set" data-set="watercolor">⬇ Барлық акварель стикерлерін жүктеу</button>
       </div>
     </div>
 
+    <!-- ДЕКОР -->
     <div class="sticker-card" style="grid-column:1/-1">
       <div class="sticker-card-header">
         <h2>Математика декоры</h2>
@@ -254,12 +309,16 @@
         <span class="sticker-card-meta">3 стикер · безендіру</span>
       </div>
       <div class="sticker-grid" style="grid-template-columns:repeat(3,1fr)">
-        <div class="sticker-item"><img src="visuals/decor_3d.png" alt="Математика 3D"></div>
-        <div class="sticker-item"><img src="visuals/decor_flat.png" alt="Математика флет дизайн"></div>
-        <div class="sticker-item"><img src="visuals/decor_kawaii.png" alt="Математика kawaii"></div>
+        <div class="sticker-item" data-src="visuals/decor_3d.png"><img src="visuals/decor_3d.png" alt="Математика 3D"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/decor_flat.png"><img src="visuals/decor_flat.png" alt="Математика флет дизайн"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/decor_kawaii.png"><img src="visuals/decor_kawaii.png" alt="Математика kawaii"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+      </div>
+      <div class="sticker-card-footer">
+        <button class="btn-dl-set" data-set="decor">⬇ Барлық декор стикерлерін жүктеу</button>
       </div>
     </div>
 
+    <!-- БАҒАЛАУ -->
     <div class="sticker-card" style="grid-column:1/-1">
       <div class="sticker-card-header">
         <h2>Бағалау және рефлексия</h2>
@@ -267,11 +326,15 @@
         <span class="sticker-card-meta">2 стикер · ашық сабақ · бағалау парағы</span>
       </div>
       <div class="sticker-grid" style="grid-template-columns:repeat(2,1fr)">
-        <div class="sticker-item"><img src="visuals/reflex_ashyk.png" alt="Ашық сабақ қалай өтті?"></div>
-        <div class="sticker-item"><img src="visuals/reflex_bagalau.png" alt="Бағалау парағы"></div>
+        <div class="sticker-item" data-src="visuals/reflex_ashyk.png"><img src="visuals/reflex_ashyk.png" alt="Ашық сабақ қалай өтті?"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/reflex_bagalau.png"><img src="visuals/reflex_bagalau.png" alt="Бағалау парағы"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+      </div>
+      <div class="sticker-card-footer">
+        <button class="btn-dl-set" data-set="reflex">⬇ Барлық бағалау стикерлерін жүктеу</button>
       </div>
     </div>
 
+    <!-- МАТЕМАТИКТЕР -->
     <div class="sticker-card" style="grid-column:1/-1">
       <div class="sticker-card-header">
         <h2>Ұлы математиктер</h2>
@@ -279,15 +342,19 @@
         <span class="sticker-card-meta">6 стикер · дәйексөздер</span>
       </div>
       <div class="sticker-grid" style="grid-template-columns:repeat(3,1fr)">
-        <div class="sticker-item"><img src="visuals/kantor1.png" alt="Георг Кантор"></div>
-        <div class="sticker-item"><img src="visuals/gilbert.png" alt="Давид Гильберт"></div>
-        <div class="sticker-item"><img src="visuals/gauss.png" alt="Карл Фридрих Гаусс"></div>
-        <div class="sticker-item"><img src="visuals/kantor2.png" alt="Георг Кантор"></div>
-        <div class="sticker-item"><img src="visuals/puankare.png" alt="Анри Пуанкаре"></div>
-        <div class="sticker-item"><img src="visuals/math_quotes_strips.png" alt="Математиктер дәйексөздері"></div>
+        <div class="sticker-item" data-src="visuals/kantor1.png"><img src="visuals/kantor1.png" alt="Георг Кантор"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/gilbert.png"><img src="visuals/gilbert.png" alt="Давид Гильберт"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/gauss.png"><img src="visuals/gauss.png" alt="Карл Фридрих Гаусс"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/kantor2.png"><img src="visuals/kantor2.png" alt="Георг Кантор"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/puankare.png"><img src="visuals/puankare.png" alt="Анри Пуанкаре"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/math_quotes_strips.png"><img src="visuals/math_quotes_strips.png" alt="Математиктер дәйексөздері"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+      </div>
+      <div class="sticker-card-footer">
+        <button class="btn-dl-set" data-set="math_hist">⬇ Барлық математиктер стикерлерін жүктеу</button>
       </div>
     </div>
 
+    <!-- ҰСТАЗДАР КҮНІ -->
     <div class="sticker-card" style="grid-column:1/-1">
       <div class="sticker-card-header">
         <h2>Құрметті ұстаз!</h2>
@@ -295,35 +362,132 @@
         <span class="sticker-card-meta">10 стикер · мұғалімдер күні</span>
       </div>
       <div class="sticker-grid" style="grid-template-columns:repeat(5,1fr)">
-        <div class="sticker-item"><img src="visuals/ustaz1.png" alt="Құрметті ұстаз 1"></div>
-        <div class="sticker-item"><img src="visuals/ustaz2.png" alt="Құрметті ұстаз 2"></div>
-        <div class="sticker-item"><img src="visuals/ustaz3.png" alt="Құрметті ұстаз 3"></div>
-        <div class="sticker-item"><img src="visuals/ustaz4.png" alt="Құрметті ұстаз 4"></div>
-        <div class="sticker-item"><img src="visuals/ustaz5.png" alt="Құрметті ұстаз 5"></div>
-        <div class="sticker-item"><img src="visuals/ustaz6.png" alt="Құрметті ұстаз 6"></div>
-        <div class="sticker-item"><img src="visuals/ustaz7.png" alt="Құрметті ұстаз 7"></div>
-        <div class="sticker-item"><img src="visuals/ustaz8.png" alt="Құрметті ұстаз 8"></div>
-        <div class="sticker-item"><img src="visuals/ustaz9.png" alt="Құрметті ұстаз 9"></div>
-        <div class="sticker-item"><img src="visuals/ustaz10.png" alt="Құрметті ұстаз 10"></div>
+        <div class="sticker-item" data-src="visuals/ustaz1.png"><img src="visuals/ustaz1.png" alt="Құрметті ұстаз 1"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/ustaz2.png"><img src="visuals/ustaz2.png" alt="Құрметті ұстаз 2"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/ustaz3.png"><img src="visuals/ustaz3.png" alt="Құрметті ұстаз 3"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/ustaz4.png"><img src="visuals/ustaz4.png" alt="Құрметті ұстаз 4"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/ustaz5.png"><img src="visuals/ustaz5.png" alt="Құрметті ұстаз 5"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/ustaz6.png"><img src="visuals/ustaz6.png" alt="Құрметті ұстаз 6"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/ustaz7.png"><img src="visuals/ustaz7.png" alt="Құрметті ұстаз 7"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/ustaz8.png"><img src="visuals/ustaz8.png" alt="Құрметті ұстаз 8"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/ustaz9.png"><img src="visuals/ustaz9.png" alt="Құрметті ұстаз 9"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+        <div class="sticker-item" data-src="visuals/ustaz10.png"><img src="visuals/ustaz10.png" alt="Құрметті ұстаз 10"><div class="sticker-overlay"><button class="sticker-dl-btn">⬇ Жүктеу</button></div></div>
+      </div>
+      <div class="sticker-card-footer">
+        <button class="btn-dl-set" data-set="ustaz">⬇ Барлық ұстаз стикерлерін жүктеу</button>
       </div>
     </div>
 
   </div>
 </div>
 
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">GoTAB Premium</div>
+    <div class="modal-sub">Барлық материалдарға толық қол жеткізу</div>
+    <div class="price-tag">
+      <div class="price-amount">4 990 ₸</div>
+      <div class="price-period">1 айға жазылу</div>
+    </div>
+    <div class="payment-info">
+      <div class="payment-info-row">
+        <span class="payment-label">Аудару арқылы</span>
+        <span class="kaspi-badge">
+          <svg width="56" height="20" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="56" height="20" rx="5" fill="#E31E24"/>
+            <text x="28" y="14" font-family="Arial,sans-serif" font-size="11" font-weight="800" fill="white" text-anchor="middle" letter-spacing="0.5">Kaspi</text>
+          </svg>
+        </span>
+      </div>
+      <div class="payment-info-row">
+        <span class="payment-label">Телефон нөмірі</span>
+        <span class="payment-phone">+7 705 251 9022</span>
+      </div>
+      <div class="payment-info-row">
+        <span class="payment-label">Аты</span>
+        <span class="payment-value">Гульмира К.</span>
+      </div>
+    </div>
+    <button class="btn-whatsapp" onclick="sendReceipt()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      Чекті WhatsApp арқылы жіберу
+    </button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script>
+let userIsPaid = false;
+
 (async () => {
   const user = await requireAuth();
   if (!user) return;
   document.getElementById('userName').textContent = user.user_metadata?.name || user.email;
+
+  try {
+    const timer = new Promise(r => setTimeout(() => r(null), 3000));
+    const query = sb.from('profiles').select('is_paid').eq('id', user.id).single();
+    const { data: profile } = await Promise.race([query, timer.then(() => ({ data: null }))]);
+    userIsPaid = profile?.is_paid || false;
+  } catch (_) { userIsPaid = false; }
+
+  if (!userIsPaid) {
+    document.getElementById('payBar').style.display = 'flex';
+  }
+
+  initDownloads();
 })();
+
+function initDownloads() {
+  // Single sticker download
+  document.querySelectorAll('.sticker-item').forEach(item => {
+    item.addEventListener('click', () => {
+      if (!userIsPaid) { openModal(); return; }
+      const src = item.dataset.src;
+      if (!src) return;
+      const a = document.createElement('a');
+      a.href = src; a.download = src.split('/').pop(); a.click();
+    });
+  });
+
+  // Download all in a card
+  document.querySelectorAll('.btn-dl-set').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!userIsPaid) { openModal(); return; }
+      const card = btn.closest('.sticker-card');
+      const items = card.querySelectorAll('.sticker-item[data-src]');
+      items.forEach((item, n) => {
+        setTimeout(() => {
+          const a = document.createElement('a');
+          a.href = item.dataset.src;
+          a.download = item.dataset.src.split('/').pop();
+          a.click();
+        }, n * 350);
+      });
+      btn.textContent = '✓ Жүктелуде...';
+      setTimeout(() => { btn.textContent = btn.textContent.replace('Жүктелуде...', 'Жүктелді'); }, items.length * 350 + 500);
+    });
+  });
+}
 
 async function logout() {
   localStorage.removeItem('gotab_last_page');
   await sb.auth.signOut();
   window.location.href = 'index.html';
+}
+
+function openModal()  { document.getElementById('payModal').classList.add('open'); }
+function closeModal() { document.getElementById('payModal').classList.remove('open'); }
+document.getElementById('payModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+function sendReceipt() {
+  const msg = encodeURIComponent('Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. Чекті жіберемін.');
+  window.open(`https://wa.me/77055894347?text=${msg}`, '_blank');
 }
 </script>
 <script src="math-bg.js"></script>
