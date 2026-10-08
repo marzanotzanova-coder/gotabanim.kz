@@ -330,6 +330,10 @@ tr:hover td{background:#f8faff}
     </div>
     <div class="progress-bar-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
     <div class="upload-result" id="uploadResult"></div>
+    <button class="btn-add-save" id="uploadBtn" onclick="uploadVideo()"
+      style="display:none;margin-top:12px;width:100%;padding:13px;font-size:14px">
+      ⬆ Жүктеу
+    </button>
   </div>
 
 </div>
@@ -469,9 +473,18 @@ function renderLessons() {
         <span>Бейне: ${l.video_url ? 'бар' : 'жоқ'}</span>
       </div>
       <div class="lesson-actions">
-        ${l.ppt_url   ? `<a class="btn-ppt"        href="${l.ppt_url}"   target="_blank">⬇ PPT</a>` : ''}
-        ${l.qmj_url   ? `<a class="btn-video-link" href="${l.qmj_url}"   target="_blank">⬇ ҚМЖ</a>` : ''}
-        ${l.video_url ? `<a class="btn-video-link" href="${l.video_url}" target="_blank">▶ Бейне</a>` : ''}
+        ${l.ppt_url
+          ? `<a class="btn-ppt" href="${l.ppt_url}" target="_blank">⬇ PPT</a>
+             <button class="btn-ppt" data-replace="${l.id}-ppt" onclick="replaceFile('${l.id}','ppt')" style="background:rgba(26,86,219,.06)">↺ PPT ауыстыру</button>`
+          : `<button class="btn-ppt" onclick="replaceFile('${l.id}','ppt')">+ PPT қосу</button>`}
+        ${l.qmj_url
+          ? `<a class="btn-video-link" href="${l.qmj_url}" target="_blank">⬇ ҚМЖ</a>
+             <button class="btn-video-link" data-replace="${l.id}-qmj" onclick="replaceFile('${l.id}','qmj')" style="background:rgba(16,185,129,.06)">↺ ҚМЖ ауыстыру</button>`
+          : `<button class="btn-video-link" onclick="replaceFile('${l.id}','qmj')">+ ҚМЖ қосу</button>`}
+        ${l.video_url
+          ? `<a class="btn-video-link" href="${l.video_url}" target="_blank">▶ Бейне</a>
+             <button class="btn-video-link" data-replace="${l.id}-video" onclick="replaceFile('${l.id}','video')" style="background:rgba(139,92,246,.06)">↺ Бейне ауыстыру</button>`
+          : `<button class="btn-video-link" onclick="replaceFile('${l.id}','video')">+ Бейне қосу</button>`}
       </div>
     </div>
   `).join('');
@@ -555,7 +568,7 @@ function handleFileSelect(file) {
   pendingFile = file;
   document.getElementById('uploadZone').querySelector('.upload-hint').innerHTML =
     `📎 <b>${file.name}</b> (${(file.size/1024/1024).toFixed(1)} MB)`;
-  uploadVideo();
+  document.getElementById('uploadBtn').style.display = 'block';
 }
 
 function handleDrop(e) {
@@ -633,8 +646,55 @@ async function uploadVideo() {
   result.innerHTML = `✓ Жүктелді! <a href="${publicUrl}" target="_blank" style="color:inherit">Ашу →</a>`;
   result.style.display = 'block';
   pendingFile = null;
+  document.getElementById('uploadBtn').style.display = 'none';
   document.getElementById('uploadZone').querySelector('.upload-hint').innerHTML =
     'Бейнені осыған сүйреңіз немесе <b>файл таңдаңыз</b>';
+}
+
+// ── Файлды ауыстыру (PPT / ҚМЖ / бейне) ──
+function replaceFile(lessonId, type) {
+  const lesson = allLessons.find(l => l.id === lessonId);
+  if (!lesson) return;
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  if (type === 'ppt')        input.accept = '.ppt,.pptx';
+  else if (type === 'qmj')   input.accept = '.doc,.docx,.pdf';
+  else                       input.accept = 'video/*,.mp4,.mov';
+
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+
+    const statusKey = `replace_status_${lessonId}_${type}`;
+    const btnEl = document.querySelector(`[data-replace="${lessonId}-${type}"]`);
+    if (btnEl) { btnEl.textContent = 'Жүктелуде...'; btnEl.disabled = true; }
+
+    const ext  = file.name.split('.').pop();
+    const path = `grade${lesson.grade}/lesson${lesson.lesson_num}/${type}_${Date.now()}.${ext}`;
+
+    const { error: upErr } = await sb.storage.from('lesson-videos')
+      .upload(path, file, { upsert: true, contentType: file.type });
+
+    if (upErr) {
+      if (btnEl) { btnEl.textContent = type === 'ppt' ? 'PPT ауыстыру' : type === 'qmj' ? 'ҚМЖ ауыстыру' : 'Бейне ауыстыру'; btnEl.disabled = false; }
+      alert('Жүктеу қатесі: ' + upErr.message);
+      return;
+    }
+
+    const { data: urlData } = sb.storage.from('lesson-videos').getPublicUrl(path);
+    const update = {};
+    if (type === 'ppt')      update.ppt_url   = urlData.publicUrl;
+    else if (type === 'qmj') update.qmj_url   = urlData.publicUrl;
+    else                     update.video_url  = urlData.publicUrl;
+
+    const { error: dbErr } = await sb.from('materials').update(update).eq('id', lessonId);
+    if (dbErr) { alert('Сақтау қатесі: ' + dbErr.message); return; }
+
+    await loadLessons();
+  };
+
+  input.click();
 }
 </script>
 <script src="math-bg.js"></script>
