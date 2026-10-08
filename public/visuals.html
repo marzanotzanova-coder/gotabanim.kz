@@ -450,8 +450,9 @@ let currentUser = null;
 
   try {
     const timer = new Promise(r => setTimeout(() => r(null), 3000));
-    const query = sb.from('profiles').select('is_paid,paid_until').eq('id', user.id).single();
+    const query = sb.from('profiles').select('is_paid,paid_until,is_banned').eq('id', user.id).single();
     const { data: profile } = await Promise.race([query, timer.then(() => ({ data: null }))]);
+    if (profile?.is_banned) { await sb.auth.signOut(); window.location.href = 'login.html?banned=1'; return; }
     userIsPaid = !!(profile?.is_paid && profile?.paid_until && new Date(profile.paid_until) > new Date());
   } catch (_) { userIsPaid = false; }
 

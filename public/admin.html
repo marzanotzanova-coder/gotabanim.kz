@@ -76,6 +76,11 @@ tr:hover td{background:#f8faff}
 .btn-toggle-paid.make-paid:hover{background:rgba(16,185,129,.22)}
 .btn-toggle-paid.make-unpaid{background:rgba(239,68,68,.08);color:#dc2626}
 .btn-toggle-paid.make-unpaid:hover{background:rgba(239,68,68,.16)}
+.btn-ban{padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;border:none;transition:all .2s;background:rgba(239,68,68,.12);color:#dc2626;margin-left:4px}
+.btn-ban:hover{background:rgba(239,68,68,.25)}
+.btn-unban{padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;border:none;transition:all .2s;background:rgba(16,185,129,.12);color:#059669;margin-left:4px}
+.btn-unban:hover{background:rgba(16,185,129,.22)}
+.badge-banned{padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700;background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.3)}
 
 .admin-nav-badge{padding:3px 10px;border-radius:100px;background:rgba(26,86,219,.08);border:1px solid rgba(26,86,219,.2);font-size:11px;font-weight:700;color:var(--primary)}
 
@@ -460,15 +465,22 @@ function renderTable(users) {
     const expiryStr = u.paid_until
       ? new Date(u.paid_until).toLocaleDateString('ru-RU', {day:'2-digit',month:'2-digit',year:'numeric'})
       : null;
-    const paidBadge = isActive
-      ? `<span class="badge-expiry">✓ ${daysLeft} күн қалды · ${expiryStr}</span>`
-      : u.is_paid && u.paid_until
-        ? `<span class="badge-expired">Мерзімі өтті ${expiryStr}</span>`
-        : `<span class="badge-unpaid">Төленбеген</span>`;
-    const toggleBtn = isActive
-      ? `<button class="btn-toggle-paid make-unpaid" onclick="togglePaid('${u.id}',false)">Болдырмау</button>`
-      : `<button class="btn-toggle-paid make-paid" onclick="togglePaid('${u.id}',true)">✓ 1 ай белсендіру</button>`;
-    return `<tr>
+    const isBanned = !!u.is_banned;
+    const paidBadge = isBanned
+      ? `<span class="badge-banned">🚫 Блокталған</span>`
+      : isActive
+        ? `<span class="badge-expiry">✓ ${daysLeft} күн қалды · ${expiryStr}</span>`
+        : u.is_paid && u.paid_until
+          ? `<span class="badge-expired">Мерзімі өтті ${expiryStr}</span>`
+          : `<span class="badge-unpaid">Төленбеген</span>`;
+    const toggleBtn = isBanned
+      ? `<button class="btn-unban" onclick="unbanUser('${u.id}')">✓ Блокты алу</button>`
+      : isActive
+        ? `<button class="btn-toggle-paid make-unpaid" onclick="togglePaid('${u.id}',false)">Болдырмау</button>
+           <button class="btn-ban" onclick="banUser('${u.id}','${u.name||u.email}')">🚫 Блоктау</button>`
+        : `<button class="btn-toggle-paid make-paid" onclick="togglePaid('${u.id}',true)">✓ 1 ай белсендіру</button>
+           <button class="btn-ban" onclick="banUser('${u.id}','${u.name||u.email}')">🚫 Блоктау</button>`;
+    return `<tr style="${isBanned?'opacity:.55;background:#fff5f5':''}">
       <td data-label="#">${i+1}</td>
       <td data-label="Аты-жөні" class="td-name">${u.name||'—'}</td>
       <td data-label="Email" class="td-email">${u.email||'—'}</td>
@@ -482,6 +494,19 @@ function renderTable(users) {
 
 async function togglePaid(userId, paid) {
   const { error } = await sb.rpc('set_user_paid', { user_id: userId, paid });
+  if (error) { alert('Қате: ' + error.message); return; }
+  await loadUsers();
+}
+
+async function banUser(userId, userName) {
+  if (!confirm(`«${userName}» пайдаланушысын блоктайсыз ба?\nОл жазылымнан шығарылып, сайтқа кіре алмайды.`)) return;
+  const { error } = await sb.rpc('ban_user', { uid: userId });
+  if (error) { alert('Қате: ' + error.message); return; }
+  await loadUsers();
+}
+
+async function unbanUser(userId) {
+  const { error } = await sb.rpc('unban_user', { uid: userId });
   if (error) { alert('Қате: ' + error.message); return; }
   await loadUsers();
 }

@@ -40,6 +40,13 @@
 <script>
 redirectIfLoggedIn();
 
+// Бан хабарламасы
+if (new URLSearchParams(location.search).get('banned') === '1') {
+  const e = document.getElementById('errMsg');
+  e.textContent = '🚫 Сіздің аккаунтіңіз блокталған. Қосымша ақпарат үшін хабарласыңыз.';
+  e.style.display = 'block';
+}
+
 async function handleLogin(e) {
   e.preventDefault();
   const errMsg = document.getElementById('errMsg');
