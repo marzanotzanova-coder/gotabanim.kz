@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoTAB — Ойындар</title>
+<link rel="stylesheet" href="gotab.css">
+<style>
+.games-page{min-height:100vh;padding:40px 20px;background:var(--bg)}
+.games-header{text-align:center;margin-bottom:48px}
+.games-header h1{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px;margin-bottom:6px}
+.games-header p{font-size:14px;color:var(--muted)}
+.games-grid{
+  max-width:900px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:24px;
+}
+.game-card{
+  background:#fff;border:1px solid #dde5f4;border-radius:20px;
+  overflow:hidden;transition:all .25s;
+  box-shadow:0 4px 16px rgba(26,86,219,.07);
+}
+.game-card:hover{transform:translateY(-4px);border-color:rgba(26,86,219,.3);box-shadow:0 12px 32px rgba(26,86,219,.14)}
+.game-card-banner{
+  height:180px;position:relative;
+  background:linear-gradient(135deg,#050810 0%,#0a0e1a 60%,#050810 100%);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.game-card-banner::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 30%,rgba(0,30,80,.5),transparent 70%);
+}
+.game-card-banner-title{
+  position:relative;z-index:1;text-align:center;
+}
+.game-card-banner-title span{
+  font-family:'Inter',sans-serif;font-size:22px;font-weight:900;
+  color:#fff;letter-spacing:4px;
+  text-shadow:0 0 30px rgba(0,212,255,.5);
+  display:block;
+}
+.game-card-banner-title small{
+  font-size:10px;color:rgba(0,212,255,.7);letter-spacing:3px;font-weight:600;
+  display:block;margin-top:4px;
+}
+.game-card-dots{
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(rgba(0,212,255,.12) 1px,transparent 1px);
+  background-size:20px 20px;
+}
+.game-card-body{padding:20px 22px 22px}
+.game-card-tag{
+  display:inline-block;padding:3px 10px;border-radius:100px;
+  font-size:11px;font-weight:700;letter-spacing:1px;
+  background:rgba(99,102,241,.10);color:#6366f1;
+  margin-bottom:12px;
+}
+.game-card-title{font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px}
+.game-card-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px}
+.game-card-meta{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.game-meta-item{
+  display:flex;align-items:center;gap:5px;
+  font-size:12px;color:#94a3b8;font-weight:600;
+}
+.game-meta-item svg{color:#1a56db}
+.btn-play{
+  display:block;width:100%;padding:12px;
+  background:linear-gradient(135deg,#050810,#0d1530);
+  border:1px solid rgba(0,212,255,.35);
+  border-radius:12px;color:#00d4ff;
+  font-size:14px;font-weight:700;letter-spacing:1px;
+  text-align:center;text-decoration:none;
+  transition:all .2s;
+  font-family:'Inter',sans-serif;cursor:pointer;
+}
+.btn-play:hover{
+  background:linear-gradient(135deg,#0d1530,#1a2040);
+  border-color:rgba(0,212,255,.7);
+  box-shadow:0 0 20px rgba(0,212,255,.2);
+}
+.soon-badge{
+  display:inline-block;padding:3px 10px;border-radius:100px;
+  font-size:11px;font-weight:700;
+  background:rgba(148,163,184,.1);color:#94a3b8;
+  margin-left:8px;
+}
+</style>
+</head>
+<body>
+<nav class="top-nav">
+  <img src="gotab_logo.png" alt="GoTAB">
+  <div class="nav-user">
+    <a href="visuals.html" style="padding:7px 16px;background:rgba(26,86,219,.08);border:1px solid rgba(26,86,219,.2);border-radius:8px;color:var(--primary);font-size:13px;font-weight:700;text-decoration:none;transition:all .2s" onmouseover="this.style.background='rgba(26,86,219,.15)'" onmouseout="this.style.background='rgba(26,86,219,.08)'">Көрнекіліктер</a>
+    <a href="games.html" style="padding:7px 16px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);border-radius:8px;color:#6366f1;font-size:13px;font-weight:700;text-decoration:none;transition:all .2s">Ойындар</a>
+    <span class="nav-user-name" id="userName"></span>
+    <button class="btn-logout" onclick="logout()">Шығу</button>
+  </div>
+</nav>
+
+<div class="games-page">
+  <div class="games-header">
+    <h1>Интерактивті ойындар</h1>
+    <p>Математиканы ойын арқылы үйрен</p>
+  </div>
+
+  <div class="games-grid">
+    <!-- Math Detective -->
+    <div class="game-card">
+      <div class="game-card-banner">
+        <div class="game-card-dots"></div>
+        <div class="game-card-banner-title">
+          <span>MATH</span>
+          <span>DETECTIVE</span>
+          <small>ЖОҒАЛҒАН ФОРМУЛАНЫҢ ҚҰПИЯСЫ</small>
+        </div>
+      </div>
+      <div class="game-card-body">
+        <div class="game-card-tag">10–11 СЫНЫП</div>
+        <div class="game-card-title">Math Detective</div>
+        <div class="game-card-desc">Кері тригонометриялық функциялар бойынша 9 тапсырмадан тұратын детектив ойыны. Айғақтарды жинап, сейфтің кодын аш!</div>
+        <div class="game-card-meta">
+          <div class="game-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ~20 минут
+          </div>
+          <div class="game-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            9 сұрақ
+          </div>
+          <div class="game-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            10–11 сынып
+          </div>
+        </div>
+        <a href="/game/" target="_blank" class="btn-play">ОЙЫНДЫ БАСТАУ →</a>
+      </div>
+    </div>
+
+    <!-- Placeholder card -->
+    <div class="game-card" style="opacity:.55;pointer-events:none">
+      <div class="game-card-banner" style="background:linear-gradient(135deg,#f8fafc,#eef2ff)">
+        <div style="font-size:48px">🚧</div>
+      </div>
+      <div class="game-card-body">
+        <div class="game-card-tag" style="background:rgba(148,163,184,.1);color:#94a3b8">ЖАҚЫНДА</div>
+        <div class="game-card-title">Келесі ойын <span class="soon-badge">SOON</span></div>
+        <div class="game-card-desc">Жаңа математика ойыны дайындалуда. Күтіп қалыңыз!</div>
+        <div class="btn-play" style="opacity:.4;cursor:not-allowed">ЖАҚЫНДА...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script>
+(async () => {
+  const user = await requireAuth();
+  if (!user) return;
+  const name = user.user_metadata?.name || user.email;
+  document.getElementById('userName').textContent = name;
+  if (user.email === ADMIN_EMAIL) {
+    const adminBtn = document.createElement('a');
+    adminBtn.href = 'admin.html';
+    adminBtn.textContent = 'Админ';
+    adminBtn.style.cssText = 'padding:7px 16px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);border-radius:8px;color:#c4b5fd;font-size:13px;font-weight:700;text-decoration:none';
+    document.querySelector('.nav-user').prepend(adminBtn);
+  }
+})();
+async function logout() {
+  localStorage.removeItem('gotab_last_page');
+  await sb.auth.signOut();
+  window.location.href = 'index.html';
+}
+</script>
+</body>
+</html>
