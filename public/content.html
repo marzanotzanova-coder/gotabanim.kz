@@ -333,6 +333,8 @@
   box-shadow:0 40px 80px rgba(0,0,0,.6);
   display:flex;flex-direction:column;
   max-height:92vh;
+  user-select:none;-webkit-user-select:none;
+  -webkit-touch-callout:none;
 }
 .preview-header{
   display:flex;align-items:center;justify-content:space-between;
@@ -359,9 +361,17 @@
 .carousel-slide{
   flex:0 0 100%;
   display:flex;align-items:center;justify-content:center;
+  position:relative;
+  user-select:none;-webkit-user-select:none;
 }
-.carousel-slide img{
+.carousel-slide canvas{
   width:100%;max-height:62vh;object-fit:contain;display:block;
+  pointer-events:none;
+  -webkit-user-drag:none;
+}
+.slide-protect-overlay{
+  position:absolute;inset:0;z-index:5;
+  background:transparent;cursor:default;
 }
 .carousel-btn{
   position:absolute;top:50%;transform:translateY(-50%);
@@ -900,6 +910,47 @@ async function sendReceipt() {
 let carouselIdx = 0;
 let carouselSlides = [];
 
+function drawWatermark(ctx, w, h, label) {
+  ctx.save();
+  ctx.globalAlpha = 0.13;
+  ctx.fillStyle = '#1a56db';
+  const fontSize = Math.max(14, Math.floor(w / 28));
+  ctx.font = `${fontSize}px Inter, Arial, sans-serif`;
+  ctx.translate(w / 2, h / 2);
+  ctx.rotate(-Math.PI / 6);
+  const stepX = Math.max(220, w / 3);
+  const stepY = Math.max(90, h / 4);
+  for (let x = -w; x < w; x += stepX) {
+    for (let y = -h; y < h; y += stepY) {
+      ctx.fillText('GoTAB  ' + label, x, y);
+    }
+  }
+  ctx.restore();
+}
+
+function renderSlideOnCanvas(canvas, src, label) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    canvas.width  = img.naturalWidth  || 1280;
+    canvas.height = img.naturalHeight || 720;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    drawWatermark(ctx, canvas.width, canvas.height, label);
+  };
+  img.onerror = () => {
+    canvas.width = 1280; canvas.height = 720;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0d1b35';
+    ctx.fillRect(0, 0, 1280, 720);
+    ctx.fillStyle = '#4b6cb7';
+    ctx.font = '28px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Слайд жүктелуде...', 640, 360);
+  };
+  img.src = src;
+}
+
 function openPreview(lesson, lessonNum) {
   carouselSlides = lesson.slides || [];
   carouselIdx = 0;
@@ -907,12 +958,25 @@ function openPreview(lesson, lessonNum) {
   document.getElementById('previewBadge').textContent = `Сабақ ${lessonNum + 1}`;
   document.getElementById('previewTitle').textContent = lesson.title;
 
+  const wmLabel = currentUser?.email || 'GoTAB.kz';
+
   const track = document.getElementById('carouselTrack');
   track.innerHTML = carouselSlides.map((src, i) =>
     `<div class="carousel-slide">
-       <img src="${src}" alt="Слайд ${i+1}" loading="${i===0?'eager':'lazy'}">
+       <canvas class="slide-canvas" id="sc-${i}"></canvas>
+       <div class="slide-protect-overlay"></div>
      </div>`
   ).join('');
+
+  // Render all canvases (only first immediately, rest deferred)
+  carouselSlides.forEach((src, i) => {
+    const canvas = document.getElementById(`sc-${i}`);
+    if (i === 0) {
+      renderSlideOnCanvas(canvas, src, wmLabel);
+    } else {
+      setTimeout(() => renderSlideOnCanvas(canvas, src, wmLabel), i * 80);
+    }
+  });
 
   const dots = document.getElementById('carouselDots');
   dots.innerHTML = carouselSlides.map((_, i) =>
@@ -946,11 +1010,30 @@ function carouselDraw() {
   );
 }
 
+// ── Security: block right-click, drag, copy on preview modal ──
+document.getElementById('previewModal').addEventListener('contextmenu', e => e.preventDefault());
+document.getElementById('previewModal').addEventListener('dragstart', e => e.preventDefault());
+document.getElementById('previewModal').addEventListener('selectstart', e => e.preventDefault());
+
+// ── Security: block keyboard shortcuts while preview is open ──
 document.addEventListener('keydown', e => {
-  if (!document.getElementById('previewModal').classList.contains('open')) return;
-  if (e.key === 'ArrowRight') carouselMove(1);
-  if (e.key === 'ArrowLeft')  carouselMove(-1);
-  if (e.key === 'Escape')     closePreview();
+  const modalOpen = document.getElementById('previewModal').classList.contains('open');
+  if (modalOpen) {
+    const key = e.key.toLowerCase();
+    // Block save, print, view-source, select-all, copy, screenshot
+    if ((e.ctrlKey || e.metaKey) && ['s','p','u','a','c','shift'].includes(key)) {
+      e.preventDefault(); return;
+    }
+    if (e.key === 'F12' || e.key === 'PrintScreen') { e.preventDefault(); return; }
+    // Allow navigation
+    if (e.key === 'ArrowRight') { carouselMove(1); return; }
+    if (e.key === 'ArrowLeft')  { carouselMove(-1); return; }
+    if (e.key === 'Escape')     { closePreview(); return; }
+    // Block everything else except navigation
+    if (!['Tab','ArrowUp','ArrowDown'].includes(e.key)) {
+      // Allow only specific keys
+    }
+  }
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
