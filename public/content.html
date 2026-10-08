@@ -555,6 +555,25 @@ let userIsPaid = false;
     userIsPaid = profile?.is_paid || false;
   } catch (_) { userIsPaid = false; }
 
+  // Supabase materials кестесінен сабақтарды алу
+  try {
+    const { data: sbMaterials } = await sb.from('materials')
+      .select('*')
+      .eq('grade', grade)
+      .eq('subject', subject)
+      .order('lesson_num');
+    if (sbMaterials && sbMaterials.length) {
+      render(sbMaterials.map(l => ({
+        title:  l.title,
+        ppt:    { meta: 'PPT',  src: l.ppt_url   || null, thumb: null },
+        slides: [],
+        qmj:    { meta: 'ҚМЖ', src: l.qmj_url   || null, thumb: null },
+        video:  { meta: 'MP4',  src: l.video_url || null }
+      })));
+      return;
+    }
+  } catch(_) {}
+
   render();
 })();
 
@@ -594,10 +613,10 @@ const CONTENT = {
   },
   8: {
     algebra: { lessons: [
+      {title:'Квадрат түбірлері бар өрнектерді тепе-тең түрлендіру', ppt:{meta:'15 слайд',src:'/materials/lesson-8-1-ppt.pptx',thumb:'/materials/lesson-8-1-slide1.jpeg'}, slides:['/materials/lesson-8-1-slide1.jpeg','/materials/lesson-8-1-slide2.jpeg','/materials/lesson-8-1-slide3.jpeg'], qmj:{meta:'Word · 4 бет',src:'/materials/lesson-8-1-qmj.docx',thumb:'/materials/lesson-8-1-qmj-thumb.jpeg'}, video:{meta:'Вертикаль · MP4',src:'/videos/8-synyp-Irracionaldyktan-Aryltu.mp4'}},
       {title:'Квадрат теңдеу',        ppt:{meta:'26 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'55 сек',src:null}},
       {title:'Дискриминант',          ppt:{meta:'22 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
       {title:'Квадрат функция',       ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
-      {title:'Иррационал теңдеулер',  ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
     ]},
     geometry: { lessons: [
       {title:'Дөңгелек және шеңбер',  ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
@@ -657,10 +676,10 @@ function wasDownloadedToday(idx) { return localStorage.getItem(dlKey(idx)) === T
 function markDone(idx) { localStorage.setItem(dlKey(idx), TODAY); }
 
 // ── Render ──
-function render() {
+function render(overrideLessons) {
   const subjectData = (CONTENT[grade] || CONTENT[5])[subject]
     || Object.values(CONTENT[grade] || CONTENT[5])[0];
-  const lessons = (subjectData && subjectData.lessons) || [];
+  const lessons = overrideLessons || (subjectData && subjectData.lessons) || [];
   const grid = document.getElementById('lessonsGrid');
 
   if (!lessons.length) {
