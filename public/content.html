@@ -951,8 +951,12 @@ function renderSlideOnCanvas(canvas, src, label) {
   img.src = src;
 }
 
-function openPreview(lesson, lessonNum) {
-  carouselSlides = lesson.slides || [];
+async function openPreview(lesson, lessonNum) {
+  const filenames = (lesson.slides || []).map(s =>
+    s.startsWith('/materials/') ? s.replace('/materials/', '') : s
+  );
+
+  carouselSlides = filenames; // placeholder
   carouselIdx = 0;
 
   document.getElementById('previewBadge').textContent = `Сабақ ${lessonNum + 1}`;
@@ -960,32 +964,44 @@ function openPreview(lesson, lessonNum) {
 
   const wmLabel = currentUser?.email || 'GoTAB.kz';
 
+  // Show modal immediately with loading placeholders
   const track = document.getElementById('carouselTrack');
-  track.innerHTML = carouselSlides.map((src, i) =>
+  track.innerHTML = filenames.map((_, i) =>
     `<div class="carousel-slide">
        <canvas class="slide-canvas" id="sc-${i}"></canvas>
        <div class="slide-protect-overlay"></div>
      </div>`
   ).join('');
 
-  // Render all canvases (only first immediately, rest deferred)
-  carouselSlides.forEach((src, i) => {
-    const canvas = document.getElementById(`sc-${i}`);
-    if (i === 0) {
-      renderSlideOnCanvas(canvas, src, wmLabel);
-    } else {
-      setTimeout(() => renderSlideOnCanvas(canvas, src, wmLabel), i * 80);
-    }
-  });
-
   const dots = document.getElementById('carouselDots');
-  dots.innerHTML = carouselSlides.map((_, i) =>
+  dots.innerHTML = filenames.map((_, i) =>
     `<button class="carousel-dot ${i===0?'active':''}" onclick="carouselGo(${i})"></button>`
   ).join('');
 
   carouselDraw();
   document.getElementById('previewModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // Fetch signed URLs from Supabase private bucket (valid 10 min)
+  let signedUrls = null;
+  try {
+    const { data, error } = await sb.storage
+      .from('slide-previews')
+      .createSignedUrls(filenames, 600);
+    if (!error && data) signedUrls = data.map(d => d.signedUrl);
+  } catch (e) { /* fallback to static */ }
+
+  // Render canvases
+  filenames.forEach((fname, i) => {
+    const canvas = document.getElementById(`sc-${i}`);
+    if (!canvas) return;
+    const url = signedUrls?.[i] || `/materials/${fname}`;
+    if (i === 0) {
+      renderSlideOnCanvas(canvas, url, wmLabel);
+    } else {
+      setTimeout(() => renderSlideOnCanvas(canvas, url, wmLabel), i * 80);
+    }
+  });
 }
 
 function closePreview() {
