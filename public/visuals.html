@@ -79,6 +79,49 @@
   border:1px solid rgba(26,86,219,.18);
 }
 
+/* Sticker collection card */
+.sticker-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:18px;overflow:hidden;
+  box-shadow:0 2px 10px rgba(26,86,219,.05);
+  transition:border-color .2s,transform .2s,box-shadow .2s;
+}
+.sticker-card:hover{
+  border-color:rgba(26,86,219,.35);
+  transform:translateY(-3px);
+  box-shadow:0 12px 32px rgba(26,86,219,.12);
+}
+.sticker-card-header{
+  padding:16px 18px 10px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.sticker-card-header h2{font-size:16px;font-weight:800;color:var(--text);margin:0}
+.sticker-card-header .visual-badge{position:static}
+.sticker-card-meta{font-size:12px;color:var(--muted);margin-left:auto}
+.sticker-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:0;
+}
+.sticker-item{
+  padding:10px;
+  border-right:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#eff6ff,#dbeafe);
+  cursor:pointer;
+  transition:background .2s;
+}
+.sticker-item:hover{background:linear-gradient(135deg,#dbeafe,#bfdbfe)}
+.sticker-item:nth-child(4n){border-right:none}
+.sticker-item:nth-last-child(-n+4){border-bottom:none}
+.sticker-item img{
+  width:100%;max-width:140px;height:auto;display:block;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.12));
+}
+
 /* Responsive */
 @media(max-width:600px){
   .visuals-page{padding:20px 12px 60px}
@@ -86,6 +129,11 @@
   .visuals-header-info h1{font-size:18px}
   .visuals-back{padding:7px 12px;font-size:12px}
   .visuals-grid{grid-template-columns:1fr}
+  .sticker-grid{grid-template-columns:repeat(2,1fr)}
+  .sticker-item:nth-child(4n){border-right:1px solid var(--border)}
+  .sticker-item:nth-child(2n){border-right:none}
+  .sticker-item:nth-last-child(-n+4){border-bottom:1px solid var(--border)}
+  .sticker-item:nth-last-child(-n+2){border-bottom:none}
 }
 </style>
 </head>
@@ -109,7 +157,25 @@
   </div>
 
   <div class="visuals-grid" id="visualsGrid">
-    <!-- Content will be added here -->
+
+    <div class="sticker-card" style="grid-column:1/-1">
+      <div class="sticker-card-header">
+        <h2>Тригонометрия көрнекіліктері</h2>
+        <span class="visual-badge badge-algebra">Алгебра</span>
+        <span class="sticker-card-meta">8 стикер · 10–11 сынып</span>
+      </div>
+      <div class="sticker-grid">
+        <div class="sticker-item"><img src="visuals/sinus.png" alt="Синус"></div>
+        <div class="sticker-item"><img src="visuals/cosinus.png" alt="Косинус"></div>
+        <div class="sticker-item"><img src="visuals/tangens.png" alt="Тангенс"></div>
+        <div class="sticker-item"><img src="visuals/kotangens.png" alt="Котангенс"></div>
+        <div class="sticker-item"><img src="visuals/arksinus.png" alt="Арксинус"></div>
+        <div class="sticker-item"><img src="visuals/arkkosinys.png" alt="Арккосинус"></div>
+        <div class="sticker-item"><img src="visuals/arktangens.png" alt="Арктангенс"></div>
+        <div class="sticker-item"><img src="visuals/arkkotangens.png" alt="Арккотангенс"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
