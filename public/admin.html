@@ -385,20 +385,40 @@ let allUsers = [];
 const MONTHS = ['қаңтар','ақпан','наурыз','сәуір','мамыр','маусым','шілде','тамыз','қыркүйек','қазан','қараша','желтоқсан'];
 
 (async () => {
-  const user = await requireAuth();
-  if (!user) return;
+  try {
+    const user = await requireAuth();
+    if (!user) return;
 
-  if (user.email !== ADMIN_EMAIL) {
-    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:12px;font-family:'Inter',sans-serif">
-      <div style="font-size:48px">🔒</div>
-      <div style="color:#dc2626;font-size:18px;font-weight:700">Рұқсат жоқ</div>
-      <a href="dashboard.html" style="color:#1a56db;font-size:14px">← Артқа</a>
-    </div>`;
-    return;
+    if (user.email !== ADMIN_EMAIL) {
+      document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:12px;font-family:'Inter',sans-serif">
+        <div style="font-size:48px">🔒</div>
+        <div style="color:#dc2626;font-size:18px;font-weight:700">Рұқсат жоқ</div>
+        <a href="dashboard.html" style="color:#1a56db;font-size:14px">← Артқа</a>
+      </div>`;
+      return;
+    }
+
+    await Promise.all([
+      loadUsers().catch(e => showLoadErr('usersBody', e, 7)),
+      loadPaymentRequests().catch(e => showLoadErr('payReqList', e)),
+      loadLessons().catch(e => showLoadErr('lessonsGrid', e)),
+    ]);
+  } catch (e) {
+    console.error('Admin init error:', e);
+    const errBox = document.createElement('div');
+    errBox.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;max-width:500px;text-align:center';
+    errBox.textContent = 'Қате: ' + (e?.message || String(e));
+    document.body.appendChild(errBox);
   }
-
-  await Promise.all([loadUsers(), loadPaymentRequests(), loadLessons()]);
 })();
+
+function showLoadErr(elId, err, colspan) {
+  console.error(elId, err);
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const msg = `<div style="color:#dc2626;font-size:13px;padding:10px 0">Қате: ${err?.message || err}</div>`;
+  el.innerHTML = colspan ? `<tr><td colspan="${colspan}" class="table-empty" style="color:#dc2626">Қате: ${err?.message || err}</td></tr>` : msg;
+}
 
 async function loadUsers() {
   const { data, error } = await sb.rpc('get_all_profiles');
