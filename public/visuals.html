@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoTAB — Көрнекіліктер</title>
+<link rel="stylesheet" href="gotab.css">
+<style>
+.visuals-page{min-height:100vh;padding:36px 20px 70px}
+
+.visuals-header{
+  max-width:1100px;margin:0 auto 32px;
+  display:flex;align-items:center;gap:16px;
+  padding-bottom:22px;border-bottom:1px solid var(--border);
+}
+.visuals-header-info h1{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.3px}
+.visuals-header-info p{font-size:13px;color:var(--muted);margin-top:4px}
+.visuals-back{
+  margin-left:auto;padding:9px 18px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;color:var(--muted);font-size:13px;font-weight:600;
+  cursor:pointer;text-decoration:none;transition:all .2s;white-space:nowrap;
+}
+.visuals-back:hover{color:var(--primary);border-color:var(--primary)}
+
+/* Grid */
+.visuals-grid{
+  max-width:1100px;margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:20px;
+}
+
+/* Card */
+.visual-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:18px;overflow:hidden;
+  transition:border-color .2s,transform .2s,box-shadow .2s;
+  box-shadow:0 2px 10px rgba(26,86,219,.05);
+}
+.visual-card:hover{
+  border-color:rgba(26,86,219,.35);
+  transform:translateY(-3px);
+  box-shadow:0 12px 32px rgba(26,86,219,.12);
+}
+
+/* Thumbnail */
+.visual-thumb{
+  width:100%;height:190px;
+  background:linear-gradient(135deg,#eff6ff,#dbeafe);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.visual-thumb img,
+.visual-thumb video{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+.visual-thumb-icon{font-size:40px;opacity:.55}
+
+/* Subject badge */
+.visual-badge{
+  position:absolute;top:10px;left:10px;
+  padding:3px 10px;border-radius:100px;
+  font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+}
+.badge-algebra{background:rgba(14,165,233,.18);color:#0ea5e9;border:1px solid rgba(14,165,233,.3)}
+.badge-geometry{background:rgba(139,92,246,.18);color:#8b5cf6;border:1px solid rgba(139,92,246,.3)}
+.badge-math{background:rgba(16,185,129,.18);color:#10b981;border:1px solid rgba(16,185,129,.3)}
+
+/* Body */
+.visual-body{padding:14px 16px 16px}
+.visual-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.35}
+.visual-meta{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.visual-grade-tag{
+  padding:2px 8px;border-radius:100px;
+  font-size:10px;font-weight:700;
+  background:rgba(26,86,219,.08);color:var(--primary);
+  border:1px solid rgba(26,86,219,.18);
+}
+
+/* Responsive */
+@media(max-width:600px){
+  .visuals-page{padding:20px 12px 60px}
+  .visuals-header{gap:10px;margin-bottom:18px;padding-bottom:14px}
+  .visuals-header-info h1{font-size:18px}
+  .visuals-back{padding:7px 12px;font-size:12px}
+  .visuals-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <img src="gotab_logo.png" alt="GoTAB">
+  <div class="nav-user">
+    <span class="nav-user-name" id="userName"></span>
+    <button class="btn-logout" onclick="logout()">Шығу</button>
+  </div>
+</nav>
+
+<div class="visuals-page">
+  <div class="visuals-header">
+    <div class="visuals-header-info">
+      <h1>Көрнекіліктер</h1>
+      <p>Математикалық анимациялар мен визуализациялар</p>
+    </div>
+    <a href="dashboard.html" class="visuals-back">← Артқа</a>
+  </div>
+
+  <div class="visuals-grid" id="visualsGrid">
+    <!-- Content will be added here -->
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script>
+(async () => {
+  const user = await requireAuth();
+  if (!user) return;
+  document.getElementById('userName').textContent = user.user_metadata?.name || user.email;
+})();
+
+async function logout() {
+  localStorage.removeItem('gotab_last_page');
+  await sb.auth.signOut();
+  window.location.href = 'index.html';
+}
+</script>
+<script src="math-bg.js"></script>
+</body>
+</html>
