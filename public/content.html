@@ -679,7 +679,8 @@ function markDone(idx) { localStorage.setItem(dlKey(idx), TODAY); }
 function render(overrideLessons) {
   const subjectData = (CONTENT[grade] || CONTENT[5])[subject]
     || Object.values(CONTENT[grade] || CONTENT[5])[0];
-  const lessons = overrideLessons || (subjectData && subjectData.lessons) || [];
+  const lessons = (overrideLessons || (subjectData && subjectData.lessons) || [])
+    .filter(l => (l.ppt && l.ppt.src) || (l.qmj && l.qmj.src) || (l.video && l.video.src));
   const grid = document.getElementById('lessonsGrid');
 
   if (!lessons.length) {
