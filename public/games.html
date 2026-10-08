@@ -254,9 +254,12 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script>
+let currentUser = null;
+
 (async () => {
   const user = await requireAuth();
   if (!user) return;
+  currentUser = user;
   document.getElementById('userName').textContent = user.user_metadata?.name || user.email;
 
   if (user.email === ADMIN_EMAIL) {
@@ -265,14 +268,15 @@
     adminBtn.textContent = 'Админ';
     adminBtn.style.cssText = 'padding:7px 16px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);border-radius:8px;color:#c4b5fd;font-size:13px;font-weight:700;text-decoration:none';
     document.querySelector('.nav-user').prepend(adminBtn);
+    return; // admin always has access
   }
 
   let isPaid = false;
   try {
     const timer = new Promise(r => setTimeout(() => r(null), 3000));
-    const query = sb.from('profiles').select('is_paid').eq('id', user.id).single();
+    const query = sb.from('profiles').select('is_paid,paid_until').eq('id', user.id).single();
     const { data: profile } = await Promise.race([query, timer.then(() => ({ data: null }))]);
-    isPaid = profile?.is_paid || false;
+    isPaid = !!(profile?.is_paid && profile?.paid_until && new Date(profile.paid_until) > new Date());
   } catch (_) { isPaid = false; }
 
   if (!isPaid) {
@@ -286,7 +290,14 @@ async function logout() {
   window.location.href = 'index.html';
 }
 
-function sendReceipt() {
+async function sendReceipt() {
+  if (currentUser) {
+    await sb.from('payment_requests').insert({
+      user_id: currentUser.id,
+      user_email: currentUser.email,
+      user_name: currentUser.user_metadata?.name || currentUser.email
+    });
+  }
   const msg = encodeURIComponent('Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. Чекті жіберемін.');
   window.open('https://wa.me/77055894347?text=' + msg, '_blank');
 }

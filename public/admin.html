@@ -79,6 +79,38 @@ tr:hover td{background:#f8faff}
 
 .admin-nav-badge{padding:3px 10px;border-radius:100px;background:rgba(26,86,219,.08);border:1px solid rgba(26,86,219,.2);font-size:11px;font-weight:700;color:var(--primary)}
 
+/* ── Payment requests ── */
+.pay-req-list{display:flex;flex-direction:column;gap:10px}
+.pay-req-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;
+  box-shadow:0 2px 8px rgba(26,86,219,.05);
+}
+.pay-req-card.pending{border-color:rgba(245,158,11,.35);background:rgba(255,251,235,.6)}
+.pay-req-card.approved{border-color:rgba(16,185,129,.3);background:rgba(240,253,244,.6);opacity:.65}
+.pay-req-info{flex:1;min-width:180px}
+.pay-req-name{font-size:14px;font-weight:700;color:var(--text)}
+.pay-req-email{font-size:12px;color:var(--muted);margin-top:2px}
+.pay-req-date{font-size:11px;color:var(--muted);margin-top:4px}
+.badge-pending{padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700;background:rgba(245,158,11,.12);color:#d97706;border:1px solid rgba(245,158,11,.3)}
+.badge-approved{padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700;background:rgba(16,185,129,.1);color:#059669;border:1px solid rgba(16,185,129,.25)}
+.btn-approve{
+  padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;
+  background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(16,185,129,.08));
+  color:#059669;border:1px solid rgba(16,185,129,.3);
+  cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;white-space:nowrap;
+}
+.btn-approve:hover{background:rgba(16,185,129,.25)}
+.req-count-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:50%;
+  background:#ef4444;color:#fff;font-size:11px;font-weight:800;
+  margin-left:8px;vertical-align:middle;
+}
+.badge-expiry{padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700;background:rgba(16,185,129,.1);color:#059669;border:1px solid rgba(16,185,129,.25)}
+.badge-expired{padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700;background:rgba(239,68,68,.08);color:#dc2626;border:1px solid rgba(239,68,68,.2)}
+
 /* ── Lesson cards ── */
 .lessons-grid{display:grid;grid-template-columns:1fr;gap:14px}
 @media(min-width:600px){.lessons-grid{grid-template-columns:repeat(2,1fr)}}
@@ -220,6 +252,14 @@ tr:hover td{background:#f8faff}
     </div>
   </div>
 
+  <!-- ── Төлем сұраныстары ── -->
+  <div class="admin-section">
+    <div class="admin-section-title">💳 Төлем сұраныстары <span class="req-count-badge" id="pendingCount" style="display:none">0</span></div>
+    <div class="pay-req-list" id="payReqList">
+      <div style="color:var(--muted);font-size:14px;padding:10px 0">Жүктелуде...</div>
+    </div>
+  </div>
+
   <div class="admin-section">
     <div class="admin-section-title">👥 Тіркелген мұғалімдер</div>
     <input class="search-input" id="searchInput" placeholder="Аты немесе email бойынша іздеу..." oninput="filterUsers()">
@@ -357,8 +397,7 @@ const MONTHS = ['қаңтар','ақпан','наурыз','сәуір','мам�
     return;
   }
 
-  await loadUsers();
-  await loadLessons();
+  await Promise.all([loadUsers(), loadPaymentRequests(), loadLessons()]);
 })();
 
 async function loadUsers() {
@@ -378,7 +417,8 @@ function updateStats(users) {
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
   const d = new Date();
   document.getElementById('statTotal').textContent = users.length;
-  document.getElementById('statPaid').textContent  = users.filter(u => u.is_paid).length;
+  const activePaid = users.filter(u => u.is_paid && u.paid_until && new Date(u.paid_until) > new Date());
+  document.getElementById('statPaid').textContent  = activePaid.length;
   document.getElementById('statToday').textContent = users.filter(u => u.created_at?.slice(0,10) === today).length;
   document.getElementById('statWeek').textContent  = users.filter(u => u.created_at >= weekAgo).length;
   document.getElementById('statDate').textContent  = `${d.getDate()} ${MONTHS[d.getMonth()]}`;
@@ -394,12 +434,20 @@ function renderTable(users) {
     const date = u.created_at
       ? new Date(u.created_at).toLocaleDateString('ru-RU', {day:'2-digit',month:'2-digit',year:'numeric'})
       : '—';
-    const paidBadge = u.is_paid
-      ? `<span class="badge-paid">✓ Төленді</span>`
-      : `<span class="badge-unpaid">Төленбеген</span>`;
-    const toggleBtn = u.is_paid
+    const now = new Date();
+    const isActive = u.is_paid && u.paid_until && new Date(u.paid_until) > now;
+    const daysLeft = u.paid_until ? Math.ceil((new Date(u.paid_until) - now) / 86400000) : 0;
+    const expiryStr = u.paid_until
+      ? new Date(u.paid_until).toLocaleDateString('ru-RU', {day:'2-digit',month:'2-digit',year:'numeric'})
+      : null;
+    const paidBadge = isActive
+      ? `<span class="badge-expiry">✓ ${daysLeft} күн қалды · ${expiryStr}</span>`
+      : u.is_paid && u.paid_until
+        ? `<span class="badge-expired">Мерзімі өтті ${expiryStr}</span>`
+        : `<span class="badge-unpaid">Төленбеген</span>`;
+    const toggleBtn = isActive
       ? `<button class="btn-toggle-paid make-unpaid" onclick="togglePaid('${u.id}',false)">Болдырмау</button>`
-      : `<button class="btn-toggle-paid make-paid" onclick="togglePaid('${u.id}',true)">✓ Белгілеу</button>`;
+      : `<button class="btn-toggle-paid make-paid" onclick="togglePaid('${u.id}',true)">✓ 1 ай белсендіру</button>`;
     return `<tr>
       <td data-label="#">${i+1}</td>
       <td data-label="Аты-жөні" class="td-name">${u.name||'—'}</td>
@@ -416,6 +464,52 @@ async function togglePaid(userId, paid) {
   const { error } = await sb.rpc('set_user_paid', { user_id: userId, paid });
   if (error) { alert('Қате: ' + error.message); return; }
   await loadUsers();
+}
+
+async function loadPaymentRequests() {
+  const { data, error } = await sb.rpc('get_payment_requests');
+  if (error) {
+    document.getElementById('payReqList').innerHTML =
+      `<div style="color:var(--muted);font-size:13px">Суpabase-қа get_payment_requests функциясын қосыңыз</div>`;
+    return;
+  }
+  const reqs = data || [];
+  const pending = reqs.filter(r => r.status === 'pending');
+  const countEl = document.getElementById('pendingCount');
+  if (pending.length > 0) {
+    countEl.textContent = pending.length;
+    countEl.style.display = 'inline-flex';
+  } else {
+    countEl.style.display = 'none';
+  }
+  const list = document.getElementById('payReqList');
+  if (!reqs.length) {
+    list.innerHTML = `<div style="color:var(--muted);font-size:14px;padding:10px 0">Сұраныстар жоқ</div>`;
+    return;
+  }
+  list.innerHTML = reqs.map(r => {
+    const dt = new Date(r.created_at).toLocaleString('ru-RU', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const badge = r.status === 'pending'
+      ? `<span class="badge-pending">⏳ Күтуде</span>`
+      : `<span class="badge-approved">✓ Белсендірілді</span>`;
+    const btn = r.status === 'pending'
+      ? `<button class="btn-approve" onclick="approveRequest('${r.id}','${r.user_id}')">✓ 1 айға белсендіру</button>`
+      : '';
+    return `<div class="pay-req-card ${r.status}">
+      <div class="pay-req-info">
+        <div class="pay-req-name">${r.user_name || '—'}</div>
+        <div class="pay-req-email">${r.user_email || '—'}</div>
+        <div class="pay-req-date">${dt} · ${badge}</div>
+      </div>
+      ${btn}
+    </div>`;
+  }).join('');
+}
+
+async function approveRequest(reqId, userId) {
+  const { error } = await sb.rpc('approve_payment_request', { req_id: reqId, uid: userId });
+  if (error) { alert('Қате: ' + error.message); return; }
+  await Promise.all([loadPaymentRequests(), loadUsers()]);
 }
 
 function filterUsers() {

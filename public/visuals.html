@@ -438,17 +438,21 @@
 <script src="supabase-client.js"></script>
 <script>
 let userIsPaid = false;
+let currentUser = null;
 
 (async () => {
   const user = await requireAuth();
   if (!user) return;
+  currentUser = user;
   document.getElementById('userName').textContent = user.user_metadata?.name || user.email;
+
+  if (user.email === ADMIN_EMAIL) { userIsPaid = true; initDownloads(); return; }
 
   try {
     const timer = new Promise(r => setTimeout(() => r(null), 3000));
-    const query = sb.from('profiles').select('is_paid').eq('id', user.id).single();
+    const query = sb.from('profiles').select('is_paid,paid_until').eq('id', user.id).single();
     const { data: profile } = await Promise.race([query, timer.then(() => ({ data: null }))]);
-    userIsPaid = profile?.is_paid || false;
+    userIsPaid = !!(profile?.is_paid && profile?.paid_until && new Date(profile.paid_until) > new Date());
   } catch (_) { userIsPaid = false; }
 
   if (!userIsPaid) {
@@ -500,7 +504,14 @@ function openModal()  { document.getElementById('payModal').classList.add('open'
 function closeModal() { document.getElementById('payModal').classList.remove('open'); }
 document.getElementById('payModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
 
-function sendReceipt() {
+async function sendReceipt() {
+  if (currentUser) {
+    await sb.from('payment_requests').insert({
+      user_id: currentUser.id,
+      user_email: currentUser.email,
+      user_name: currentUser.user_metadata?.name || currentUser.email
+    });
+  }
   const msg = encodeURIComponent('Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. Чекті жіберемін.');
   window.open(`https://wa.me/77055894347?text=${msg}`, '_blank');
 }
