@@ -592,54 +592,40 @@ let currentUser = null;
 
   if (!userIsPaid) { document.getElementById('payBar').style.display = 'flex'; }
 
-  // Supabase materials кестесінен сабақтарды алу + жергілікті CONTENT-пен merge
+  // Жергілікті CONTENT — негізгі дереккөз; Supabase тек URL-дерді байытады
+  let sbByNum = {};
   try {
     const { data: sbMaterials } = await sb.from('materials')
       .select('*')
       .eq('grade', grade)
       .eq('subject', subject)
       .order('lesson_num');
-
-    if (sbMaterials && sbMaterials.length) {
-      // Supabase деректерін жергілікті CONTENT слайдтарымен байыту
-      const subjectData = (CONTENT[grade] || CONTENT[5])[subject]
-        || Object.values(CONTENT[grade] || CONTENT[5])[0];
-      const localLessons = (subjectData && subjectData.lessons) || [];
-
-      const sbMapped = sbMaterials.map((l, idx) => {
-        const local = localLessons[idx] || {};
-        return {
-          title:  l.title || local.title || '',
-          ppt:    { meta: l.ppt_url   ? 'PPT' : (local.ppt  && local.ppt.meta  || 'PPT'),
-                    src:  l.ppt_url   || (local.ppt  && local.ppt.src)  || null,
-                    thumb:(local.ppt  && local.ppt.thumb) || null },
-          slides: local.slides || [],
-          qmj:    { meta: l.qmj_url   ? 'ҚМЖ' : (local.qmj  && local.qmj.meta || 'ҚМЖ'),
-                    src:  l.qmj_url   || (local.qmj  && local.qmj.src)  || null,
-                    thumb:(local.qmj  && local.qmj.thumb) || null },
-          video:  { meta: l.video_url ? 'MP4' : (local.video && local.video.meta || 'MP4'),
-                    src:  l.video_url || (local.video && local.video.src) || null }
-        };
-      });
-
-      // Supabase-те жоқ, бірақ жергілікті CONTENT-те видео/ppt бар сабақтарды қосу
-      localLessons.forEach((local, idx) => {
-        const existsInSb = sbMaterials.some(l => l.lesson_num === idx + 1);
-        if (!existsInSb && ((local.ppt && local.ppt.src) || (local.video && local.video.src))) {
-          sbMapped.push(local);
-        }
-      });
-
-      if (sbMapped.some(l =>
-        (l.ppt && l.ppt.src) || (l.qmj && l.qmj.src) || (l.video && l.video.src)
-      )) {
-        render(sbMapped);
-        return;
-      }
+    if (sbMaterials) {
+      sbMaterials.forEach(l => { sbByNum[l.lesson_num] = l; });
     }
   } catch(_) {}
 
-  render();
+  const subjectData = (CONTENT[grade] || CONTENT[5])[subject]
+    || Object.values(CONTENT[grade] || CONTENT[5])[0];
+  const localLessons = (subjectData && subjectData.lessons) || [];
+
+  const merged = localLessons.map((local, idx) => {
+    const sb = sbByNum[idx + 1] || {};
+    return {
+      title:  sb.title  || local.title  || '',
+      ppt:    { meta: (local.ppt  && local.ppt.meta)  || 'PPT',
+                src:  sb.ppt_url  || (local.ppt  && local.ppt.src)  || null,
+                thumb:(local.ppt  && local.ppt.thumb) || null },
+      slides: local.slides || [],
+      qmj:    { meta: (local.qmj  && local.qmj.meta)  || 'ҚМЖ',
+                src:  sb.qmj_url  || (local.qmj  && local.qmj.src)  || null,
+                thumb:(local.qmj  && local.qmj.thumb) || null },
+      video:  { meta: (local.video && local.video.meta) || 'MP4',
+                src:  sb.video_url || (local.video && local.video.src) || null }
+    };
+  });
+
+  render(merged);
 })();
 
 async function logout() {
