@@ -538,6 +538,8 @@
   </div>
 </div>
 
+<script src="supabase.js"></script>
+<script src="supabase-client.js"></script>
 <script>
 const GRADES_LABEL = {5:'5-сынып',6:'6-сынып',7:'7-сынып',8:'8-сынып',9:'9-сынып',10:'10-сынып',11:'11-сынып'};
 const SUBJECT_LABEL = {math:'Математика',algebra:'Алгебра',geometry:'Геометрия'};
@@ -577,16 +579,15 @@ let currentUser = null;
   if (user.email === ADMIN_EMAIL) { userIsPaid = true; }
   else {
     try {
-      const timer = new Promise(r => setTimeout(() => r(null), 3000));
-      const query = sb.from('profiles').select('is_paid,paid_until,is_banned').eq('id', user.id).single();
-      const { data: profile } = await Promise.race([query, timer.then(() => ({ data: null }))]);
-      if (profile?.is_banned) {
-        await sb.auth.signOut();
-        window.location.href = 'login.html?banned=1';
-        return;
-      }
-      userIsPaid = !!(profile?.is_paid && profile?.paid_until && new Date(profile.paid_until) > new Date());
-    } catch (_) { userIsPaid = false; }
+      console.log('[GoTAB] user.id:', user.id);
+      const { data: paid, error: rpcErr } = await sb.rpc('check_paid_user', { check_id: user.id });
+      console.log('[GoTAB] check_paid_user result:', paid, 'error:', rpcErr);
+      userIsPaid = paid === true;
+      console.log('[GoTAB] userIsPaid:', userIsPaid);
+    } catch (e) {
+      console.error('[GoTAB] catch error:', e);
+      userIsPaid = false;
+    }
   }
 
   if (!userIsPaid) { document.getElementById('payBar').style.display = 'flex'; }
@@ -623,7 +624,7 @@ async function logout() {
 const CONTENT = {
   5: { math: { lessons: [
     {title:'ЕҮОБ және ЕКОЕ',          ppt:{meta:'12 слайд',src:'/materials/GoTAB_5сынып_final.pptx',thumb:'/materials/lesson-5-1-slide1.jpeg'}, slides:['/materials/lesson-5-1-slide1.jpeg','/materials/lesson-5-1-slide2.jpeg','/materials/lesson-5-1-slide3.jpeg','/materials/lesson-5-1-slide4.jpeg','/materials/lesson-5-1-slide5.jpeg','/materials/lesson-5-1-slide6.jpeg','/materials/lesson-5-1-slide7.jpeg','/materials/lesson-5-1-slide8.jpeg','/materials/lesson-5-1-slide9.jpeg','/materials/lesson-5-1-slide10.jpeg','/materials/lesson-5-1-slide11.jpeg','/materials/lesson-5-1-slide12.jpeg'], qmj:{meta:'Word · 4 бет',src:'/materials/lesson-5-1-qmj.docx',thumb:'/materials/lesson-5-1-qmj-thumb.jpeg'}, video:{meta:'16x9 · MP4',src:'/videos/5-synyp-EUOB-EKOE.mp4'}},
-    {title:'Бөлшектер',               ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
+    {title:'Дұрыс және бұрыс бөлшектер', ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'16x9 · MP4',src:'/videos/5-synyp-Durys-Burys-Bolshekter.mp4'}},
     {title:'Геометриялық фигуралар',  ppt:{meta:'16 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'50 сек',src:null}},
     {title:'Теңдеулер',               ppt:{meta:'14 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'40 сек',src:null}},
   ]}},
@@ -873,7 +874,7 @@ function render(overrideLessons) {
         lesson.qmj  && lesson.qmj.src,
         lesson.video && lesson.video.src,
       ].filter(Boolean);
-      if (!files.length) { openModal(); return; }
+      if (!files.length) { return; }
       files.forEach((url, n) => setTimeout(() => {
         const a = document.createElement('a'); a.href = url; a.download = ''; a.click();
       }, n * 400));
@@ -891,8 +892,6 @@ function render(overrideLessons) {
     });
   });
 }
-
-render();
 
 // ── Payment modal ──
 function openModal()  { document.getElementById('payModal').classList.add('open'); }
@@ -1057,8 +1056,6 @@ document.addEventListener('keydown', e => {
   }
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js"></script>
 <script src="math-bg.js"></script>
 </body>
 </html>
