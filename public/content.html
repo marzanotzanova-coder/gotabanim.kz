@@ -610,18 +610,24 @@ let currentUser = null;
   const localLessons = (subjectData && subjectData.lessons) || [];
 
   const merged = localLessons.map((local, idx) => {
-    const sb = sbByNum[idx + 1] || {};
+    const sbRow = sbByNum[idx + 1] || {};
+    const pptThumb = sbRow.ppt_thumb_url || (local.ppt && local.ppt.thumb) || null;
+    const qmjThumb = sbRow.qmj_thumb_url || (local.qmj && local.qmj.thumb) || null;
+    // If no local slides but Supabase has a thumbnail, use it as a 1-slide preview
+    const slides = (local.slides && local.slides.length > 0)
+      ? local.slides
+      : (pptThumb ? [pptThumb] : []);
     return {
-      title:  sb.title  || local.title  || '',
+      title:  sbRow.title  || local.title  || '',
       ppt:    { meta: (local.ppt  && local.ppt.meta)  || 'PPT',
-                src:  sb.ppt_url  || (local.ppt  && local.ppt.src)  || null,
-                thumb:(local.ppt  && local.ppt.thumb) || null },
-      slides: local.slides || [],
+                src:  sbRow.ppt_url  || (local.ppt  && local.ppt.src)  || null,
+                thumb: pptThumb },
+      slides,
       qmj:    { meta: (local.qmj  && local.qmj.meta)  || 'ҚМЖ',
-                src:  sb.qmj_url  || (local.qmj  && local.qmj.src)  || null,
-                thumb:(local.qmj  && local.qmj.thumb) || null },
+                src:  sbRow.qmj_url  || (local.qmj  && local.qmj.src)  || null,
+                thumb: qmjThumb },
       video:  { meta: (local.video && local.video.meta) || 'MP4',
-                src:  sb.video_url || (local.video && local.video.src) || null }
+                src:  sbRow.video_url || (local.video && local.video.src) || null }
     };
   });
 
@@ -829,7 +835,7 @@ function render(overrideLessons) {
       </div>
 
       <div class="lesson-dl-footer">
-        ${lesson.slides ? `<button class="btn-preview" data-preview="${i}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Алдын ала</button>` : ''}
+        ${lesson.slides && lesson.slides.length > 0 ? `<button class="btn-preview" data-preview="${i}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Алдын ала</button>` : ''}
         ${hasAnySrc
           ? `<button class="btn-dl-all" data-dl-all="${i}">⬇ ${i + 1}-сабақ жалпы жүктеу</button>`
           : `<button class="btn-dl-all" data-dl-all="${i}">⬇ Барлығын жүктеу</button>`
@@ -970,11 +976,16 @@ function renderSlideOnCanvas(canvas, src, label) {
 }
 
 async function openPreview(lesson, lessonNum) {
-  const filenames = (lesson.slides || []).map(s =>
-    s.startsWith('/materials/') ? s.replace('/materials/', '') : s
+  const rawSlides = lesson.slides || [];
+  if (!rawSlides.length) return;
+
+  // Separate full URLs (Supabase Storage) from local filenames (/materials/)
+  const isFullUrl = rawSlides.map(s => s.startsWith('http') || s.startsWith('//'));
+  const filenames = rawSlides.map((s, i) =>
+    isFullUrl[i] ? s : (s.startsWith('/materials/') ? s.replace('/materials/', '') : s)
   );
 
-  carouselSlides = filenames; // placeholder
+  carouselSlides = filenames;
   carouselIdx = 0;
 
   document.getElementById('previewBadge').textContent = `Сабақ ${lessonNum + 1}`;
@@ -1000,20 +1011,21 @@ async function openPreview(lesson, lessonNum) {
   document.getElementById('previewModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 
-  // Fetch signed URLs from Supabase private bucket (valid 10 min)
-  let signedUrls = null;
-  try {
-    const { data, error } = await sb.storage
-      .from('slide-previews')
-      .createSignedUrls(filenames, 600);
-    if (!error && data) signedUrls = data.map(d => d.signedUrl);
-  } catch (e) { /* fallback to static */ }
+  // For local filenames: fetch signed URLs from Supabase private bucket (10 min)
+  const localNames = filenames.filter((_, i) => !isFullUrl[i]);
+  let signedMap = {};
+  if (localNames.length) {
+    try {
+      const { data, error } = await sb.storage.from('slide-previews').createSignedUrls(localNames, 600);
+      if (!error && data) localNames.forEach((n, i) => { signedMap[n] = data[i]?.signedUrl; });
+    } catch (e) { /* fallback to static */ }
+  }
 
   // Render canvases
   filenames.forEach((fname, i) => {
     const canvas = document.getElementById(`sc-${i}`);
     if (!canvas) return;
-    const url = signedUrls?.[i] || `/materials/${fname}`;
+    const url = isFullUrl[i] ? fname : (signedMap[fname] || `/materials/${fname}`);
     if (i === 0) {
       renderSlideOnCanvas(canvas, url, wmLabel);
     } else {
