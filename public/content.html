@@ -741,7 +741,7 @@ function render(overrideLessons) {
   const subjectData = (CONTENT[grade] || CONTENT[5])[subject]
     || Object.values(CONTENT[grade] || CONTENT[5])[0];
   const lessons = (overrideLessons || (subjectData && subjectData.lessons) || [])
-    .filter(l => (l.ppt && l.ppt.src) || (l.qmj && l.qmj.src) || (l.video && l.video.src));
+    .filter(l => (l.ppt && l.ppt.src) || (l.qmj && l.qmj.src) || (l.video && l.video.src) || (l.slides && l.slides.length > 0));
   const grid = document.getElementById('lessonsGrid');
 
   if (!lessons.length) {
@@ -774,11 +774,12 @@ function render(overrideLessons) {
     const hasPpt   = lesson.ppt && lesson.ppt.src;
     const hasThumb = lesson.ppt && lesson.ppt.thumb;
 
+    const hasSlides = lesson.slides && lesson.slides.length > 0;
     const previewInner = hasThumb
       ? `<img class="slide-thumb" src="${lesson.ppt.thumb}" alt="${lesson.title}" loading="lazy">
          <div class="slide-thumb-overlay"></div>
          <span class="lesson-badge" style="z-index:3">Сабақ ${i + 1}</span>
-         <span class="slide-dl-hint">⬇ PPT жүктеу</span>`
+         <span class="slide-dl-hint">${hasPpt ? '⬇ PPT жүктеу' : hasSlides ? '👁 Алдын ала қарау' : ''}</span>`
       : `<span class="lesson-badge">Сабақ ${i + 1}</span>
          ${!hasPpt ? '<span class="soon-badge">Жақында</span>' : ''}
          <div class="ppt-slide-mock">
