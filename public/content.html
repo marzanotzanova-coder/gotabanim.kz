@@ -613,10 +613,14 @@ let currentUser = null;
     const sbRow = sbByNum[idx + 1] || {};
     const pptThumb = sbRow.ppt_thumb_url || (local.ppt && local.ppt.thumb) || null;
     const qmjThumb = sbRow.qmj_thumb_url || (local.qmj && local.qmj.thumb) || null;
-    // If no local slides but Supabase has a thumbnail, use it as a 1-slide preview
-    const slides = (local.slides && local.slides.length > 0)
-      ? local.slides
-      : (pptThumb ? [pptThumb] : []);
+    // Supabase slides_urls (admin-uploaded) take priority; fall back to local static array
+    const sbSlides = Array.isArray(sbRow.slides_urls) && sbRow.slides_urls.length
+      ? sbRow.slides_urls : null;
+    const slides = sbSlides
+      ? sbSlides
+      : (local.slides && local.slides.length > 0)
+        ? local.slides
+        : (pptThumb ? [pptThumb] : []);
     return {
       title:  sbRow.title  || local.title  || '',
       ppt:    { meta: (local.ppt  && local.ppt.meta)  || 'PPT',

@@ -220,6 +220,25 @@ tr:hover td{background:#f8faff}
 .save-progress{font-size:12px;color:var(--muted);padding:4px 0;display:none}
 .upload-fields-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
 @media(max-width:500px){.upload-fields-3{grid-template-columns:1fr}}
+
+/* ── Slides modal ── */
+.slides-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.slides-modal-overlay.open{display:flex}
+.slides-modal{background:#fff;border-radius:20px;padding:26px;max-width:580px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);margin:auto}
+.slides-modal-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:3px}
+.slides-modal-sub{font-size:12px;color:var(--muted);margin-bottom:16px}
+.slides-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:7px;margin-bottom:14px}
+.slide-thumb-item{position:relative;border-radius:7px;overflow:hidden;aspect-ratio:16/9;background:#f1f5f9;border:1px solid #e2e8f0}
+.slide-thumb-item img{width:100%;height:100%;object-fit:cover;display:block}
+.slide-idx{position:absolute;top:3px;left:3px;background:rgba(0,0,0,.6);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;line-height:1}
+.slides-count-badge{padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;background:rgba(14,165,233,.12);color:#0284c7;border:1px solid rgba(14,165,233,.22);margin-left:5px;vertical-align:middle}
+.btn-slides{padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;background:rgba(14,165,233,.1);color:#0284c7;border:1px solid rgba(14,165,233,.22);cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s}
+.btn-slides:hover{background:rgba(14,165,233,.2)}
+.slide-upload-zone{border:2px dashed #cbd5e1;border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:#fafbff;margin-bottom:12px}
+.slide-upload-zone:hover{border-color:var(--primary);background:rgba(26,86,219,.02)}
+.btn-slides-clear{padding:8px 14px;border-radius:9px;font-size:12px;font-weight:700;background:rgba(239,68,68,.08);color:#dc2626;border:1px solid rgba(239,68,68,.2);cursor:pointer;font-family:'Inter',sans-serif}
+.btn-slides-clear:hover{background:rgba(239,68,68,.16)}
+.slides-divider{border:none;border-top:1px solid #f1f5f9;margin:14px 0}
 </style>
 </head>
 <body>
@@ -348,6 +367,39 @@ tr:hover td{background:#f8faff}
 
     <div class="lessons-grid" id="lessonsGrid">
       <div style="color:var(--muted);font-size:14px;padding:20px 0">Жүктелуде...</div>
+    </div>
+  </div>
+
+  <!-- ── Slides modal ── -->
+  <div class="slides-modal-overlay" id="slidesModalOverlay" onclick="if(event.target===this)closeSlidesModal()">
+    <div class="slides-modal">
+      <div class="slides-modal-title" id="slideModalTitle">Слайдтар</div>
+      <div class="slides-modal-sub" id="slideModalSub">—</div>
+
+      <div id="slidesCurrentSection">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Қазіргі слайдтар</div>
+        <div class="slides-preview-grid" id="slidesPreviewGrid"></div>
+      </div>
+
+      <hr class="slides-divider">
+
+      <div class="slide-upload-zone" onclick="document.getElementById('slidesFileInput').click()">
+        <div style="font-size:26px;margin-bottom:6px">🖼</div>
+        <div style="font-size:13px;color:var(--muted)">Жаңа слайдтарды таңдаңыз <b style="color:var(--primary)">(бірнешеу)</b></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">JPEG · Файлдар аты бойынша реттеледі</div>
+        <input type="file" id="slidesFileInput" accept=".jpg,.jpeg,.png" multiple style="display:none" onchange="handleSlidesSelect(this.files)">
+      </div>
+
+      <div id="slidesNewPreview" style="margin-bottom:10px"></div>
+
+      <div class="progress-bar-wrap" id="slidesProgressWrap" style="margin-bottom:10px"><div class="progress-bar" id="slidesProgressBar"></div></div>
+      <div class="upload-result" id="slidesUploadResult" style="margin-bottom:12px"></div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn-add-save" id="slidesSaveBtn" onclick="uploadSlidesNow()" style="display:none">⬆ Жүктеу</button>
+        <button class="btn-slides-clear" id="slidesClearBtn" onclick="clearSlidesNow()" style="display:none">✕ Барлығын өшіру</button>
+        <button class="btn-form-cancel" onclick="closeSlidesModal()" style="margin-left:auto">Жабу</button>
+      </div>
     </div>
   </div>
 
@@ -604,7 +656,10 @@ function renderLessons() {
   }
   const SUBJ = { math:'Математика', algebra:'Алгебра', geometry:'Геометрия' };
   const sorted = [...allLessons].sort((a,b) => a.grade - b.grade || a.lesson_num - b.lesson_num);
-  grid.innerHTML = sorted.map(l => `
+  grid.innerHTML = sorted.map(l => {
+    const slideCount = Array.isArray(l.slides_urls) ? l.slides_urls.length : 0;
+    const slidesBadge = slideCount ? `<span class="slides-count-badge">${slideCount}</span>` : '';
+    return `
     <div class="lesson-card">
       <div class="lesson-card-header">
         <span class="lesson-grade-badge">${l.grade}-сынып</span>
@@ -620,6 +675,8 @@ function renderLessons() {
         <span>ҚМЖ: ${l.qmj_url ? 'бар' : 'жоқ'}</span>
         <div class="video-status-dot" style="margin-left:10px;${l.video_url ? 'background:#8b5cf6' : ''}"></div>
         <span>Бейне: ${l.video_url ? 'бар' : 'жоқ'}</span>
+        <div class="video-status-dot" style="margin-left:10px;${slideCount ? 'background:#0ea5e9' : ''}"></div>
+        <span>Слайдтар: ${slideCount || 'жоқ'}</span>
       </div>
       <div class="lesson-actions">
         ${l.ppt_url
@@ -634,9 +691,10 @@ function renderLessons() {
           ? `<a class="btn-video-link" href="${l.video_url}" target="_blank">▶ Бейне</a>
              <button class="btn-video-link" data-replace="${l.id}-video" onclick="replaceFile('${l.id}','video')" style="background:rgba(139,92,246,.06)">↺ Бейне ауыстыру</button>`
           : `<button class="btn-video-link" onclick="replaceFile('${l.id}','video')">+ Бейне қосу</button>`}
+        <button class="btn-slides" onclick="openSlidesModal('${l.id}')">📸 Слайдтар${slidesBadge}</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function toggleAddForm() {
@@ -733,6 +791,152 @@ async function deleteLesson(id) {
   const { error } = await sb.from('materials').delete().eq('id', id);
   if (error) { alert('Жою қатесі: ' + error.message); return; }
   await loadLessons();
+}
+
+// ── Слайд суреттерін басқару ──
+let slidesModalLesson = null;
+let pendingSlideFiles = [];
+
+function openSlidesModal(lessonId) {
+  slidesModalLesson = allLessons.find(l => l.id === lessonId);
+  if (!slidesModalLesson) return;
+  const l = slidesModalLesson;
+  const SUBJ = { math:'Математика', algebra:'Алгебра', geometry:'Геометрия' };
+  document.getElementById('slideModalTitle').textContent = l.title || '—';
+  document.getElementById('slideModalSub').textContent =
+    `${l.grade}-сынып · ${SUBJ[l.subject]||l.subject} · ${l.lesson_num}-сабақ`;
+
+  const existing = Array.isArray(l.slides_urls) ? l.slides_urls : [];
+  const grid = document.getElementById('slidesPreviewGrid');
+  if (existing.length) {
+    grid.innerHTML = existing.map((url, i) =>
+      `<div class="slide-thumb-item"><img src="${url}" loading="lazy"><span class="slide-idx">${i+1}</span></div>`
+    ).join('');
+    document.getElementById('slidesClearBtn').style.display = 'inline-block';
+  } else {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:6px 0;grid-column:1/-1">Слайдтар жоқ</div>';
+    document.getElementById('slidesClearBtn').style.display = 'none';
+  }
+
+  pendingSlideFiles = [];
+  document.getElementById('slidesNewPreview').innerHTML = '';
+  document.getElementById('slidesSaveBtn').style.display = 'none';
+  document.getElementById('slidesFileInput').value = '';
+  document.getElementById('slidesUploadResult').style.display = 'none';
+  document.getElementById('slidesProgressWrap').style.display = 'none';
+  document.getElementById('slidesModalOverlay').classList.add('open');
+}
+
+function closeSlidesModal() {
+  document.getElementById('slidesModalOverlay').classList.remove('open');
+  slidesModalLesson = null;
+  pendingSlideFiles = [];
+}
+
+function handleSlidesSelect(files) {
+  if (!files || !files.length) return;
+  pendingSlideFiles = Array.from(files).sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { numeric: true })
+  );
+  const preview = document.getElementById('slidesNewPreview');
+  preview.innerHTML =
+    `<div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:8px">
+       Жаңа слайдтар (${pendingSlideFiles.length} сурет):
+     </div>
+     <div class="slides-preview-grid">
+       ${pendingSlideFiles.map((f, i) => `
+         <div class="slide-thumb-item">
+           <img src="${URL.createObjectURL(f)}" loading="lazy">
+           <span class="slide-idx">${i+1}</span>
+         </div>`).join('')}
+     </div>`;
+  document.getElementById('slidesSaveBtn').style.display = 'inline-block';
+}
+
+async function uploadSlidesNow() {
+  if (!slidesModalLesson || !pendingSlideFiles.length) return;
+  const l = slidesModalLesson;
+  const progressWrap = document.getElementById('slidesProgressWrap');
+  const progressBar  = document.getElementById('slidesProgressBar');
+  const result       = document.getElementById('slidesUploadResult');
+  const saveBtn      = document.getElementById('slidesSaveBtn');
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Жүктелуде...';
+  result.style.display = 'none';
+  progressWrap.style.display = 'block';
+  progressBar.style.width = '5%';
+
+  const urls = [];
+  for (let i = 0; i < pendingSlideFiles.length; i++) {
+    const file = pendingSlideFiles[i];
+    const ext  = file.name.split('.').pop().toLowerCase();
+    const path = `grade${l.grade}/lesson${l.lesson_num}/slides/slide_${String(i+1).padStart(2,'0')}.${ext}`;
+
+    const { error } = await sb.storage
+      .from('lesson-videos')
+      .upload(path, file, { upsert: true, contentType: file.type });
+
+    if (error) {
+      result.className = 'upload-result err';
+      result.textContent = `✕ ${i+1}-слайд қатесі: ${error.message}`;
+      result.style.display = 'block';
+      saveBtn.disabled = false;
+      saveBtn.textContent = '⬆ Жүктеу';
+      return;
+    }
+
+    const { data: urlData } = sb.storage.from('lesson-videos').getPublicUrl(path);
+    urls.push(urlData.publicUrl);
+    progressBar.style.width = `${Math.round(((i + 1) / pendingSlideFiles.length) * 90)}%`;
+  }
+
+  const { error: dbErr } = await sb.from('materials')
+    .update({ slides_urls: urls })
+    .eq('id', l.id);
+
+  progressBar.style.width = '100%';
+  setTimeout(() => { progressWrap.style.display = 'none'; progressBar.style.width = '0%'; }, 700);
+
+  if (dbErr) {
+    result.className = 'upload-result err';
+    result.textContent = '✕ Дерекқор қатесі: ' + dbErr.message;
+    result.style.display = 'block';
+    saveBtn.disabled = false;
+    saveBtn.textContent = '⬆ Жүктеу';
+    return;
+  }
+
+  result.className = 'upload-result ok';
+  result.textContent = `✓ ${urls.length} слайд сақталды!`;
+  result.style.display = 'block';
+  saveBtn.style.display = 'none';
+
+  await loadLessons();
+  slidesModalLesson = allLessons.find(l2 => l2.id === l.id);
+
+  const grid = document.getElementById('slidesPreviewGrid');
+  grid.innerHTML = urls.map((url, i) =>
+    `<div class="slide-thumb-item"><img src="${url}" loading="lazy"><span class="slide-idx">${i+1}</span></div>`
+  ).join('');
+  document.getElementById('slidesClearBtn').style.display = 'inline-block';
+  document.getElementById('slidesNewPreview').innerHTML = '';
+  pendingSlideFiles = [];
+}
+
+async function clearSlidesNow() {
+  if (!slidesModalLesson) return;
+  if (!confirm('Барлық слайд суреттерін өшіресіз бе?')) return;
+  const { error } = await sb.from('materials')
+    .update({ slides_urls: [] })
+    .eq('id', slidesModalLesson.id);
+  if (error) { alert('Қате: ' + error.message); return; }
+  await loadLessons();
+  slidesModalLesson = allLessons.find(l => l.id === slidesModalLesson.id);
+  document.getElementById('slidesPreviewGrid').innerHTML =
+    '<div style="color:var(--muted);font-size:13px;padding:6px 0;grid-column:1/-1">Слайдтар жоқ</div>';
+  document.getElementById('slidesClearBtn').style.display = 'none';
+  document.getElementById('slidesUploadResult').style.display = 'none';
 }
 
 // ── Бейне жүктеу (Supabase Storage → materials кестесіне байлау) ──
