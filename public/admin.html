@@ -745,7 +745,7 @@ async function saveLesson() {
   if (pptFile) {
     prog.textContent = 'PPT жүктелуде...';
     const ext  = pptFile.name.split('.').pop();
-    const path = `grade${grade}/lesson${lesson_num}/ppt_${Date.now()}.${ext}`;
+    const path = `grade${grade}/${subject}/lesson${lesson_num}/ppt_${Date.now()}.${ext}`;
     const { error: e } = await sb.storage.from('lesson-videos').upload(path, pptFile, { upsert: true });
     if (!e) {
       const { data: u } = sb.storage.from('lesson-videos').getPublicUrl(path);
@@ -758,7 +758,7 @@ async function saveLesson() {
   if (qmjFile) {
     prog.textContent = 'ҚМЖ жүктелуде...';
     const ext  = qmjFile.name.split('.').pop();
-    const path = `grade${grade}/lesson${lesson_num}/qmj_${Date.now()}.${ext}`;
+    const path = `grade${grade}/${subject}/lesson${lesson_num}/qmj_${Date.now()}.${ext}`;
     const { error: e } = await sb.storage.from('lesson-videos').upload(path, qmjFile, { upsert: true });
     if (!e) {
       const { data: u } = sb.storage.from('lesson-videos').getPublicUrl(path);
@@ -781,7 +781,7 @@ async function saveLesson() {
       prog.textContent = `Слайдтар жүктелуде... ${i + 1}/${slideSources.length}`;
       const blob = slideSources[i].blob;
       const ext  = pendingSlideBlobs.length ? 'jpg' : manualFiles[i].name.split('.').pop().toLowerCase();
-      const path = `grade${grade}/lesson${lesson_num}/slides/slide_${String(i + 1).padStart(2, '0')}.${ext}`;
+      const path = `grade${grade}/${subject}/lesson${lesson_num}/slides/slide_${String(i + 1).padStart(2, '0')}.${ext}`;
       const { error: e } = await sb.storage.from('lesson-videos').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
       if (!e) {
         const { data: u } = sb.storage.from('lesson-videos').getPublicUrl(path);
@@ -797,7 +797,7 @@ async function saveLesson() {
   if (qmjThumb) {
     prog.textContent = 'ҚМЖ суреті жүктелуде...';
     const ext  = qmjThumb.name.split('.').pop();
-    const path = `grade${grade}/lesson${lesson_num}/qmj_thumb_${Date.now()}.${ext}`;
+    const path = `grade${grade}/${subject}/lesson${lesson_num}/qmj_thumb_${Date.now()}.${ext}`;
     const { error: e } = await sb.storage.from('lesson-videos').upload(path, qmjThumb, { upsert: true });
     if (!e) {
       const { data: u } = sb.storage.from('lesson-videos').getPublicUrl(path);
@@ -999,7 +999,7 @@ async function uploadSlidesNow() {
   for (let i = 0; i < pendingSlideFiles.length; i++) {
     const file = pendingSlideFiles[i];
     const ext  = file.name.split('.').pop().toLowerCase();
-    const path = `grade${l.grade}/lesson${l.lesson_num}/slides/slide_${String(i+1).padStart(2,'0')}.${ext}`;
+    const path = `grade${l.grade}/${l.subject}/lesson${l.lesson_num}/slides/slide_${String(i+1).padStart(2,'0')}.${ext}`;
 
     const { error } = await sb.storage
       .from('lesson-videos')
@@ -1178,7 +1178,7 @@ function replaceFile(lessonId, type) {
     if (btnEl) { btnEl.textContent = 'Жүктелуде...'; btnEl.disabled = true; }
 
     const ext  = file.name.split('.').pop();
-    const path = `grade${lesson.grade}/lesson${lesson.lesson_num}/${type}_${Date.now()}.${ext}`;
+    const path = `grade${lesson.grade}/${lesson.subject}/lesson${lesson.lesson_num}/${type}_${Date.now()}.${ext}`;
 
     const { error: upErr } = await sb.storage.from('lesson-videos')
       .upload(path, file, { upsert: true, contentType: file.type });
