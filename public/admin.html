@@ -1020,7 +1020,7 @@ async function uploadSlidesNow() {
   }
 
   const { error: dbErr } = await sb.from('materials')
-    .update({ slides_urls: urls })
+    .update({ slides_urls: urls, ppt_thumb_url: urls[0] })
     .eq('id', l.id);
 
   progressBar.style.width = '100%';
