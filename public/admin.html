@@ -349,14 +349,18 @@ tr:hover td{background:#f8faff}
         </label>
       </div>
       <div class="form-row">
-        <label class="file-upload-label">
-          <span>🖼 PPT 1-слайд суреті (JPEG)</span>
-          <input type="file" id="fPptThumb" accept=".jpg,.jpeg,.png">
+        <label class="file-upload-label" style="flex:1">
+          <span>🖼 Презентация слайдтары (барлық суреттер, 1–30+)</span>
+          <input type="file" id="fPptThumb" accept=".jpg,.jpeg,.png" multiple onchange="previewFormSlides(this.files)">
         </label>
-        <label class="file-upload-label">
+        <label class="file-upload-label" style="flex:1">
           <span>🖼 ҚМЖ preview суреті (JPEG)</span>
           <input type="file" id="fQmjThumb" accept=".jpg,.jpeg,.png">
         </label>
+      </div>
+      <div id="fSlidesPreview" style="display:none;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:6px" id="fSlidesCount"></div>
+        <div class="slides-preview-grid" id="fSlidesGrid"></div>
       </div>
       <div class="save-progress" id="saveProgress">Жүктелуде...</div>
       <div style="display:flex;gap:10px">
@@ -749,14 +753,25 @@ async function saveLesson() {
     }
   }
 
-  if (pptThumb) {
-    prog.textContent = 'PPT суреті жүктелуде...';
-    const ext  = pptThumb.name.split('.').pop();
-    const path = `grade${grade}/lesson${lesson_num}/ppt_thumb_${Date.now()}.${ext}`;
-    const { error: e } = await sb.storage.from('lesson-videos').upload(path, pptThumb, { upsert: true });
-    if (!e) {
-      const { data: u } = sb.storage.from('lesson-videos').getPublicUrl(path);
-      payload.ppt_thumb_url = u.publicUrl;
+  const pptThumbFiles = Array.from(document.getElementById('fPptThumb').files)
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+
+  if (pptThumbFiles.length) {
+    const slideUrls = [];
+    for (let i = 0; i < pptThumbFiles.length; i++) {
+      prog.textContent = `Слайдтар жүктелуде... ${i + 1}/${pptThumbFiles.length}`;
+      const file = pptThumbFiles[i];
+      const ext  = file.name.split('.').pop().toLowerCase();
+      const path = `grade${grade}/lesson${lesson_num}/slides/slide_${String(i + 1).padStart(2, '0')}.${ext}`;
+      const { error: e } = await sb.storage.from('lesson-videos').upload(path, file, { upsert: true, contentType: file.type });
+      if (!e) {
+        const { data: u } = sb.storage.from('lesson-videos').getPublicUrl(path);
+        slideUrls.push(u.publicUrl);
+      }
+    }
+    if (slideUrls.length) {
+      payload.slides_urls = slideUrls;
+      payload.ppt_thumb_url = slideUrls[0];
     }
   }
 
@@ -782,6 +797,8 @@ async function saveLesson() {
   document.getElementById('fQmjFile').value = '';
   document.getElementById('fPptThumb').value = '';
   document.getElementById('fQmjThumb').value = '';
+  document.getElementById('fSlidesPreview').style.display = 'none';
+  document.getElementById('fSlidesGrid').innerHTML = '';
   document.getElementById('addLessonForm').classList.remove('open');
   await loadLessons();
 }
@@ -791,6 +808,25 @@ async function deleteLesson(id) {
   const { error } = await sb.from('materials').delete().eq('id', id);
   if (error) { alert('Жою қатесі: ' + error.message); return; }
   await loadLessons();
+}
+
+// ── Жаңа сабақ формасындағы слайд preview ──
+function previewFormSlides(files) {
+  const wrap  = document.getElementById('fSlidesPreview');
+  const grid  = document.getElementById('fSlidesGrid');
+  const count = document.getElementById('fSlidesCount');
+  if (!files || !files.length) { wrap.style.display = 'none'; return; }
+  const sorted = Array.from(files).sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { numeric: true })
+  );
+  count.textContent = `Таңдалған слайдтар: ${sorted.length} сурет (алдын ала қарау):`;
+  grid.innerHTML = sorted.map((f, i) =>
+    `<div class="slide-thumb-item">
+       <img src="${URL.createObjectURL(f)}" loading="lazy">
+       <span class="slide-idx">${i + 1}</span>
+     </div>`
+  ).join('');
+  wrap.style.display = 'block';
 }
 
 // ── Слайд суреттерін басқару ──
