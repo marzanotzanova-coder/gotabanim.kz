@@ -348,9 +348,23 @@ tr:hover td{background:#f8faff}
           <input type="file" id="fQmjFile" accept=".doc,.docx,.pdf">
         </label>
       </div>
+      <!-- PDF auto-extract zone -->
+      <div style="border:2px dashed #0ea5e9;border-radius:12px;padding:14px 16px;background:rgba(14,165,233,.04);margin-bottom:10px">
+        <div style="font-size:12px;font-weight:800;color:#0284c7;margin-bottom:8px">
+          🪄 Презентация PDF → автоматты слайдтар
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">
+          PowerPoint → <b>File → Export as PDF</b> (немесе Google Slides → Download as PDF), содан кейін осы жерге PDF тастаңыз
+        </div>
+        <label class="file-upload-label" style="margin-bottom:0">
+          <span>📄 Презентация PDF файлы</span>
+          <input type="file" id="fPdfSlides" accept=".pdf" onchange="extractPdfSlides(this.files[0])">
+        </label>
+        <div id="fPdfStatus" style="display:none;font-size:12px;font-weight:600;color:#0284c7;margin-top:8px"></div>
+      </div>
       <div class="form-row">
         <label class="file-upload-label" style="flex:1">
-          <span>🖼 Презентация слайдтары (барлық суреттер, 1–30+)</span>
+          <span>🖼 Слайдтарды қолмен қосу (JPEG, бірнешеу)</span>
           <input type="file" id="fPptThumb" accept=".jpg,.jpeg,.png" multiple onchange="previewFormSlides(this.files)">
         </label>
         <label class="file-upload-label" style="flex:1">
@@ -449,6 +463,7 @@ tr:hover td{background:#f8faff}
 
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script>
@@ -753,17 +768,21 @@ async function saveLesson() {
     }
   }
 
-  const pptThumbFiles = Array.from(document.getElementById('fPptThumb').files)
+  // PDF blob-тары бар болса — сол, болмаса қолмен таңдалған суреттер
+  const manualFiles = Array.from(document.getElementById('fPptThumb').files)
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+  const slideSources = pendingSlideBlobs.length
+    ? pendingSlideBlobs.map((b, i) => ({ blob: b, idx: i }))
+    : manualFiles.map((f, i) => ({ blob: f, idx: i }));
 
-  if (pptThumbFiles.length) {
+  if (slideSources.length) {
     const slideUrls = [];
-    for (let i = 0; i < pptThumbFiles.length; i++) {
-      prog.textContent = `Слайдтар жүктелуде... ${i + 1}/${pptThumbFiles.length}`;
-      const file = pptThumbFiles[i];
-      const ext  = file.name.split('.').pop().toLowerCase();
+    for (let i = 0; i < slideSources.length; i++) {
+      prog.textContent = `Слайдтар жүктелуде... ${i + 1}/${slideSources.length}`;
+      const blob = slideSources[i].blob;
+      const ext  = pendingSlideBlobs.length ? 'jpg' : manualFiles[i].name.split('.').pop().toLowerCase();
       const path = `grade${grade}/lesson${lesson_num}/slides/slide_${String(i + 1).padStart(2, '0')}.${ext}`;
-      const { error: e } = await sb.storage.from('lesson-videos').upload(path, file, { upsert: true, contentType: file.type });
+      const { error: e } = await sb.storage.from('lesson-videos').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
       if (!e) {
         const { data: u } = sb.storage.from('lesson-videos').getPublicUrl(path);
         slideUrls.push(u.publicUrl);
@@ -797,8 +816,11 @@ async function saveLesson() {
   document.getElementById('fQmjFile').value = '';
   document.getElementById('fPptThumb').value = '';
   document.getElementById('fQmjThumb').value = '';
+  document.getElementById('fPdfSlides').value = '';
+  document.getElementById('fPdfStatus').style.display = 'none';
   document.getElementById('fSlidesPreview').style.display = 'none';
   document.getElementById('fSlidesGrid').innerHTML = '';
+  pendingSlideBlobs = [];
   document.getElementById('addLessonForm').classList.remove('open');
   await loadLessons();
 }
@@ -810,12 +832,82 @@ async function deleteLesson(id) {
   await loadLessons();
 }
 
-// ── Жаңа сабақ формасындағы слайд preview ──
+// ── PDF → слайд суреттері (PDF.js) ──
+let pendingSlideBlobs = []; // PDF-тен алынған blob-тар
+
+async function extractPdfSlides(file) {
+  if (!file) return;
+  const status = document.getElementById('fPdfStatus');
+  status.style.display = 'block';
+  status.textContent = 'PDF оқылуда...';
+
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const totalPages = pdf.numPages;
+    status.textContent = `${totalPages} бет табылды, суретке айналдырылуда...`;
+
+    pendingSlideBlobs = [];
+    const blobs = [];
+
+    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+      status.textContent = `Слайд ${pageNum}/${totalPages} өңделуде...`;
+      const page = await pdf.getPage(pageNum);
+      const scale = 1.5;
+      const viewport = page.getViewport({ scale });
+
+      const canvas = document.createElement('canvas');
+      canvas.width  = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext('2d');
+
+      await page.render({ canvasContext: ctx, viewport }).promise;
+
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.88));
+      blobs.push(blob);
+    }
+
+    pendingSlideBlobs = blobs;
+    status.textContent = `✓ ${blobs.length} слайд дайын — сақтау кезінде жүктеледі`;
+    status.style.color = '#16a34a';
+
+    // Preview көрсет
+    const wrap  = document.getElementById('fSlidesPreview');
+    const grid  = document.getElementById('fSlidesGrid');
+    const count = document.getElementById('fSlidesCount');
+    count.textContent = `PDF-тен алынған слайдтар: ${blobs.length} бет (алдын ала қарау):`;
+    grid.innerHTML = blobs.map((b, i) =>
+      `<div class="slide-thumb-item">
+         <img src="${URL.createObjectURL(b)}" loading="lazy">
+         <span class="slide-idx">${i + 1}</span>
+       </div>`
+    ).join('');
+    wrap.style.display = 'block';
+
+    // Қолмен input-ті тазала
+    document.getElementById('fPptThumb').value = '';
+  } catch (e) {
+    status.textContent = '⚠ PDF оқу қатесі: ' + e.message;
+    status.style.color = '#dc2626';
+  }
+}
+
+// ── Жаңа сабақ формасындағы слайд preview (қолмен) ──
 function previewFormSlides(files) {
   const wrap  = document.getElementById('fSlidesPreview');
   const grid  = document.getElementById('fSlidesGrid');
   const count = document.getElementById('fSlidesCount');
   if (!files || !files.length) { wrap.style.display = 'none'; return; }
+
+  // PDF жолы таңдалса, blob-тарды тазала
+  pendingSlideBlobs = [];
+  const status = document.getElementById('fPdfStatus');
+  status.style.display = 'none';
+  document.getElementById('fPdfSlides').value = '';
+
   const sorted = Array.from(files).sort((a, b) =>
     a.name.localeCompare(b.name, undefined, { numeric: true })
   );
