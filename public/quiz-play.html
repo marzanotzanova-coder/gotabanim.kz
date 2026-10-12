@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoTAB — Викторина</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;min-height:100vh;overflow:hidden;
+  background:var(--bg1);color:var(--txt);transition:background .5s}
+
+/* ─── THEME VARIABLES ─── */
+:root{
+  --bg1:#001a33;--bg2:#003875;
+  --acc:#00d4ff;--acc2:#0076b6;
+  --txt:#e0f4ff;--muted:rgba(224,244,255,.6);
+  --card:rgba(0,60,120,.45);--border:rgba(0,212,255,.3);
+  --ok:#00ff9d;--bad:#ff4d6d;
+  --shadow:rgba(0,212,255,.3);
+  --particle:rgba(255,255,255,.18);
+}
+[data-theme=cave]{
+  --bg1:#0a0500;--bg2:#1a0e00;
+  --acc:#ff8c00;--acc2:#c45a00;
+  --txt:#ffe8c0;--muted:rgba(255,232,192,.6);
+  --card:rgba(50,25,0,.55);--border:rgba(255,140,0,.35);
+  --ok:#88ff44;--bad:#ff3333;
+  --shadow:rgba(255,140,0,.4);
+  --particle:rgba(255,180,0,.15);
+}
+[data-theme=space]{
+  --bg1:#000005;--bg2:#0d0030;
+  --acc:#c084fc;--acc2:#7c3aed;
+  --txt:#f0e6ff;--muted:rgba(240,230,255,.6);
+  --card:rgba(20,0,60,.5);--border:rgba(192,132,252,.3);
+  --ok:#44ff88;--bad:#ff3366;
+  --shadow:rgba(192,132,252,.4);
+  --particle:rgba(255,255,255,.15);
+}
+[data-theme=forest]{
+  --bg1:#010d01;--bg2:#0a3d0a;
+  --acc:#44ff44;--acc2:#1a8c1a;
+  --txt:#d0ffd0;--muted:rgba(208,255,208,.6);
+  --card:rgba(0,40,0,.5);--border:rgba(68,255,68,.3);
+  --ok:#ffff44;--bad:#ff4444;
+  --shadow:rgba(68,255,68,.35);
+  --particle:rgba(100,255,100,.15);
+}
+[data-theme=steppe]{
+  --bg1:#7b3200;--bg2:#2e7d32;
+  --acc:#ffd700;--acc2:#ff8c00;
+  --txt:#fff8e1;--muted:rgba(255,248,225,.7);
+  --card:rgba(80,40,0,.4);--border:rgba(255,215,0,.4);
+  --ok:#88ff44;--bad:#ff4444;
+  --shadow:rgba(255,215,0,.4);
+  --particle:rgba(255,220,50,.15);
+}
+
+/* ─── THEME LAYER ─── */
+#themeLayer{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:linear-gradient(to bottom,var(--bg1),var(--bg2))}
+.bubble{position:absolute;border-radius:50%;background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.3);animation:bubRise var(--dur,5s) var(--del,0s) infinite ease-in}
+.fish{position:absolute;bottom:30%;font-size:22px;animation:fishSwim 12s -4s infinite linear}
+.star-dot{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--dur,2s) var(--del,0s) infinite alternate}
+.stalactite{position:absolute;top:0;border-left:var(--w1,5px) solid transparent;
+  border-right:var(--w2,5px) solid transparent;border-top:var(--h,40px) solid #2d1800}
+.crystal{position:absolute;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+  animation:crystGlow var(--dur,2s) var(--del,0s) infinite alternate}
+.torch{position:absolute;bottom:0;width:6px;height:20px;background:#5c3a00;border-radius:2px}
+.torch::after{content:'';position:absolute;bottom:100%;left:50%;transform:translateX(-50%);
+  width:10px;height:10px;border-radius:50% 50% 30% 30%;
+  background:radial-gradient(#fff700,#ff6600);animation:torchFlicker 0.3s infinite alternate}
+.leaf{position:absolute;font-size:16px;animation:leafFall var(--dur,4s) var(--del,0s) infinite linear}
+.firefly{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff700;
+  animation:fireflyBlink var(--dur,3s) var(--del,0s) infinite}
+.sun-el{position:absolute;border-radius:50%;animation:sunPulse 3s infinite alternate}
+.grass{position:absolute;bottom:0;left:0;right:0;height:60px;overflow:hidden}
+.grass-blade{position:absolute;bottom:0;width:3px;border-radius:2px 2px 0 0;
+  background:linear-gradient(to top,#1b5e20,#43a047);transform-origin:bottom center;
+  animation:grassWave var(--dur,2s) var(--del,0s) infinite ease-in-out alternate}
+.shooting-star{position:absolute;width:2px;height:80px;background:linear-gradient(to bottom,#fff,transparent);
+  transform:rotate(35deg);animation:shootingStar 8s var(--del,0s) infinite linear;opacity:0}
+
+/* ─── SCREENS ─── */
+.screen{position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;
+  padding:20px;flex-direction:column}
+.screen.active{display:flex}
+
+/* Loading */
+#sLoad{background:rgba(0,0,0,.8)}
+.loader{width:48px;height:48px;border-radius:50%;border:4px solid rgba(255,255,255,.1);
+  border-top-color:var(--acc);animation:spin 1s linear infinite;margin-bottom:20px}
+.load-txt{color:var(--muted);font-size:14px}
+
+/* Intro */
+#sIntro{text-align:center;gap:16px}
+.quiz-badge{padding:8px 20px;border:1px solid var(--border);border-radius:100px;
+  font-size:12px;font-weight:700;color:var(--acc);letter-spacing:2px;background:var(--card);
+  backdrop-filter:blur(10px)}
+.quiz-title{font-size:clamp(22px,5vw,38px);font-weight:900;color:var(--txt);
+  text-shadow:0 0 30px var(--shadow);letter-spacing:-.5px;max-width:600px;text-align:center}
+.quiz-meta{font-size:13px;color:var(--muted)}
+.btn-start{margin-top:12px;padding:16px 44px;background:var(--acc);border:none;border-radius:14px;
+  color:#000;font-size:17px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;
+  animation:pulseBtn 2s infinite;letter-spacing:-.3px}
+.btn-start:hover{filter:brightness(1.1);transform:scale(1.04)}
+
+/* ─── HUD (shared) ─── */
+.hud{position:fixed;top:0;left:0;right:0;z-index:20;
+  display:none;align-items:center;justify-content:space-between;
+  padding:14px 24px;background:rgba(0,0,0,.3);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border)}
+.hud.active{display:flex}
+.hud-title{font-size:13px;font-weight:700;color:var(--acc);max-width:200px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hud-score{font-size:13px;font-weight:800;color:var(--txt)}
+.hud-prog{flex:1;height:4px;background:rgba(255,255,255,.1);
+  border-radius:2px;margin:0 16px;overflow:hidden}
+.hud-prog-fill{height:100%;background:var(--acc);border-radius:2px;transition:width .4s}
+.btn-quit{padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:transparent;
+  color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;
+  transition:color .2s}
+.btn-quit:hover{color:var(--bad)}
+
+/* ─── QUIZ GAME ─── */
+#sQuiz{flex-direction:column;gap:20px;padding-top:80px}
+.q-card{background:var(--card);backdrop-filter:blur(16px);border:1px solid var(--border);
+  border-radius:20px;padding:28px 32px;max-width:680px;width:100%;text-align:center;
+  box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.q-num{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;letter-spacing:2px}
+.q-text{font-size:clamp(16px,3vw,22px);font-weight:700;color:var(--txt);line-height:1.4}
+.timer-ring{width:40px;height:40px;margin:16px auto 0}
+.timer-ring svg{transform:rotate(-90deg)}
+.timer-ring circle{stroke-dasharray:100;stroke-dashoffset:100;transition:stroke-dashoffset .9s linear;
+  stroke:var(--acc);stroke-width:5;fill:none}
+.timer-num{font-size:10px;font-weight:800;fill:var(--acc);text-anchor:middle;dominant-baseline:middle;
+  transform:rotate(90deg) translate(0,0)}
+.choices-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:680px;width:100%}
+@media(max-width:500px){.choices-grid{grid-template-columns:1fr}}
+.choice-btn{padding:16px 20px;background:var(--card);backdrop-filter:blur(12px);
+  border:1.5px solid var(--border);border-radius:14px;color:var(--txt);
+  font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;
+  transition:all .2s;text-align:left;display:flex;align-items:center;gap:12px}
+.choice-btn:hover:not(:disabled){background:rgba(255,255,255,.1);border-color:var(--acc);transform:scale(1.02)}
+.choice-btn:disabled{cursor:default}
+.choice-btn.correct{background:rgba(0,255,157,.15);border-color:var(--ok);color:var(--ok);
+  box-shadow:0 0 20px rgba(0,255,157,.2)}
+.choice-btn.wrong{background:rgba(255,77,109,.1);border-color:var(--bad);color:var(--bad)}
+.choice-ltr{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.1);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;
+  flex-shrink:0}
+.feedback-bar{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+  padding:14px 28px;border-radius:12px;font-size:15px;font-weight:700;
+  backdrop-filter:blur(16px);opacity:0;transition:opacity .3s;pointer-events:none;z-index:30}
+.feedback-bar.ok{background:rgba(0,255,157,.15);border:1px solid var(--ok);color:var(--ok)}
+.feedback-bar.bad{background:rgba(255,77,109,.1);border:1px solid var(--bad);color:var(--bad)}
+.feedback-bar.show{opacity:1}
+
+/* ─── MATCH GAME ─── */
+#sMatch{flex-direction:column;gap:16px;padding-top:80px;overflow-y:auto;align-items:center}
+.match-info{font-size:13px;color:var(--muted);text-align:center;margin-bottom:4px}
+.match-area{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:700px;width:100%}
+.match-pill{padding:14px 18px;background:var(--card);backdrop-filter:blur(12px);
+  border:1.5px solid var(--border);border-radius:12px;color:var(--txt);
+  font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;
+  min-height:52px;display:flex;align-items:center;justify-content:center}
+.match-pill:hover:not(.matched):not(.selected){background:rgba(255,255,255,.08);border-color:var(--acc)}
+.match-pill.selected{border-color:var(--acc);box-shadow:0 0 16px var(--shadow);color:var(--acc)}
+.match-pill.matched{opacity:.3;cursor:default;border-color:rgba(255,255,255,.1)}
+.match-pill.shake{animation:shake .4s}
+.match-col-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:2px;
+  text-align:center;margin-bottom:4px}
+
+/* ─── CAROUSEL GAME ─── */
+#sCarousel{flex-direction:column;gap:20px;padding-top:80px;align-items:center}
+.carousel-wrap{perspective:1000px;width:min(460px,92vw);height:240px;position:relative}
+.flip-card{width:100%;height:100%;transform-style:preserve-3d;transition:transform .6s;cursor:pointer;position:relative}
+.flip-card.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:20px;
+  display:flex;align-items:center;justify-content:center;padding:28px;text-align:center;
+  background:var(--card);backdrop-filter:blur(16px);border:1px solid var(--border)}
+.card-back{transform:rotateY(180deg);border-color:var(--ok)}
+.card-front-label{position:absolute;top:16px;left:20px;font-size:10px;font-weight:700;
+  color:var(--muted);letter-spacing:2px}
+.card-back-label{position:absolute;top:16px;left:20px;font-size:10px;font-weight:700;
+  color:rgba(0,255,157,.6);letter-spacing:2px}
+.card-text{font-size:clamp(15px,3vw,20px);font-weight:700;color:var(--txt);line-height:1.4}
+.flip-hint{font-size:12px;color:var(--muted);text-align:center}
+.carousel-nav{display:flex;gap:12px;align-items:center;justify-content:center}
+.nav-btn{padding:10px 24px;background:var(--card);border:1px solid var(--border);border-radius:10px;
+  color:var(--txt);font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;
+  transition:all .2s}
+.nav-btn:hover{border-color:var(--acc);color:var(--acc)}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.carousel-dots{display:flex;gap:6px;align-items:center;justify-content:center}
+.c-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .3s}
+.c-dot.active{background:var(--acc);width:18px;border-radius:4px}
+.know-btns{display:flex;gap:12px}
+.know-btn{padding:11px 28px;border:none;border-radius:12px;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
+.know-btn.yes{background:rgba(0,255,157,.15);border:1px solid var(--ok);color:var(--ok)}
+.know-btn.yes:hover{background:rgba(0,255,157,.25)}
+.know-btn.no{background:rgba(255,77,109,.1);border:1px solid var(--bad);color:var(--bad)}
+.know-btn.no:hover{background:rgba(255,77,109,.2)}
+
+/* ─── SORT GAME ─── */
+#sSort{flex-direction:column;gap:16px;padding-top:80px;overflow-y:auto;
+  align-items:center;padding-bottom:40px}
+.boxes-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:720px;width:100%}
+.sort-box{flex:1;min-width:140px;min-height:100px;background:var(--card);
+  backdrop-filter:blur(12px);border:2px dashed var(--border);border-radius:16px;padding:14px;
+  transition:all .25s;display:flex;flex-direction:column;gap:8px}
+.sort-box.highlight{border-color:var(--acc);background:rgba(255,255,255,.08);
+  box-shadow:0 0 20px var(--shadow)}
+.sort-box.correct-box{border-color:var(--ok);animation:boxPop .4s}
+.sort-box.wrong-box{border-color:var(--bad);animation:shake .4s}
+.box-label{font-size:12px;font-weight:800;color:var(--acc);letter-spacing:1px;margin-bottom:4px}
+.box-item{padding:8px 12px;background:rgba(255,255,255,.1);border-radius:8px;
+  font-size:13px;font-weight:600;color:var(--txt);text-align:center}
+.sort-items{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:720px;width:100%}
+.sort-chip{padding:12px 20px;background:var(--card);backdrop-filter:blur(12px);
+  border:1.5px solid var(--border);border-radius:12px;color:var(--txt);
+  font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
+.sort-chip:hover{border-color:var(--acc);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.sort-chip.selected{border-color:var(--acc);box-shadow:0 0 14px var(--shadow);color:var(--acc)}
+.sort-chip.placed{opacity:.25;cursor:default;transform:none}
+.sort-info{font-size:13px;color:var(--muted)}
+
+/* ─── RESULTS ─── */
+#sResults{text-align:center;gap:18px;padding-top:20px}
+.result-circle{width:120px;height:120px;border-radius:50%;background:var(--card);
+  border:3px solid var(--acc);display:flex;align-items:center;justify-content:center;
+  flex-direction:column;box-shadow:0 0 40px var(--shadow);animation:popIn .5s}
+.result-pct{font-size:32px;font-weight:900;color:var(--acc)}
+.result-lbl{font-size:11px;color:var(--muted);font-weight:600}
+.result-title{font-size:24px;font-weight:900;color:var(--txt)}
+.result-sub{font-size:14px;color:var(--muted);max-width:360px;line-height:1.6}
+.result-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.btn-replay{padding:13px 32px;background:var(--acc);border:none;border-radius:12px;
+  color:#000;font-size:14px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;
+  transition:filter .2s}
+.btn-replay:hover{filter:brightness(1.1)}
+.btn-share{padding:13px 32px;background:var(--card);border:1px solid var(--border);
+  border-radius:12px;color:var(--txt);font-size:14px;font-weight:700;cursor:pointer;
+  font-family:'Inter',sans-serif;transition:all .2s;backdrop-filter:blur(12px)}
+.btn-share:hover{border-color:var(--acc);color:var(--acc)}
+
+/* ─── ANIMATIONS ─── */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bubRise{0%{transform:translateY(0) scale(.5);opacity:0}20%{opacity:.7}100%{transform:translateY(-110vh) scale(1.2);opacity:0}}
+@keyframes fishSwim{0%{transform:translateX(-80px) scaleX(1)}49%{transform:translateX(110vw) scaleX(1)}50%{transform:translateX(110vw) scaleX(-1)}99%{transform:translateX(-80px) scaleX(-1)}100%{transform:translateX(-80px) scaleX(1)}}
+@keyframes twinkle{0%{opacity:.15}100%{opacity:1}}
+@keyframes crystGlow{0%{opacity:.3;filter:drop-shadow(0 0 2px currentColor)}100%{opacity:1;filter:drop-shadow(0 0 10px currentColor)}}
+@keyframes torchFlicker{0%{opacity:.7;transform:scale(.9)}100%{opacity:1;transform:scale(1.1)}}
+@keyframes leafFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(360deg);opacity:0}}
+@keyframes fireflyBlink{0%,100%{opacity:0}50%{opacity:1}}
+@keyframes sunPulse{0%{box-shadow:0 0 15px #ffb300}100%{box-shadow:0 0 40px #ff7b1c,0 0 60px rgba(255,215,0,.2)}}
+@keyframes grassWave{0%{transform:rotate(-5deg)}100%{transform:rotate(5deg)}}
+@keyframes shootingStar{0%{transform:translate(0,0) rotate(35deg);opacity:0}2%{opacity:1}8%{opacity:0;transform:translate(200px,200px) rotate(35deg)}100%{opacity:0}}
+@keyframes pulseBtn{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.3)}50%{box-shadow:0 0 0 14px rgba(255,255,255,0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes boxPop{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+@keyframes popIn{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- Theme background layer -->
+<div id="themeLayer"></div>
+
+<!-- HUD -->
+<div class="hud" id="hud">
+  <div class="hud-title" id="hudTitle"></div>
+  <div class="hud-prog"><div class="hud-prog-fill" id="hudProg"></div></div>
+  <div class="hud-score" id="hudScore">0 ⭐</div>
+  <button class="btn-quit" onclick="quitGame()">✕</button>
+</div>
+
+<!-- Loading -->
+<div class="screen active" id="sLoad">
+  <div class="loader"></div>
+  <div class="load-txt">Жүктелуде...</div>
+</div>
+
+<!-- Intro -->
+<div class="screen" id="sIntro">
+  <div class="quiz-badge" id="introBadge">ВИКТОРИНА</div>
+  <div class="quiz-title" id="introTitle"></div>
+  <div class="quiz-meta" id="introMeta"></div>
+  <button class="btn-start" id="btnStart" onclick="startGame()">▶ Бастау</button>
+</div>
+
+<!-- Quiz (multiple choice) -->
+<div class="screen" id="sQuiz">
+  <div class="q-card">
+    <div class="q-num" id="qNum">1 / 10</div>
+    <div class="q-text" id="qText"></div>
+    <div class="timer-ring" id="timerRing">
+      <svg width="40" height="40" viewBox="0 0 36 36">
+        <circle id="timerCircle" cx="18" cy="18" r="15.9"/>
+        <text id="timerNum" x="18" y="18" class="timer-num">30</text>
+      </svg>
+    </div>
+  </div>
+  <div class="choices-grid" id="choices"></div>
+</div>
+
+<!-- Match -->
+<div class="screen" id="sMatch" style="overflow-y:auto">
+  <div class="match-info" id="matchInfo">Сол жақтан бір, оң жақтан бір — жұп тап</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;max-width:700px;width:100%;margin-bottom:4px">
+    <div class="match-col-label">СҰРАҚТАР</div>
+    <div class="match-col-label">ЖАУАПТАР</div>
+  </div>
+  <div class="match-area" id="matchArea"></div>
+</div>
+
+<!-- Carousel -->
+<div class="screen" id="sCarousel">
+  <div class="carousel-wrap">
+    <div class="flip-card" id="flipCard" onclick="flipCard()">
+      <div class="card-face">
+        <span class="card-front-label">СҰРАҚ</span>
+        <div class="card-text" id="cardFront"></div>
+      </div>
+      <div class="card-face card-back">
+        <span class="card-back-label">ЖАУАП</span>
+        <div class="card-text" id="cardBack"></div>
+      </div>
+    </div>
+  </div>
+  <div class="flip-hint">👆 Карточканы басып, жауапты ашыңыз</div>
+  <div class="carousel-dots" id="carouselDots"></div>
+  <div class="carousel-nav">
+    <button class="nav-btn" id="prevBtn" onclick="prevCard()">← Алдыңғы</button>
+    <button class="nav-btn" id="nextBtn" onclick="nextCard()">Келесі →</button>
+  </div>
+  <div class="know-btns" id="knowBtns" style="display:none">
+    <button class="know-btn no" onclick="markCard(false)">✗ Білмедім</button>
+    <button class="know-btn yes" onclick="markCard(true)">✓ Білемін</button>
+  </div>
+</div>
+
+<!-- Sort boxes -->
+<div class="screen" id="sSort" style="overflow-y:auto">
+  <div class="sort-info" id="sortInfo">Элементтерді дұрыс қорапшаға орналастырыңыз</div>
+  <div class="boxes-row" id="boxesRow"></div>
+  <div class="sort-items" id="sortItems"></div>
+</div>
+
+<!-- Results -->
+<div class="screen" id="sResults">
+  <div class="result-circle">
+    <div class="result-pct" id="resPct">0%</div>
+    <div class="result-lbl">нәтиже</div>
+  </div>
+  <div class="result-title" id="resTitle"></div>
+  <div class="result-sub" id="resSub"></div>
+  <div class="result-btns">
+    <button class="btn-replay" onclick="location.reload()">🔄 Қайтадан</button>
+    <button class="btn-share" onclick="shareQuiz()">🔗 Бөлісу</button>
+  </div>
+</div>
+
+<!-- Feedback toast -->
+<div class="feedback-bar" id="feedbackBar"></div>
+
+<script src="supabase.js"></script>
+<script src="supabase-client.js"></script>
+<script>
+let quiz = null;
+let score = 0;
+let total = 0;
+let qIndex = 0;
+let timerInterval = null;
+
+// ── LOAD ──
+(async () => {
+  const id = new URLSearchParams(location.search).get('id');
+  if (!id) { showError('Сілтемеде quiz ID жоқ'); return; }
+  try {
+    const { data, error } = await sb.from('quizzes').select('*').eq('id', id).single();
+    if (error || !data) throw new Error('Табылмады');
+    quiz = data;
+    document.title = `GoTAB — ${quiz.title}`;
+    document.body.setAttribute('data-theme', quiz.theme);
+    initTheme(quiz.theme);
+    setupIntro();
+    show('sIntro');
+    // increment play count async
+    sb.from('quizzes').update({ play_count: (quiz.play_count||0)+1 }).eq('id', id);
+  } catch(e) { showError('Викторина табылмады: ' + e.message); }
+})();
+
+function showError(msg) {
+  document.getElementById('sLoad').innerHTML = `
+    <div style="text-align:center;color:var(--bad)">
+      <div style="font-size:40px;margin-bottom:16px">⚠️</div>
+      <div style="font-size:16px;font-weight:700;color:var(--txt);margin-bottom:8px">${msg}</div>
+      <a href="games.html" style="color:var(--acc);font-size:14px;text-decoration:none">← Ойындарға оралу</a>
+    </div>`;
+  show('sLoad');
+}
+
+function setupIntro() {
+  const typeNames = { quiz:'Викторина', match:'Сәйкестендіру', carousel:'Карусель', sort:'Сұрыптау' };
+  const themeNames = { underwater:'🌊 Су Астында', cave:'⛰️ Тау Ішінде', space:'🚀 Ғарыш', forest:'🌿 Орман', steppe:'🌅 Қазақ Даласы' };
+  document.getElementById('introBadge').textContent = (typeNames[quiz.game_type]||quiz.game_type).toUpperCase();
+  document.getElementById('introTitle').textContent = quiz.title;
+  document.getElementById('introMeta').textContent =
+    [themeNames[quiz.theme], quiz.grade, quiz.subject, quiz.questions.length + ' сұрақ'].filter(Boolean).join(' · ');
+}
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id !== 'sLoad' && id !== 'sIntro' && id !== 'sResults') {
+    document.getElementById('hud').classList.add('active');
+  } else {
+    document.getElementById('hud').classList.remove('active');
+  }
+  if (id === 'sLoad') document.getElementById('hud').classList.remove('active');
+}
+
+function startGame() {
+  score = 0; qIndex = 0;
+  const qs = quiz.questions;
+  document.getElementById('hudTitle').textContent = quiz.title;
+  document.getElementById('hudScore').textContent = '0 ⭐';
+  total = qs.length;
+  updateHud(0);
+  if      (quiz.game_type === 'quiz')     startQuizGame(qs);
+  else if (quiz.game_type === 'match')    startMatchGame(qs);
+  else if (quiz.game_type === 'carousel') startCarouselGame(qs);
+  else if (quiz.game_type === 'sort')     startSortGame(qs);
+}
+
+function updateHud(idx) {
+  const pct = total > 0 ? (idx/total)*100 : 0;
+  document.getElementById('hudProg').style.width = pct + '%';
+}
+
+// ══════════════════════════════════════
+// QUIZ GAME (multiple choice)
+// ══════════════════════════════════════
+function startQuizGame(qs) {
+  show('sQuiz');
+  renderQuizQuestion(qs, 0);
+}
+
+function renderQuizQuestion(qs, i) {
+  if (i >= qs.length) { showResults(); return; }
+  qIndex = i;
+  const q = qs[i];
+  document.getElementById('qNum').textContent = (i+1) + ' / ' + qs.length;
+  document.getElementById('qText').textContent = q.q;
+  updateHud(i);
+
+  const wrong = q.wrong?.length >= 3
+    ? q.wrong.slice(0,3)
+    : autoWrong(qs, i, q.a);
+
+  const opts = shuffle([q.a, ...wrong.slice(0,3)]);
+  const letters = ['A','B','C','D'];
+  document.getElementById('choices').innerHTML = opts.map((opt, j) => `
+    <button class="choice-btn" onclick="answerQuiz(this,'${escQ(q.a)}','${escQ(opt)}',${i})" id="ch${j}">
+      <div class="choice-ltr">${letters[j]}</div>
+      <span>${opt}</span>
+    </button>`).join('');
+
+  startTimer(30, i, qs);
+}
+
+function answerQuiz(btn, correct, chosen, i) {
+  stopTimer();
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+  const isOk = chosen === correct;
+  if (isOk) {
+    btn.classList.add('correct');
+    score++;
+    showFeedback('✓ Дұрыс!', true);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.choice-btn').forEach(b => {
+      if (b.querySelector('span')?.textContent === correct) b.classList.add('correct');
+    });
+    showFeedback('✗ Қате. Дұрысы: ' + correct, false);
+  }
+  document.getElementById('hudScore').textContent = score + ' ⭐';
+  setTimeout(() => renderQuizQuestion(quiz.questions, i+1), 2000);
+}
+
+function startTimer(sec, i, qs) {
+  stopTimer();
+  let t = sec;
+  const circle = document.getElementById('timerCircle');
+  const num = document.getElementById('timerNum');
+  function tick() {
+    const pct = (t/sec)*100;
+    circle.style.strokeDashoffset = 100 - pct;
+    num.textContent = t;
+    if (t <= 5) circle.style.stroke = 'var(--bad)';
+    else circle.style.stroke = 'var(--acc)';
+    if (--t < 0) {
+      stopTimer();
+      showFeedback('⏰ Уақыт аяқталды!', false);
+      document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+      setTimeout(() => renderQuizQuestion(qs, i+1), 1500);
+    }
+  }
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
+
+function autoWrong(qs, skip, correct) {
+  const pool = qs.filter((_,i) => i !== skip).map(q => q.a).filter(a => a !== correct);
+  const result = shuffle(pool).slice(0,3);
+  while (result.length < 3) result.push('?');
+  return result;
+}
+
+// ══════════════════════════════════════
+// MATCH GAME
+// ══════════════════════════════════════
+let matchSelected = null;
+let matchPairs = [];
+
+function startMatchGame(qs) {
+  show('sMatch');
+  matchSelected = null;
+  const pairs = qs.map((q,i) => ({ id:i, q: q.q, a: q.a, matched: false }));
+  matchPairs = pairs;
+  const terms = shuffle([...pairs.map(p => ({ id:p.id, text:p.q, side:'q' }))]);
+  const defs  = shuffle([...pairs.map(p => ({ id:p.id, text:p.a, side:'a' }))]);
+  total = pairs.length;
+  score = 0;
+  document.getElementById('matchInfo').textContent = 'Сол жақтан бір, оң жақтан бір — жұп тап';
+  const area = document.getElementById('matchArea');
+  const rows = Math.max(terms.length, defs.length);
+  area.innerHTML = '';
+  for (let i=0;i<rows;i++) {
+    if (terms[i]) area.appendChild(makePill(terms[i]));
+    else area.appendChild(document.createElement('div'));
+    if (defs[i]) area.appendChild(makePill(defs[i]));
+    else area.appendChild(document.createElement('div'));
+  }
+}
+
+function makePill(item) {
+  const d = document.createElement('div');
+  d.className = 'match-pill';
+  d.textContent = item.text;
+  d.dataset.id = item.id;
+  d.dataset.side = item.side;
+  d.onclick = () => clickMatchPill(d);
+  return d;
+}
+
+function clickMatchPill(pill) {
+  if (pill.classList.contains('matched')) return;
+  if (!matchSelected) {
+    document.querySelectorAll('.match-pill.selected').forEach(p => p.classList.remove('selected'));
+    pill.classList.add('selected');
+    matchSelected = pill;
+  } else {
+    if (pill === matchSelected) { pill.classList.remove('selected'); matchSelected = null; return; }
+    const a = matchSelected, b = pill;
+    if (a.dataset.id === b.dataset.id && a.dataset.side !== b.dataset.side) {
+      a.classList.add('matched'); b.classList.add('matched');
+      a.classList.remove('selected');
+      score++;
+      document.getElementById('hudScore').textContent = score + ' ⭐';
+      updateHud(score);
+      showFeedback('✓ Дұрыс жұп!', true);
+      if (score >= total) setTimeout(showResults, 1200);
+    } else {
+      a.classList.add('shake'); b.classList.add('shake');
+      setTimeout(() => { a.classList.remove('shake','selected'); b.classList.remove('shake'); }, 500);
+      showFeedback('✗ Жұп емес, қайтадан тырыс', false);
+    }
+    matchSelected = null;
+  }
+}
+
+// ══════════════════════════════════════
+// CAROUSEL GAME
+// ══════════════════════════════════════
+let carouselIdx = 0;
+let carouselKnown = [];
+let carouselFlipped = false;
+
+function startCarouselGame(qs) {
+  show('sCarousel');
+  carouselIdx = 0;
+  carouselKnown = new Array(qs.length).fill(null);
+  carouselFlipped = false;
+  total = qs.length;
+  score = 0;
+  renderCarouselDots(qs.length);
+  renderCard(qs, 0);
+}
+
+function renderCard(qs, i) {
+  const q = qs[i];
+  carouselFlipped = false;
+  const fc = document.getElementById('flipCard');
+  fc.classList.remove('flipped');
+  document.getElementById('cardFront').textContent = q.q;
+  document.getElementById('cardBack').textContent = q.a;
+  document.getElementById('prevBtn').disabled = i === 0;
+  document.getElementById('nextBtn').disabled = i >= qs.length-1;
+  document.getElementById('knowBtns').style.display = 'none';
+  updateHud(i);
+  // dots
+  document.querySelectorAll('.c-dot').forEach((d,j) => {
+    d.classList.toggle('active', j === i);
+    d.style.background = carouselKnown[j] === true ? 'var(--ok)' : carouselKnown[j] === false ? 'var(--bad)' : 'var(--border)';
+    if (j === i) d.style.background = 'var(--acc)';
+  });
+}
+
+function renderCarouselDots(n) {
+  document.getElementById('carouselDots').innerHTML = Array.from({length:n}, (_,i) =>
+    `<div class="c-dot ${i===0?'active':''}"></div>`).join('');
+}
+
+function flipCard() {
+  carouselFlipped = !carouselFlipped;
+  document.getElementById('flipCard').classList.toggle('flipped', carouselFlipped);
+  document.getElementById('knowBtns').style.display = carouselFlipped ? 'flex' : 'none';
+}
+
+function prevCard() { if (carouselIdx>0) renderCard(quiz.questions, --carouselIdx); }
+function nextCard() {
+  if (carouselIdx < quiz.questions.length-1) renderCard(quiz.questions, ++carouselIdx);
+  else if (carouselKnown.filter(v=>v!==null).length === quiz.questions.length) showResults();
+}
+
+function markCard(known) {
+  carouselKnown[carouselIdx] = known;
+  if (known) { score++; document.getElementById('hudScore').textContent = score + ' ⭐'; }
+  if (carouselIdx < quiz.questions.length-1) renderCard(quiz.questions, ++carouselIdx);
+  else showResults();
+}
+
+// ══════════════════════════════════════
+// SORT GAME
+// ══════════════════════════════════════
+let sortSelected = null;
+let sortPlaced = 0;
+
+function startSortGame(qs) {
+  show('sSort');
+  sortSelected = null;
+  sortPlaced = 0;
+  score = 0;
+  total = qs.length;
+  const categories = [...new Set(qs.map(q => q.a))];
+  const items = shuffle([...qs.map((q,i) => ({ id:i, text:q.q, cat:q.a }))]);
+
+  const boxesRow = document.getElementById('boxesRow');
+  boxesRow.innerHTML = categories.map(cat => `
+    <div class="sort-box" id="box-${escID(cat)}" data-cat="${escQ(cat)}" onclick="clickBox(this)">
+      <div class="box-label">${cat}</div>
+    </div>`).join('');
+
+  document.getElementById('sortItems').innerHTML = items.map(item => `
+    <div class="sort-chip" id="item-${item.id}" data-id="${item.id}" data-cat="${escQ(item.cat)}" onclick="clickChip(this)">
+      ${item.text}
+    </div>`).join('');
+  document.getElementById('sortInfo').textContent = 'Элементті таңдап, дұрыс қорапшаны басыңыз';
+}
+
+function clickChip(chip) {
+  if (chip.classList.contains('placed')) return;
+  document.querySelectorAll('.sort-chip.selected').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.sort-box.highlight').forEach(b => b.classList.remove('highlight'));
+  chip.classList.add('selected');
+  sortSelected = chip;
+  document.querySelectorAll('.sort-box').forEach(b => b.classList.add('highlight'));
+}
+
+function clickBox(box) {
+  if (!sortSelected) return;
+  const chipCat = sortSelected.dataset.cat;
+  const boxCat = box.dataset.cat;
+  if (chipCat === boxCat) {
+    const item = document.createElement('div');
+    item.className = 'box-item';
+    item.textContent = sortSelected.textContent.trim();
+    box.appendChild(item);
+    sortSelected.classList.add('placed');
+    sortSelected.classList.remove('selected');
+    sortSelected = null;
+    score++;
+    sortPlaced++;
+    document.getElementById('hudScore').textContent = score + ' ⭐';
+    updateHud(sortPlaced);
+    box.classList.add('correct-box');
+    setTimeout(() => box.classList.remove('correct-box'), 500);
+    showFeedback('✓ Дұрыс!', true);
+    if (sortPlaced >= total) setTimeout(showResults, 1200);
+  } else {
+    box.classList.add('wrong-box');
+    setTimeout(() => box.classList.remove('wrong-box'), 500);
+    showFeedback('✗ Қате қорапша', false);
+  }
+  document.querySelectorAll('.sort-box.highlight').forEach(b => b.classList.remove('highlight'));
+  document.querySelectorAll('.sort-chip.selected').forEach(c => c.classList.remove('selected'));
+  sortSelected = null;
+}
+
+// ══════════════════════════════════════
+// RESULTS
+// ══════════════════════════════════════
+function showResults() {
+  stopTimer();
+  document.getElementById('hud').classList.remove('active');
+  const pct = total > 0 ? Math.round((score/total)*100) : 0;
+  document.getElementById('resPct').textContent = pct + '%';
+  document.getElementById('resTitle').textContent =
+    pct >= 80 ? '🏆 Тамаша нәтиже!' : pct >= 50 ? '👍 Жақсы тырыстыңыз!' : '💪 Жаттығу керек';
+  document.getElementById('resSub').textContent =
+    `${total} сұрақтан ${score} дұрыс жауап · ${pct}% дұрыстық деңгейі`;
+  show('sResults');
+}
+
+function shareQuiz() {
+  navigator.clipboard.writeText(location.href).catch(() => {});
+  alert('Сілтеме көшірілді! 📋');
+}
+
+function quitGame() { show('sIntro'); stopTimer(); }
+
+// ══════════════════════════════════════
+// THEME BACKGROUNDS
+// ══════════════════════════════════════
+function initTheme(theme) {
+  const layer = document.getElementById('themeLayer');
+  layer.innerHTML = '';
+  if (theme === 'underwater') {
+    for (let i=0;i<18;i++) {
+      const b = document.createElement('div');
+      const sz = 6 + Math.random()*18;
+      b.className = 'bubble';
+      b.style.cssText = `left:${Math.random()*100}%;bottom:-30px;
+        width:${sz}px;height:${sz}px;
+        --dur:${4+Math.random()*7}s;--del:${Math.random()*8}s`;
+      layer.appendChild(b);
+    }
+    const fish = document.createElement('div');
+    fish.className = 'fish';
+    fish.textContent = '🐠';
+    fish.style.bottom = (25+Math.random()*40)+'%';
+    layer.appendChild(fish);
+    const fish2 = document.createElement('div');
+    fish2.className = 'fish';
+    fish2.textContent = '🐟';
+    fish2.style.cssText = `bottom:${15+Math.random()*30}%;animation-delay:-7s;animation-duration:16s;font-size:16px`;
+    layer.appendChild(fish2);
+  } else if (theme === 'cave') {
+    for (let i=0;i<10;i++) {
+      const s = document.createElement('div');
+      s.className = 'stalactite';
+      const w = 4+Math.random()*7;
+      s.style.cssText = `left:${i*10+Math.random()*6}%;--w1:${w}px;--w2:${w}px;--h:${25+Math.random()*60}px`;
+      layer.appendChild(s);
+    }
+    const colors = ['#00ffff','#ff66ff','#ffff44','#44ffaa','#ff8844'];
+    colors.forEach((c,i) => {
+      const cr = document.createElement('div');
+      cr.className = 'crystal';
+      cr.style.cssText = `bottom:${3+Math.random()*12}%;left:${8+i*18}%;
+        width:${10+Math.random()*8}px;height:${18+Math.random()*14}px;
+        background:${c};color:${c};--dur:${1.5+Math.random()}s;--del:${i*.4}s`;
+      layer.appendChild(cr);
+    });
+    [15,35,55,75,90].forEach(pos => {
+      const t = document.createElement('div');
+      t.className = 'torch';
+      t.style.cssText = `left:${pos}%;bottom:${8+Math.random()*15}%`;
+      layer.appendChild(t);
+    });
+  } else if (theme === 'space') {
+    for (let i=0;i<70;i++) {
+      const s = document.createElement('div');
+      s.className = 'star-dot';
+      const sz = .8+Math.random()*2.5;
+      s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;
+        width:${sz}px;height:${sz}px;--dur:${1+Math.random()*3}s;--del:${Math.random()*4}s`;
+      layer.appendChild(s);
+    }
+    for (let i=0;i<3;i++) {
+      const ss = document.createElement('div');
+      ss.className = 'shooting-star';
+      ss.style.cssText = `top:${5+Math.random()*30}%;left:${Math.random()*60}%;
+        --del:${3+i*4}s`;
+      layer.appendChild(ss);
+    }
+    // planet
+    const planet = document.createElement('div');
+    planet.style.cssText = `position:absolute;top:5%;right:8%;width:55px;height:55px;border-radius:50%;
+      background:radial-gradient(circle at 35% 35%,#c084fc,#4c0066);
+      box-shadow:0 0 20px rgba(192,132,252,.5)`;
+    layer.appendChild(planet);
+    const ring = document.createElement('div');
+    ring.style.cssText = `position:absolute;top:calc(5% + 20px);right:calc(8% - 18px);
+      width:90px;height:18px;border-radius:50%;border:3px solid rgba(192,132,252,.4);
+      transform:rotateX(60deg)`;
+    layer.appendChild(ring);
+  } else if (theme === 'forest') {
+    const leaves = ['🍃','🍂','🌿','🍀'];
+    for (let i=0;i<12;i++) {
+      const l = document.createElement('div');
+      l.className = 'leaf';
+      l.textContent = leaves[Math.floor(Math.random()*leaves.length)];
+      l.style.cssText = `left:${Math.random()*100}%;top:-20px;font-size:${14+Math.random()*10}px;
+        --dur:${3+Math.random()*4}s;--del:${Math.random()*6}s`;
+      layer.appendChild(l);
+    }
+    for (let i=0;i<20;i++) {
+      const ff = document.createElement('div');
+      ff.className = 'firefly';
+      ff.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;
+        --dur:${2+Math.random()*3}s;--del:${Math.random()*5}s`;
+      layer.appendChild(ff);
+    }
+  } else if (theme === 'steppe') {
+    const sun = document.createElement('div');
+    sun.className = 'sun-el';
+    sun.style.cssText = `top:30px;left:50%;transform:translateX(-50%);
+      width:60px;height:60px;
+      background:radial-gradient(circle,#fff700,#ffb300)`;
+    layer.appendChild(sun);
+    // sun rays
+    for (let i=0;i<8;i++) {
+      const ray = document.createElement('div');
+      ray.style.cssText = `position:absolute;top:30px;left:50%;width:2px;height:30px;
+        background:rgba(255,215,0,.3);transform-origin:top center;
+        transform:translateX(-50%) rotate(${i*45}deg) translateY(30px);`;
+      layer.appendChild(ray);
+    }
+    // geometric pattern overlay
+    const pat = document.createElement('div');
+    pat.style.cssText = `position:absolute;inset:0;opacity:.06;
+      background-image:repeating-linear-gradient(45deg,#fff8dc 0,#fff8dc 1px,transparent 0,transparent 50%);
+      background-size:20px 20px`;
+    layer.appendChild(pat);
+    // grass
+    const grass = document.createElement('div');
+    grass.className = 'grass';
+    for (let i=0;i<30;i++) {
+      const blade = document.createElement('div');
+      blade.className = 'grass-blade';
+      const h = 20+Math.random()*30;
+      blade.style.cssText = `left:${Math.random()*100}%;height:${h}px;
+        --dur:${1+Math.random()*1.5}s;--del:${Math.random()*1.5}s`;
+      grass.appendChild(blade);
+    }
+    layer.appendChild(grass);
+  }
+}
+
+// ── HELPERS ──
+function shuffle(arr) {
+  for (let i=arr.length-1;i>0;i--) {
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+function escQ(s){ return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;') }
+function escID(s){ return String(s).replace(/[^a-zA-Z0-9]/g,'_') }
+function showFeedback(msg, ok) {
+  const bar = document.getElementById('feedbackBar');
+  bar.textContent = msg;
+  bar.className = 'feedback-bar show ' + (ok ? 'ok' : 'bad');
+  clearTimeout(bar._t);
+  bar._t = setTimeout(() => bar.classList.remove('show'), 1800);
+}
+</script>
+</body>
+</html>
