@@ -592,7 +592,7 @@ let currentUser = null;
 
   if (!userIsPaid) { document.getElementById('payBar').style.display = 'flex'; }
 
-  // Жергілікті CONTENT — негізгі дереккөз; Supabase тек URL-дерді байытады
+  // Supabase — негізгі тұрақты дереккөз; жергілікті CONTENT тек thumbnail/слайдтарды толықтырады
   let sbByNum = {};
   try {
     const { data: sbMaterials } = await sb.from('materials')
@@ -605,13 +605,24 @@ let currentUser = null;
     }
   } catch(_) {}
 
-  const subjectData = (CONTENT[grade] || CONTENT[5])[subject]
-    || Object.values(CONTENT[grade] || CONTENT[5])[0];
+  const subjectData = (CONTENT[grade] || {})[subject]
+    || (CONTENT[grade] ? Object.values(CONTENT[grade])[0] : null);
   const localLessons = (subjectData && subjectData.lessons) || [];
 
-  const merged = localLessons.map((local, idx) => {
-    const sbRow = sbByNum[idx + 1] || {};
-    // Local curated thumb/slides take priority; Supabase fills in when local is absent
+  // Supabase lesson_num-дері + файлы бар жергілікті сабақтар — екеуін біріктіреміз
+  const sbNums = Object.keys(sbByNum).map(Number);
+  const localNums = localLessons
+    .map((l, idx) => ({ num: idx + 1, hasFile: !!(
+      (l.ppt && l.ppt.src) || (l.qmj && l.qmj.src) ||
+      (l.video && l.video.src) || (l.slides && l.slides.length > 0)
+    )}))
+    .filter(x => x.hasFile)
+    .map(x => x.num);
+  const allNums = [...new Set([...sbNums, ...localNums])].sort((a, b) => a - b);
+
+  function buildLesson(num) {
+    const sbRow = sbByNum[num] || {};
+    const local = localLessons[num - 1] || {};
     const pptThumb = (local.ppt && local.ppt.thumb) || sbRow.ppt_thumb_url || null;
     const qmjThumb = (local.qmj && local.qmj.thumb) || sbRow.qmj_thumb_url || null;
     const localSlides = local.slides && local.slides.length > 0 ? local.slides : null;
@@ -620,6 +631,7 @@ let currentUser = null;
     const slides = localSlides || sbSlides || (pptThumb ? [pptThumb] : []);
     return {
       title:  sbRow.title  || local.title  || '',
+      topic:  sbRow.topic  || '',
       ppt:    { meta: (local.ppt  && local.ppt.meta)  || 'PPT',
                 src:  sbRow.ppt_url  || (local.ppt  && local.ppt.src)  || null,
                 thumb: pptThumb },
@@ -630,8 +642,9 @@ let currentUser = null;
       video:  { meta: (local.video && local.video.meta) || 'MP4',
                 src:  sbRow.video_url || (local.video && local.video.src) || null }
     };
-  });
+  }
 
+  const merged = allNums.map(buildLesson);
   render(merged);
 })();
 
@@ -732,10 +745,7 @@ function markDone(idx) { localStorage.setItem(dlKey(idx), TODAY); }
 
 // ── Render ──
 function render(overrideLessons) {
-  const subjectData = (CONTENT[grade] || CONTENT[5])[subject]
-    || Object.values(CONTENT[grade] || CONTENT[5])[0];
-  const lessons = (overrideLessons || (subjectData && subjectData.lessons) || [])
-    .filter(l => (l.ppt && l.ppt.src) || (l.qmj && l.qmj.src) || (l.video && l.video.src) || (l.slides && l.slides.length > 0));
+  const lessons = overrideLessons || [];
   const grid = document.getElementById('lessonsGrid');
 
   if (!lessons.length) {
