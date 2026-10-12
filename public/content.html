@@ -611,16 +611,13 @@ let currentUser = null;
 
   const merged = localLessons.map((local, idx) => {
     const sbRow = sbByNum[idx + 1] || {};
-    const pptThumb = sbRow.ppt_thumb_url || (local.ppt && local.ppt.thumb) || null;
-    const qmjThumb = sbRow.qmj_thumb_url || (local.qmj && local.qmj.thumb) || null;
-    // Supabase slides_urls (admin-uploaded) take priority; fall back to local static array
-    const sbSlides = Array.isArray(sbRow.slides_urls) && sbRow.slides_urls.length
+    // Local curated thumb/slides take priority; Supabase fills in when local is absent
+    const pptThumb = (local.ppt && local.ppt.thumb) || sbRow.ppt_thumb_url || null;
+    const qmjThumb = (local.qmj && local.qmj.thumb) || sbRow.qmj_thumb_url || null;
+    const localSlides = local.slides && local.slides.length > 0 ? local.slides : null;
+    const sbSlides = !localSlides && Array.isArray(sbRow.slides_urls) && sbRow.slides_urls.length
       ? sbRow.slides_urls : null;
-    const slides = sbSlides
-      ? sbSlides
-      : (local.slides && local.slides.length > 0)
-        ? local.slides
-        : (pptThumb ? [pptThumb] : []);
+    const slides = localSlides || sbSlides || (pptThumb ? [pptThumb] : []);
     return {
       title:  sbRow.title  || local.title  || '',
       ppt:    { meta: (local.ppt  && local.ppt.meta)  || 'PPT',
@@ -678,7 +675,7 @@ const CONTENT = {
     ]},
     geometry: { lessons: [
       {title:'Үшбұрыштың тамаша нүктелері', ppt:{meta:'17 слайд',src:null,thumb:'/materials/lesson-8-geo1-slide1.jpeg'}, slides:['/materials/lesson-8-geo1-slide1.jpeg','/materials/lesson-8-geo1-slide2.jpeg','/materials/lesson-8-geo1-slide3.jpeg','/materials/lesson-8-geo1-slide4.jpeg','/materials/lesson-8-geo1-slide5.jpeg','/materials/lesson-8-geo1-slide6.jpeg','/materials/lesson-8-geo1-slide7.jpeg','/materials/lesson-8-geo1-slide8.jpeg','/materials/lesson-8-geo1-slide9.jpeg','/materials/lesson-8-geo1-slide10.jpeg','/materials/lesson-8-geo1-slide11.jpeg','/materials/lesson-8-geo1-slide12.jpeg','/materials/lesson-8-geo1-slide13.jpeg','/materials/lesson-8-geo1-slide14.jpeg','/materials/lesson-8-geo1-slide15.jpeg','/materials/lesson-8-geo1-slide16.jpeg','/materials/lesson-8-geo1-slide17.jpeg'], qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'45 сек',src:null}},
-      {title:'Пифагор теоремасы',     ppt:{meta:'24 слайд',src:null}, qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
+      {title:'Көпбұрыштың сыртқы бұрышы', ppt:{meta:'13 слайд',src:null,thumb:'/materials/lesson-8-geo2-slide1.jpeg'}, slides:['/materials/lesson-8-geo2-slide1.jpeg'], qmj:{meta:'Word · 5 бет',src:null}, video:{meta:'60 сек',src:null}},
       {title:'Ауданды есептеу',       ppt:{meta:'18 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
       {title:'Ұқсас үшбұрыштар',      ppt:{meta:'20 слайд',src:null}, qmj:{meta:'Word · 4 бет',src:null}, video:{meta:'55 сек',src:null}},
     ]},
