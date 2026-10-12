@@ -189,35 +189,6 @@
 
 <div class="games-page">
 
-  <!-- HERO STATS BAR -->
-  <div class="gp-hero">
-    <div class="hero-left">
-      <div class="hero-eyebrow">ОЙЫН ОРТАЛЫҒЫ</div>
-      <div class="hero-title">Интерактивті ойындар</div>
-      <div class="hero-sub">Математиканы ойын арқылы үйрен — мұғалімдер викторина жасайды, оқушылар ойнайды</div>
-      <div class="hero-stats">
-        <div class="hstat">
-          <div class="hstat-ico">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          </div>
-          <div><div class="hstat-num" id="statQuizzes">—</div><div class="hstat-lbl">Викторина</div></div>
-        </div>
-        <div class="hstat">
-          <div class="hstat-ico">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          </div>
-          <div><div class="hstat-num">6</div><div class="hstat-lbl">Ойын түрі</div></div>
-        </div>
-        <div class="hstat">
-          <div class="hstat-ico">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </div>
-          <div><div class="hstat-num">5</div><div class="hstat-lbl">Тема</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- CREATE CARD (dark, fancy) -->
   <div style="max-width:1040px;margin:0 auto 36px;padding:0 0">
   <div class="create-card">
@@ -256,31 +227,10 @@
   </div>
   </div>
 
-  <!-- TEACHER QUIZZES -->
-  <div class="gp-section">
-    <div class="sec-head">
-      <div class="sec-title">
-        <h2>Мұғалімдер жасаған</h2>
-        <span class="sec-badge badge-live" id="liveLabel">● LIVE</span>
-      </div>
-      <a href="quiz-maker.html" class="sec-link">+ Жаңа жасау</a>
-    </div>
-    <div class="quiz-grid" id="teacherQuizzes">
-      <div class="qg-empty">
-        <div class="qg-empty-ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-        Жүктелуде...
-      </div>
-    </div>
-  </div>
-
   <!-- FEATURED GAMES -->
   <div class="gp-section">
-    <div class="sec-head">
-      <div class="sec-title">
-        <h2>Дайын ойындар</h2>
-        <span class="sec-badge badge-prem">PREMIUM</span>
-      </div>
-    </div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:22px;padding:28px 28px 32px;box-shadow:0 4px 20px rgba(26,86,219,.06)">
+      <h2 style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:20px">GoTAB-тан дайын ойындар</h2>
     <div class="featured-grid">
 
       <!-- Math Detective -->
@@ -335,6 +285,7 @@
         </div>
       </div>
 
+    </div>
     </div>
   </div>
 </div><!-- /games-page -->
@@ -432,7 +383,6 @@ const TYPE_NAMES={quiz:'Викторина',match:'Сәйкестендіру',c
     try{const{data:p}=await sb.rpc('check_paid_user',{check_id:user.id});isPaid=p===true;}catch(_){}
     if(!isPaid)document.getElementById('payWall').style.display='flex';
   }
-  loadTeacherQuizzes();
 })();
 
 async function loadTeacherQuizzes(){
