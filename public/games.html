@@ -6,261 +6,165 @@
 <title>GoTAB — Ойын Орталығы</title>
 <link rel="stylesheet" href="gotab.css">
 <style>
-/* ── DARK BASE ── */
-body{background:#060c1a;color:#e2e8f0}
-.top-nav{background:rgba(6,12,26,.95);border-bottom:1px solid rgba(255,255,255,.06);backdrop-filter:blur(20px)}
-.sub-nav{background:rgba(10,18,38,.9);border-bottom:1px solid rgba(255,255,255,.06);backdrop-filter:blur(16px)}
-.sub-nav a{color:rgba(255,255,255,.5)}
-.sub-nav a:hover,.sub-nav a.active-game{color:#00d4ff;background:rgba(0,212,255,.08)}
-.nav-user-name{color:rgba(255,255,255,.7)}
-.btn-logout{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.5)}
-
-/* ── STARS BACKGROUND ── */
-#stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-.star{position:absolute;border-radius:50%;background:#fff;animation:starTwinkle var(--d,2s) var(--dl,0s) infinite alternate}
-@keyframes starTwinkle{0%{opacity:.1}100%{opacity:.8}}
+.games-page{min-height:100vh;padding:36px 20px 60px;background:var(--bg)}
 
 /* ── HERO ── */
 .gp-hero{
-  position:relative;z-index:1;
-  text-align:center;padding:56px 24px 40px;
-  background:radial-gradient(ellipse at 50% 0%,rgba(0,212,255,.08) 0%,transparent 70%);
+  max-width:1040px;margin:0 auto 36px;
+  background:#fff;border:1px solid var(--border);border-radius:22px;
+  padding:36px 36px 32px;
+  display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  box-shadow:0 4px 20px rgba(26,86,219,.06);
 }
-.hero-badge{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:6px 18px;border-radius:100px;
-  border:1px solid rgba(0,212,255,.25);
-  background:rgba(0,212,255,.08);
-  font-size:11px;font-weight:700;color:#00d4ff;letter-spacing:2px;
-  margin-bottom:20px;
-}
-.hero-badge span{width:6px;height:6px;border-radius:50%;background:#00d4ff;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
-.hero-title{
-  font-size:clamp(28px,5vw,44px);font-weight:900;
-  color:#fff;letter-spacing:-.8px;line-height:1.15;margin-bottom:12px;
-}
-.hero-title .g{background:linear-gradient(135deg,#00d4ff,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{font-size:15px;color:rgba(255,255,255,.5);margin-bottom:32px}
-.hero-stats{display:flex;align-items:center;justify-content:center;gap:32px;flex-wrap:wrap}
-.hstat{text-align:center}
-.hstat-num{font-size:24px;font-weight:900;color:#00d4ff;line-height:1}
-.hstat-lbl{font-size:11px;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:1px;margin-top:3px}
-.hstat-sep{width:1px;height:36px;background:rgba(255,255,255,.1)}
+.hero-left{flex:1;min-width:220px}
+.hero-eyebrow{font-size:11px;font-weight:700;color:var(--primary);letter-spacing:2px;margin-bottom:10px}
+.hero-title{font-size:clamp(20px,3vw,28px);font-weight:900;color:var(--text);letter-spacing:-.5px;margin-bottom:6px;line-height:1.2}
+.hero-sub{font-size:13px;color:var(--muted);line-height:1.6;max-width:420px}
+.hero-stats{display:flex;gap:28px;margin-top:20px;flex-wrap:wrap}
+.hstat{display:flex;align-items:center;gap:8px}
+.hstat-ico{width:32px;height:32px;border-radius:8px;background:rgba(26,86,219,.07);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hstat-ico svg{color:var(--primary)}
+.hstat-num{font-size:16px;font-weight:800;color:var(--text);line-height:1}
+.hstat-lbl{font-size:11px;color:var(--muted);font-weight:600}
 
-/* ── SECTION ── */
-.gp-section{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:0 20px 56px}
-.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:12px}
-.sec-title{display:flex;align-items:center;gap:10px}
-.sec-title h2{font-size:18px;font-weight:800;color:#fff}
-.sec-title-badge{padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:1.5px}
-.badge-live{background:rgba(255,77,77,.15);color:#ff4d4d;border:1px solid rgba(255,77,77,.3)}
-.badge-new{background:rgba(0,212,255,.12);color:#00d4ff;border:1px solid rgba(0,212,255,.25)}
-.sec-link{font-size:13px;font-weight:600;color:rgba(255,255,255,.4);text-decoration:none;transition:color .2s}
-.sec-link:hover{color:#00d4ff}
-
-/* ── CREATE STRIP ── */
-.create-strip{
-  position:relative;z-index:1;
-  max-width:1040px;margin:0 auto 44px;padding:0 20px;
-}
+/* ── CREATE CARD ── */
 .create-card{
-  background:linear-gradient(135deg,#0a1628,#0d1f40);
+  background:linear-gradient(135deg,#050810,#0d1a3a);
   border:1px solid rgba(0,212,255,.2);border-radius:22px;
   padding:28px 32px;
   display:flex;align-items:center;gap:28px;flex-wrap:wrap;
-  box-shadow:0 0 60px rgba(0,212,255,.06);
+  box-shadow:0 8px 32px rgba(0,0,0,.18);
+  margin-bottom:36px;
 }
 .create-left{flex:1;min-width:240px}
 .create-tag{font-size:10px;font-weight:700;color:rgba(0,212,255,.7);letter-spacing:2px;margin-bottom:10px}
 .create-title{font-size:20px;font-weight:900;color:#fff;margin-bottom:6px;letter-spacing:-.3px}
-.create-sub{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6}
+.create-sub{font-size:13px;color:rgba(255,255,255,.5);line-height:1.6}
 .gtype-mini-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .gtype-mini{
-  padding:6px 14px;border-radius:100px;
-  border:1px solid rgba(255,255,255,.1);
-  background:rgba(255,255,255,.04);
-  font-size:12px;font-weight:600;color:rgba(255,255,255,.55);
+  padding:5px 12px;border-radius:100px;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.05);
+  font-size:12px;font-weight:600;color:rgba(255,255,255,.6);
   cursor:pointer;transition:all .2s;text-decoration:none;
+  display:inline-flex;align-items:center;gap:6px;
 }
 .gtype-mini:hover{border-color:rgba(0,212,255,.5);color:#00d4ff;background:rgba(0,212,255,.08)}
+.gtype-mini svg{flex-shrink:0}
 .btn-create-big{
-  padding:14px 32px;
-  background:linear-gradient(135deg,#00d4ff,#0076b6);
+  padding:14px 28px;
+  background:linear-gradient(135deg,#1a56db,#0891b2);
   border:none;border-radius:14px;
-  color:#000;font-size:15px;font-weight:800;
+  color:#fff;font-size:15px;font-weight:800;
   cursor:pointer;font-family:'Inter',sans-serif;
   text-decoration:none;display:inline-block;white-space:nowrap;
-  letter-spacing:-.3px;transition:filter .2s,transform .15s;
-  box-shadow:0 0 28px rgba(0,212,255,.25);
+  letter-spacing:-.3px;transition:opacity .2s,transform .15s;
+  box-shadow:0 4px 20px rgba(26,86,219,.35);
 }
-.btn-create-big:hover{filter:brightness(1.1);transform:translateY(-2px)}
+.btn-create-big:hover{opacity:.9;transform:translateY(-1px)}
 
-/* ── QUIZ CARDS GRID (teacher-made) ── */
-.quiz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+/* ── SECTION ── */
+.gp-section{max-width:1040px;margin:0 auto;padding:0 0 48px}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px}
+.sec-title{display:flex;align-items:center;gap:10px}
+.sec-title h2{font-size:17px;font-weight:800;color:var(--text)}
+.sec-badge{padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:1.5px}
+.badge-live{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.25)}
+.badge-prem{background:rgba(26,86,219,.08);color:var(--primary);border:1px solid rgba(26,86,219,.18)}
+.sec-link{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;transition:color .2s}
+.sec-link:hover{color:var(--primary)}
+
+/* ── TEACHER QUIZ CARDS ── */
+.quiz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
 .qgcard{
-  background:rgba(255,255,255,.035);
-  border:1px solid rgba(255,255,255,.07);
-  border-radius:16px;overflow:hidden;
-  transition:all .22s;cursor:pointer;
+  background:#fff;border:1px solid var(--border);border-radius:16px;
+  overflow:hidden;transition:all .22s;cursor:pointer;
+  box-shadow:0 2px 10px rgba(26,86,219,.05);
 }
-.qgcard:hover{background:rgba(255,255,255,.06);border-color:rgba(0,212,255,.25);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.qgcard:hover{border-color:rgba(26,86,219,.3);transform:translateY(-3px);box-shadow:0 10px 28px rgba(26,86,219,.12)}
 .qgcard-banner{
-  height:88px;position:relative;overflow:hidden;
+  height:76px;position:relative;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
 }
-.qgcard-theme-label{
-  font-size:20px;z-index:1;position:relative;
-  filter:drop-shadow(0 0 10px rgba(255,255,255,.3));
-}
-.qgcard-body{padding:14px 16px 16px}
-.qgcard-type{display:flex;align-items:center;gap:6px;margin-bottom:6px}
-.qgcard-type-ico{font-size:13px}
-.qgcard-type-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:1.5px}
-.qgcard-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.3}
-.qgcard-meta{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:12px}
+.qgcard-theme-ico{position:relative;z-index:1}
+.qgcard-theme-ico svg{filter:drop-shadow(0 0 8px rgba(255,255,255,.4))}
+.qgcard-body{padding:13px 15px 15px}
+.qgcard-type{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.qgcard-type svg{color:var(--muted)}
+.qgcard-type-lbl{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1.5px}
+.qgcard-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;line-height:1.3}
+.qgcard-meta{font-size:11px;color:var(--muted);margin-bottom:11px}
 .btn-qgplay{
-  display:block;width:100%;padding:9px;
-  background:linear-gradient(135deg,rgba(0,212,255,.12),rgba(0,118,182,.12));
-  border:1px solid rgba(0,212,255,.25);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  width:100%;padding:9px;
+  background:linear-gradient(135deg,#050810,#0d1530);
+  border:1px solid rgba(0,212,255,.3);border-radius:9px;
   color:#00d4ff;font-size:12px;font-weight:700;
-  text-align:center;text-decoration:none;transition:all .2s;letter-spacing:.5px;
+  text-decoration:none;transition:all .2s;letter-spacing:.5px;
 }
-.btn-qgplay:hover{background:rgba(0,212,255,.2);border-color:rgba(0,212,255,.5)}
+.btn-qgplay:hover{border-color:rgba(0,212,255,.6);box-shadow:0 0 16px rgba(0,212,255,.15)}
 .qg-empty{
   grid-column:1/-1;text-align:center;padding:48px 24px;
-  color:rgba(255,255,255,.25);font-size:14px;
+  color:var(--muted);font-size:14px;
+  background:#fff;border:1px solid var(--border);border-radius:16px;
 }
-.qg-empty-ico{font-size:36px;margin-bottom:12px;display:block}
+.qg-empty-ico{margin-bottom:12px;color:#cbd5e1;display:flex;justify-content:center}
 
 /* ── FEATURED GAME CARDS ── */
 .featured-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
 .fgcard{
-  border-radius:20px;overflow:hidden;
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.08);
-  transition:all .25s;
+  background:#fff;border:1px solid var(--border);border-radius:20px;
+  overflow:hidden;transition:all .25s;
+  box-shadow:0 4px 16px rgba(26,86,219,.07);
 }
-.fgcard:hover{transform:translateY(-5px);border-color:rgba(0,212,255,.3);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.fgcard:hover{transform:translateY(-4px);border-color:rgba(26,86,219,.3);box-shadow:0 12px 36px rgba(26,86,219,.14)}
 .fgcard-banner{
-  height:180px;position:relative;
-  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  height:170px;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
 }
-.fgcard-banner::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.6));
-}
-.fgcard-dots{
-  position:absolute;inset:0;
-  background-image:radial-gradient(rgba(0,212,255,.12) 1px,transparent 1px);
-  background-size:22px 22px;
-}
+.fgcard-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.5))}
+.fgcard-dots{position:absolute;inset:0;background-image:radial-gradient(rgba(0,212,255,.12) 1px,transparent 1px);background-size:22px 22px}
 .fgcard-title-wrap{position:relative;z-index:2;text-align:center}
-.fgcard-title-wrap .t{
-  font-size:20px;font-weight:900;color:#fff;letter-spacing:4px;
-  text-shadow:0 0 30px rgba(0,212,255,.6);display:block;
-}
-.fgcard-title-wrap .s{
-  font-size:9px;color:rgba(0,212,255,.7);letter-spacing:3px;font-weight:600;
-  display:block;margin-top:4px;
-}
+.fgcard-title-wrap .t{font-size:20px;font-weight:900;color:#fff;letter-spacing:4px;text-shadow:0 0 30px rgba(0,212,255,.6);display:block}
+.fgcard-title-wrap .s{font-size:9px;color:rgba(0,212,255,.7);letter-spacing:3px;font-weight:600;display:block;margin-top:4px}
 .fgcard-body{padding:18px 20px 20px}
-.fgcard-tag{
-  display:inline-block;padding:3px 10px;border-radius:100px;
-  font-size:10px;font-weight:700;letter-spacing:1px;
-  background:rgba(99,102,241,.12);color:#a5b4fc;margin-bottom:10px;
-}
-.fgcard-name{font-size:16px;font-weight:800;color:#fff;margin-bottom:6px}
-.fgcard-desc{font-size:12px;color:rgba(255,255,255,.45);line-height:1.6;margin-bottom:14px}
-.fgcard-metas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-.fgcard-m{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.35);font-weight:600}
-.fgcard-m svg{color:#00d4ff}
+.fgcard-tag{display:inline-block;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:1px;background:rgba(99,102,241,.08);color:#6366f1;margin-bottom:10px}
+.fgcard-name{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px}
+.fgcard-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+.fgcard-metas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.fgcard-m{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);font-weight:600}
+.fgcard-m svg{color:var(--primary)}
 .btn-fgplay{
   display:block;width:100%;padding:12px;
-  background:linear-gradient(135deg,#060c1a,#0d1a30);
+  background:linear-gradient(135deg,#050810,#0d1530);
   border:1px solid rgba(0,212,255,.3);border-radius:11px;
   color:#00d4ff;font-size:13px;font-weight:700;letter-spacing:1px;
   text-align:center;text-decoration:none;transition:all .2s;
 }
-.btn-fgplay:hover{border-color:rgba(0,212,255,.7);box-shadow:0 0 24px rgba(0,212,255,.18)}
-
-/* ── GAME TYPE SHOWCASE ── */
-.gtype-showcase{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-@media(max-width:680px){.gtype-showcase{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:420px){.gtype-showcase{grid-template-columns:1fr 1fr}}
-.gtsc-card{
-  padding:18px 16px;border-radius:16px;
-  border:1px solid rgba(255,255,255,.07);
-  background:rgba(255,255,255,.03);
-  text-align:center;transition:all .22s;
-  cursor:pointer;text-decoration:none;display:block;
-}
-.gtsc-card:hover{border-color:var(--gcolor,rgba(0,212,255,.4));background:rgba(255,255,255,.06);transform:translateY(-2px)}
-.gtsc-ico{font-size:26px;margin-bottom:8px;line-height:1}
-.gtsc-name{font-size:12px;font-weight:700;color:#fff;margin-bottom:3px}
-.gtsc-desc{font-size:10px;color:rgba(255,255,255,.35);line-height:1.4}
+.btn-fgplay:hover{border-color:rgba(0,212,255,.65);box-shadow:0 0 20px rgba(0,212,255,.18)}
 
 /* ── PAYMENT WALL ── */
-.pay-wall{
-  position:fixed;inset:0;z-index:200;
-  background:rgba(6,12,26,.92);
-  backdrop-filter:blur(18px);
-  display:flex;align-items:center;justify-content:center;padding:20px;
-}
-.pay-wall-box{
-  background:#0d1a2e;
-  border:1px solid rgba(0,212,255,.2);
-  border-radius:24px;padding:40px 36px 36px;
-  max-width:400px;width:100%;
-  box-shadow:0 0 80px rgba(0,212,255,.1),0 30px 80px rgba(0,0,0,.5);
-  text-align:center;
-}
-.pay-wall-lock{
-  width:60px;height:60px;border-radius:50%;
-  background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(0,118,182,.08));
-  border:1px solid rgba(0,212,255,.2);
-  display:flex;align-items:center;justify-content:center;margin:0 auto 20px;
-}
-.pay-wall-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:6px}
-.pay-wall-sub{font-size:13px;color:rgba(255,255,255,.45);margin-bottom:24px;line-height:1.5}
-.pay-wall-price{
-  background:rgba(0,212,255,.05);
-  border:1px solid rgba(0,212,255,.15);
-  border-radius:16px;padding:18px;margin-bottom:20px;
-}
-.pay-wall-amount{font-size:32px;font-weight:900;color:#00d4ff;letter-spacing:-.5px}
-.pay-wall-period{font-size:12px;color:rgba(255,255,255,.35);margin-top:2px;font-weight:600}
-.pay-wall-info{
-  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
-  border-radius:14px;padding:14px 16px;margin-bottom:20px;text-align:left;
-}
-.pay-wall-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;
-}
+.pay-wall{position:fixed;inset:0;z-index:200;background:rgba(240,244,251,.9);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:20px}
+.pay-wall-box{background:#fff;border:1px solid var(--border);border-radius:24px;padding:40px 36px 36px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(26,86,219,.14);text-align:center}
+.pay-wall-lock{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,rgba(26,86,219,.1),rgba(8,145,178,.07));border:1px solid rgba(26,86,219,.18);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.pay-wall-title{font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px}
+.pay-wall-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5}
+.pay-wall-price{background:rgba(26,86,219,.04);border:1px solid rgba(26,86,219,.14);border-radius:16px;padding:18px;margin-bottom:20px}
+.pay-wall-amount{font-size:32px;font-weight:900;color:var(--primary);letter-spacing:-.5px}
+.pay-wall-period{font-size:12px;color:var(--muted);margin-top:2px;font-weight:600}
+.pay-wall-info{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:20px;text-align:left}
+.pay-wall-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
 .pay-wall-row:last-child{border-bottom:none}
-.pay-wall-label{color:rgba(255,255,255,.4);font-weight:500}
-.pay-wall-value{font-weight:700;color:#fff}
-.kaspi-badge{
-  display:inline-flex;align-items:center;background:#E31E24;color:#fff;
-  border-radius:6px;padding:3px 10px;font-size:12px;font-weight:800;letter-spacing:.5px;
-}
-.pay-wall-phone{font-size:18px;font-weight:900;color:#00d4ff;letter-spacing:1px}
-.btn-whatsapp{
-  width:100%;padding:14px;
-  background:linear-gradient(135deg,#25d366,#1da851);
-  border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;
-  font-family:'Inter',sans-serif;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s;
-}
+.pay-wall-label{color:var(--muted);font-weight:500}
+.pay-wall-value{font-weight:700;color:var(--text)}
+.kaspi-badge{display:inline-flex;align-items:center;background:#E31E24;color:#fff;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:800;letter-spacing:.5px}
+.pay-wall-phone{font-size:18px;font-weight:900;color:var(--primary);letter-spacing:1px}
+.btn-whatsapp{width:100%;padding:14px;background:linear-gradient(135deg,#25d366,#1da851);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s}
 .btn-whatsapp:hover{opacity:.9}
 </style>
 </head>
 <body>
-
-<!-- Animated stars -->
-<div id="stars"></div>
-
 <nav class="top-nav">
   <img src="gotab_logo.png" alt="GoTAB">
   <div class="nav-user">
@@ -283,155 +187,166 @@ body{background:#060c1a;color:#e2e8f0}
   </a>
 </div>
 
-<!-- HERO -->
-<div class="gp-hero">
-  <div class="hero-badge"><span></span> ОЙЫН ОРТАЛЫҒЫ</div>
-  <div class="hero-title">Математиканы<br><span class="g">ойын арқылы</span> үйрен</div>
-  <div class="hero-sub">Wordwall сияқты — тақырып таңдап, секундта викторина жасаңыз</div>
-  <div class="hero-stats">
-    <div class="hstat"><div class="hstat-num" id="statQuizzes">—</div><div class="hstat-lbl">ВИКТОРИНА</div></div>
-    <div class="hstat-sep"></div>
-    <div class="hstat"><div class="hstat-num">6</div><div class="hstat-lbl">ОЙЫН ТҮРІ</div></div>
-    <div class="hstat-sep"></div>
-    <div class="hstat"><div class="hstat-num">5</div><div class="hstat-lbl">ТЕМА</div></div>
-  </div>
-</div>
+<div class="games-page">
 
-<!-- CREATE STRIP -->
-<div class="create-strip">
+  <!-- HERO STATS BAR -->
+  <div class="gp-hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">ОЙЫН ОРТАЛЫҒЫ</div>
+      <div class="hero-title">Интерактивті ойындар</div>
+      <div class="hero-sub">Математиканы ойын арқылы үйрен — мұғалімдер викторина жасайды, оқушылар ойнайды</div>
+      <div class="hero-stats">
+        <div class="hstat">
+          <div class="hstat-ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div><div class="hstat-num" id="statQuizzes">—</div><div class="hstat-lbl">Викторина</div></div>
+        </div>
+        <div class="hstat">
+          <div class="hstat-ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div><div class="hstat-num">6</div><div class="hstat-lbl">Ойын түрі</div></div>
+        </div>
+        <div class="hstat">
+          <div class="hstat-ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div><div class="hstat-num">5</div><div class="hstat-lbl">Тема</div></div>
+        </div>
+      </div>
+    </div>
+    <a href="quiz-maker.html" style="padding:13px 26px;background:linear-gradient(135deg,#1a56db,#0891b2);border-radius:13px;color:#fff;font-size:14px;font-weight:800;text-decoration:none;white-space:nowrap;box-shadow:0 4px 18px rgba(26,86,219,.3);transition:opacity .2s" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+      + Викторина жасау
+    </a>
+  </div>
+
+  <!-- CREATE CARD (dark, fancy) -->
+  <div style="max-width:1040px;margin:0 auto 36px;padding:0 0">
   <div class="create-card">
     <div class="create-left">
-      <div class="create-tag">✏️ ӨЗ ВИКТОРИНАЛАРЫҢЫЗ</div>
-      <div class="create-title">Жаңа викторина жасаңыз</div>
+      <div class="create-tag">МҰҒАЛІМДЕРГЕ АРНАЛҒАН</div>
+      <div class="create-title">Өз викторинаңызды жасаңыз</div>
       <div class="create-sub">Тема таңдап (су астында, ғарыш, тау ішінде...), сұрақ енгізіп, сілтеме алыңыз — 2 минутта дайын.</div>
       <div class="gtype-mini-row">
-        <a href="quiz-maker.html?type=quiz"     class="gtype-mini">📋 Викторина</a>
-        <a href="quiz-maker.html?type=match"    class="gtype-mini">🃏 Сәйкестендіру</a>
-        <a href="quiz-maker.html?type=carousel" class="gtype-mini">🎠 Карусель</a>
-        <a href="quiz-maker.html?type=sort"     class="gtype-mini">📦 Сұрыптау</a>
-        <a href="quiz-maker.html?type=target"   class="gtype-mini">🎯 Нысана</a>
-        <a href="quiz-maker.html?type=lightning" class="gtype-mini">⚡ Найзағай</a>
+        <a href="quiz-maker.html?type=quiz" class="gtype-mini">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Викторина
+        </a>
+        <a href="quiz-maker.html?type=match" class="gtype-mini">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="8" height="5" rx="1"/><rect x="14" y="3" width="8" height="5" rx="1"/><rect x="2" y="16" width="8" height="5" rx="1"/><rect x="14" y="16" width="8" height="5" rx="1"/><line x1="6" y1="8" x2="6" y2="16"/><line x1="18" y1="8" x2="18" y2="16"/></svg>
+          Сәйкестендіру
+        </a>
+        <a href="quiz-maker.html?type=carousel" class="gtype-mini">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 10 20 15 15 20"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg>
+          Карусель
+        </a>
+        <a href="quiz-maker.html?type=sort" class="gtype-mini">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Сұрыптау
+        </a>
+        <a href="quiz-maker.html?type=target" class="gtype-mini">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          Нысана
+        </a>
+        <a href="quiz-maker.html?type=lightning" class="gtype-mini">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Найзағай
+        </a>
       </div>
     </div>
     <a href="quiz-maker.html" class="btn-create-big">+ Жасау →</a>
   </div>
-</div>
+  </div>
 
-<!-- GAME TYPE SHOWCASE -->
-<div class="gp-section">
-  <div class="sec-head">
-    <div class="sec-title">
-      <h2>Ойын форматтары</h2>
-      <span class="sec-title-badge badge-new">6 ТҮРІ</span>
+  <!-- TEACHER QUIZZES -->
+  <div class="gp-section">
+    <div class="sec-head">
+      <div class="sec-title">
+        <h2>Мұғалімдер жасаған</h2>
+        <span class="sec-badge badge-live" id="liveLabel">● LIVE</span>
+      </div>
+      <a href="quiz-maker.html" class="sec-link">+ Жаңа жасау</a>
     </div>
-    <a href="quiz-maker.html" class="sec-link">Барлығын жасау →</a>
-  </div>
-  <div class="gtype-showcase">
-    <a href="quiz-maker.html?type=quiz" class="gtsc-card" style="--gcolor:rgba(99,102,241,.5)">
-      <div class="gtsc-ico">📋</div>
-      <div class="gtsc-name">Викторина</div>
-      <div class="gtsc-desc">4 нұсқадан дұрыс жауап, таймер</div>
-    </a>
-    <a href="quiz-maker.html?type=match" class="gtsc-card" style="--gcolor:rgba(0,212,255,.5)">
-      <div class="gtsc-ico">🃏</div>
-      <div class="gtsc-name">Сәйкестендіру</div>
-      <div class="gtsc-desc">Жұп тауып қосу ойыны</div>
-    </a>
-    <a href="quiz-maker.html?type=carousel" class="gtsc-card" style="--gcolor:rgba(192,132,252,.5)">
-      <div class="gtsc-ico">🎠</div>
-      <div class="gtsc-name">Карусель</div>
-      <div class="gtsc-desc">3D карточка аударыңыз</div>
-    </a>
-    <a href="quiz-maker.html?type=sort" class="gtsc-card" style="--gcolor:rgba(255,210,0,.4)">
-      <div class="gtsc-ico">📦</div>
-      <div class="gtsc-name">Сұрыптау</div>
-      <div class="gtsc-desc">Элементтерді қорапшаларға сал</div>
-    </a>
-    <a href="quiz-maker.html?type=target" class="gtsc-card" style="--gcolor:rgba(255,77,109,.5)">
-      <div class="gtsc-ico">🎯</div>
-      <div class="gtsc-name">Нысана</div>
-      <div class="gtsc-desc">Ұшқан бөлбекшені ату ойыны</div>
-    </a>
-    <a href="quiz-maker.html?type=lightning" class="gtsc-card" style="--gcolor:rgba(250,204,21,.5)">
-      <div class="gtsc-ico">⚡</div>
-      <div class="gtsc-name">Найзағай</div>
-      <div class="gtsc-desc">10 секунд — жылдам жауап!</div>
-    </a>
-  </div>
-</div>
-
-<!-- TEACHER QUIZZES -->
-<div class="gp-section">
-  <div class="sec-head">
-    <div class="sec-title">
-      <h2>Мұғалімдер жасаған</h2>
-      <span class="sec-title-badge badge-live" id="liveLabel">● LIVE</span>
-    </div>
-    <a href="quiz-maker.html" class="sec-link">+ Жаңа жасау</a>
-  </div>
-  <div class="quiz-grid" id="teacherQuizzes">
-    <div class="qg-empty"><span class="qg-empty-ico">⏳</span>Жүктелуде...</div>
-  </div>
-</div>
-
-<!-- FEATURED GAMES -->
-<div class="gp-section">
-  <div class="sec-head">
-    <div class="sec-title">
-      <h2>Дайын ойындар</h2>
-      <span class="sec-title-badge badge-new">PREMIUM</span>
+    <div class="quiz-grid" id="teacherQuizzes">
+      <div class="qg-empty">
+        <div class="qg-empty-ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        Жүктелуде...
+      </div>
     </div>
   </div>
-  <div class="featured-grid">
 
-    <!-- Math Detective -->
-    <div class="fgcard">
-      <div class="fgcard-banner" style="background:linear-gradient(135deg,#050810,#0a0e1a)">
-        <div class="fgcard-dots"></div>
-        <div class="fgcard-title-wrap">
-          <span class="t">MATH</span>
-          <span class="t">DETECTIVE</span>
-          <span class="s">ЖОҒАЛҒАН ФОРМУЛАНЫҢ ҚҰПИЯСЫ</span>
+  <!-- FEATURED GAMES -->
+  <div class="gp-section">
+    <div class="sec-head">
+      <div class="sec-title">
+        <h2>Дайын ойындар</h2>
+        <span class="sec-badge badge-prem">PREMIUM</span>
+      </div>
+    </div>
+    <div class="featured-grid">
+
+      <!-- Math Detective -->
+      <div class="fgcard">
+        <div class="fgcard-banner" style="background:linear-gradient(135deg,#050810,#0a0e1a)">
+          <div class="fgcard-dots"></div>
+          <div class="fgcard-title-wrap">
+            <span class="t">MATH</span>
+            <span class="t">DETECTIVE</span>
+            <span class="s">ЖОҒАЛҒАН ФОРМУЛАНЫҢ ҚҰПИЯСЫ</span>
+          </div>
+        </div>
+        <div class="fgcard-body">
+          <div class="fgcard-tag">10–11 СЫНЫП · ТРИГОНОМЕТРИЯ</div>
+          <div class="fgcard-name">Math Detective</div>
+          <div class="fgcard-desc">Кері тригонометриялық функциялар бойынша 9 тапсырмалы детектив ойыны. Айғақтарды жинап, сейфтің кодын аш!</div>
+          <div class="fgcard-metas">
+            <div class="fgcard-m">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              ~20 минут
+            </div>
+            <div class="fgcard-m">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              9 сұрақ
+            </div>
+          </div>
+          <a href="/game/" target="_blank" class="btn-fgplay">▶ ОЙЫНДЫ БАСТАУ</a>
         </div>
       </div>
-      <div class="fgcard-body">
-        <div class="fgcard-tag">10–11 СЫНЫП · ТРИГОНОМЕТРИЯ</div>
-        <div class="fgcard-name">Math Detective</div>
-        <div class="fgcard-desc">Кері тригонометриялық функциялар бойынша 9 тапсырмалы детектив ойыны. Айғақтарды жинап, сейфтің кодын аш!</div>
-        <div class="fgcard-metas">
-          <div class="fgcard-m"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>~20 мин</div>
-          <div class="fgcard-m"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>9 сұрақ</div>
-        </div>
-        <a href="/game/" target="_blank" class="btn-fgplay">▶ ОЙЫНДЫ БАСТАУ</a>
-      </div>
-    </div>
 
-    <!-- Бұрыш Шебері -->
-    <div class="fgcard">
-      <div class="fgcard-banner" style="background:linear-gradient(135deg,#0d1b2a,#0a2240)">
-        <div class="fgcard-dots" style="background-image:radial-gradient(rgba(255,215,0,.1) 1px,transparent 1px)"></div>
-        <canvas id="angle-canvas" width="240" height="140" style="position:relative;z-index:1"></canvas>
-      </div>
-      <div class="fgcard-body">
-        <div class="fgcard-tag">8 СЫНЫП · ГЕОМЕТРИЯ</div>
-        <div class="fgcard-name">Бұрыш Шебері</div>
-        <div class="fgcard-desc">Көпбұрыштың сыртқы бұрышы тақырыбы. 3 кезең: сәйкестендіру, викторина, есептер.</div>
-        <div class="fgcard-metas">
-          <div class="fgcard-m"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>~15 мин</div>
-          <div class="fgcard-m"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>3 кезең · 24 ұпай</div>
+      <!-- Бұрыш Шебері -->
+      <div class="fgcard">
+        <div class="fgcard-banner" style="background:linear-gradient(135deg,#0d1b2a,#0a2240)">
+          <div class="fgcard-dots" style="background-image:radial-gradient(rgba(255,215,0,.1) 1px,transparent 1px)"></div>
+          <canvas id="angle-canvas" width="240" height="140" style="position:relative;z-index:1"></canvas>
         </div>
-        <a href="/game-angle/" target="_blank" class="btn-fgplay">▶ ОЙЫНДЫ БАСТАУ</a>
+        <div class="fgcard-body">
+          <div class="fgcard-tag">8 СЫНЫП · ГЕОМЕТРИЯ</div>
+          <div class="fgcard-name">Бұрыш Шебері</div>
+          <div class="fgcard-desc">Көпбұрыштың сыртқы бұрышы тақырыбы. 3 кезең: сәйкестендіру, викторина, есептер.</div>
+          <div class="fgcard-metas">
+            <div class="fgcard-m">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              ~15 минут
+            </div>
+            <div class="fgcard-m">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              3 кезең · 24 ұпай
+            </div>
+          </div>
+          <a href="/game-angle/" target="_blank" class="btn-fgplay">▶ ОЙЫНДЫ БАСТАУ</a>
+        </div>
       </div>
-    </div>
 
+    </div>
   </div>
-</div>
+</div><!-- /games-page -->
 
 <!-- PAYMENT WALL -->
 <div class="pay-wall" id="payWall" style="display:none">
   <div class="pay-wall-box">
     <div class="pay-wall-lock">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2.2">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2.2">
         <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
       </svg>
     </div>
@@ -454,48 +369,23 @@ body{background:#060c1a;color:#e2e8f0}
 </div>
 
 <script>
-// Stars
-(function(){
-  const c=document.getElementById('stars');
-  for(let i=0;i<80;i++){
-    const s=document.createElement('div');
-    s.className='star';
-    const sz=.6+Math.random()*2.2;
-    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;
-      width:${sz}px;height:${sz}px;--d:${1+Math.random()*3}s;--dl:${Math.random()*4}s`;
-    c.appendChild(s);
-  }
-})();
-
-// Angle canvas
 (function(){
   const cv=document.getElementById('angle-canvas');
   if(!cv)return;
-  const c=cv.getContext('2d');
-  const W=240,H=140,cx=W/2,cy=H/2,r=48,n=5;
+  const c=cv.getContext('2d'),W=240,H=140,cx=W/2,cy=H/2,r=48,n=5;
   let angle=0;
   function draw(){
     c.clearRect(0,0,W,H);
     c.beginPath();
-    for(let i=0;i<n;i++){
-      const a=(i*2*Math.PI/n)-Math.PI/2+angle;
-      i===0?c.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):c.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
-    }
-    c.closePath();
-    c.strokeStyle='#ffd700';c.lineWidth=2;c.shadowColor='#ffd700';c.shadowBlur=8;c.stroke();c.shadowBlur=0;
-    c.fillStyle='rgba(255,215,0,.07)';c.fill();
+    for(let i=0;i<n;i++){const a=(i*2*Math.PI/n)-Math.PI/2+angle;i===0?c.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):c.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}
+    c.closePath();c.strokeStyle='#ffd700';c.lineWidth=2;c.shadowColor='#ffd700';c.shadowBlur=8;c.stroke();c.shadowBlur=0;c.fillStyle='rgba(255,215,0,.07)';c.fill();
     const a0=-Math.PI/2+angle,a1=(2*Math.PI/n)-Math.PI/2+angle;
-    const vx=cx+r*Math.cos(a0),vy=cy+r*Math.sin(a0);
-    const px=cx+r*Math.cos(a1),py=cy+r*Math.sin(a1);
-    const dx=vx-px,dy=vy-py,len=Math.hypot(dx,dy);
-    const ex=vx+(dx/len)*28,ey=vy+(dy/len)*28;
+    const vx=cx+r*Math.cos(a0),vy=cy+r*Math.sin(a0),px=cx+r*Math.cos(a1),py=cy+r*Math.sin(a1);
+    const dx=vx-px,dy=vy-py,len=Math.hypot(dx,dy),ex=vx+(dx/len)*28,ey=vy+(dy/len)*28;
     c.beginPath();c.moveTo(px,py);c.lineTo(vx,vy);c.lineTo(ex,ey);
     c.strokeStyle='#ff8c00';c.lineWidth=2.2;c.shadowColor='#ff8c00';c.shadowBlur=6;c.stroke();c.shadowBlur=0;
-    c.font='bold 13px Arial';c.textAlign='left';
-    c.fillStyle='#ff8c00';c.fillText('β',ex+4,ey);
-    c.fillStyle='#ffd700';c.fillText('α',vx+5,vy+4);
-    c.font='bold 11px Arial';c.textAlign='center';
-    c.fillStyle='rgba(255,215,0,.5)';c.fillText('БҰРЫШ ШЕБЕРІ',cx,H-10);
+    c.font='bold 13px Arial';c.textAlign='left';c.fillStyle='#ff8c00';c.fillText('β',ex+4,ey);c.fillStyle='#ffd700';c.fillText('α',vx+5,vy+4);
+    c.font='bold 11px Arial';c.textAlign='center';c.fillStyle='rgba(255,215,0,.5)';c.fillText('БҰРЫШ ШЕБЕРІ',cx,H-10);
     angle+=0.005;requestAnimationFrame(draw);
   }
   draw();
@@ -508,88 +398,86 @@ body{background:#060c1a;color:#e2e8f0}
 let currentUser=null;
 
 const THEME_META={
-  underwater:{ico:'🌊',bg:'linear-gradient(135deg,#001a33,#003875)'},
-  cave:       {ico:'⛰️',bg:'linear-gradient(135deg,#1a0e00,#2d1700)'},
-  space:      {ico:'🚀',bg:'linear-gradient(135deg,#000005,#100030)'},
-  forest:     {ico:'🌿',bg:'linear-gradient(135deg,#010d01,#0a3d0a)'},
-  steppe:     {ico:'🌅',bg:'linear-gradient(135deg,#7b3200,#2e7d32)'},
+  underwater:{bg:'linear-gradient(135deg,#001a33,#003875)',svgColor:'#00d4ff'},
+  cave:      {bg:'linear-gradient(135deg,#1a0e00,#2d1700)',svgColor:'#ff8c00'},
+  space:     {bg:'linear-gradient(135deg,#000005,#100030)',svgColor:'#c084fc'},
+  forest:    {bg:'linear-gradient(135deg,#010d01,#0a3d0a)',svgColor:'#44ff44'},
+  steppe:    {bg:'linear-gradient(135deg,#7b3200,#2e7d32)',svgColor:'#ffd700'},
 };
-const TYPE_META={
-  quiz:     {ico:'📋',name:'Викторина'},
-  match:    {ico:'🃏',name:'Сәйкестендіру'},
-  carousel: {ico:'🎠',name:'Карусель'},
-  sort:     {ico:'📦',name:'Сұрыптау'},
-  target:   {ico:'🎯',name:'Нысана'},
-  lightning:{ico:'⚡',name:'Найзағай'},
+const THEME_ICONS={
+  underwater:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/><path d="M2 17c2-2 4-3 6-3s4 2 6 1 4-3 8-1"/></svg>`,
+  cave:      `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 22 20 2 20"/><polyline points="8 20 8 14 12 10 16 14 16 20"/></svg>`,
+  space:     `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+  forest:    `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h11v9H3z"/><path d="M12 20v-4"/><line x1="6" y1="20" x2="18" y2="20"/></svg>`,
+  steppe:    `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>`,
 };
+const TYPE_ICONS={
+  quiz:     `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+  match:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="8" height="5" rx="1"/><rect x="14" y="3" width="8" height="5" rx="1"/><rect x="2" y="16" width="8" height="5" rx="1"/><rect x="14" y="16" width="8" height="5" rx="1"/></svg>`,
+  carousel: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 10 20 15 15 20"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg>`,
+  sort:     `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/></svg>`,
+  target:   `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+  lightning:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+};
+const TYPE_NAMES={quiz:'Викторина',match:'Сәйкестендіру',carousel:'Карусель',sort:'Сұрыптау',target:'Нысана',lightning:'Найзағай'};
 
 (async()=>{
   const user=await requireAuth();
   if(!user)return;
   currentUser=user;
   document.getElementById('userName').textContent=user.user_metadata?.name||user.email;
-
   if(user.email===ADMIN_EMAIL){
     const btn=document.createElement('a');btn.href='admin.html';btn.textContent='Админ';
-    btn.style.cssText='padding:7px 16px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);border-radius:8px;color:#c4b5fd;font-size:13px;font-weight:700;text-decoration:none';
+    btn.style.cssText='padding:7px 16px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.25);border-radius:8px;color:#8b5cf6;font-size:13px;font-weight:700;text-decoration:none';
     document.querySelector('.nav-user').prepend(btn);
   } else {
     let isPaid=false;
     try{const{data:p}=await sb.rpc('check_paid_user',{check_id:user.id});isPaid=p===true;}catch(_){}
-    if(!isPaid){document.getElementById('payWall').style.display='flex';}
+    if(!isPaid)document.getElementById('payWall').style.display='flex';
   }
-
   loadTeacherQuizzes();
 })();
 
 async function loadTeacherQuizzes(){
   try{
     const{data,count}=await sb.from('quizzes')
-      .select('id,title,theme,game_type,grade,questions,play_count,creator_name',{count:'exact'})
-      .order('created_at',{ascending:false})
-      .limit(9);
-
-    if(count!=null) document.getElementById('statQuizzes').textContent=count;
-
+      .select('id,title,theme,game_type,grade,questions,play_count',{count:'exact'})
+      .order('created_at',{ascending:false}).limit(9);
+    if(count!=null)document.getElementById('statQuizzes').textContent=count;
     const grid=document.getElementById('teacherQuizzes');
     if(!data||!data.length){
-      grid.innerHTML=`<div class="qg-empty"><span class="qg-empty-ico">✏️</span>Әлі викторина жасалмаған.<br>Бірінші болыңыз!</div>`;
+      grid.innerHTML=`<div class="qg-empty"><div class="qg-empty-ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>Әлі викторина жасалмаған — бірінші болыңыз!</div>`;
       return;
     }
-
     grid.innerHTML=data.map(q=>{
-      const th=THEME_META[q.theme]||{ico:'🎮',bg:'linear-gradient(135deg,#111,#222)'};
-      const ty=TYPE_META[q.game_type]||{ico:'🎮',name:q.game_type};
+      const th=THEME_META[q.theme]||{bg:'linear-gradient(135deg,#1a56db,#0891b2)',svgColor:'#fff'};
+      const ti=THEME_ICONS[q.theme]||THEME_ICONS.space;
+      const tyIco=TYPE_ICONS[q.game_type]||TYPE_ICONS.quiz;
+      const tyName=TYPE_NAMES[q.game_type]||q.game_type;
       return `
       <div class="qgcard" onclick="window.open('quiz-play.html?id=${q.id}','_blank')">
         <div class="qgcard-banner" style="background:${th.bg}">
-          <div class="qgcard-theme-label">${th.ico}</div>
+          <div class="qgcard-theme-ico" style="color:${th.svgColor}">${ti}</div>
         </div>
         <div class="qgcard-body">
-          <div class="qgcard-type">
-            <span class="qgcard-type-ico">${ty.ico}</span>
-            <span class="qgcard-type-lbl">${ty.name.toUpperCase()}</span>
-          </div>
+          <div class="qgcard-type">${tyIco}<span class="qgcard-type-lbl">${tyName.toUpperCase()}</span></div>
           <div class="qgcard-title">${q.title}</div>
           <div class="qgcard-meta">${q.questions?.length||0} сұрақ${q.grade?' · '+q.grade:''}${q.play_count?' · '+q.play_count+' рет':''}</div>
-          <a href="quiz-play.html?id=${q.id}" target="_blank" class="btn-qgplay" onclick="event.stopPropagation()">▶ Ойнату</a>
+          <a href="quiz-play.html?id=${q.id}" target="_blank" class="btn-qgplay" onclick="event.stopPropagation()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Ойнату
+          </a>
         </div>
       </div>`;
     }).join('');
   }catch(e){
-    document.getElementById('teacherQuizzes').innerHTML=`<div class="qg-empty"><span class="qg-empty-ico">⚠️</span>Жүктеу қатесі</div>`;
+    document.getElementById('teacherQuizzes').innerHTML=`<div class="qg-empty"><div class="qg-empty-ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>Жүктеу қатесі</div>`;
   }
 }
 
-async function logout(){
-  localStorage.removeItem('gotab_last_page');
-  await sb.auth.signOut();
-  window.location.href='index.html';
-}
+async function logout(){localStorage.removeItem('gotab_last_page');await sb.auth.signOut();window.location.href='index.html';}
 async function sendReceipt(){
-  if(currentUser){
-    await sb.from('payment_requests').insert({user_id:currentUser.id,user_email:currentUser.email,user_name:currentUser.user_metadata?.name||currentUser.email}).catch(()=>{});
-  }
+  if(currentUser)await sb.from('payment_requests').insert({user_id:currentUser.id,user_email:currentUser.email,user_name:currentUser.user_metadata?.name||currentUser.email}).catch(()=>{});
   window.open('https://wa.me/77055894347?text='+encodeURIComponent('Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. Чекті жіберемін.'),'_blank');
 }
 </script>
