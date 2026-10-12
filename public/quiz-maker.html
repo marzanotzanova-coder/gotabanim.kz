@@ -29,6 +29,7 @@
 
 /* Theme cards */
 .themes-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px}
+@media(max-width:900px){.themes-grid{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:680px){.themes-grid{grid-template-columns:repeat(2,1fr)}}
 .theme-card{border-radius:14px;overflow:hidden;cursor:pointer;border:2.5px solid transparent;
   transition:all .25s;box-shadow:0 3px 14px rgba(0,0,0,.08)}
@@ -268,11 +269,16 @@
 <script src="supabase-client.js"></script>
 <script>
 const THEMES = [
-  { id:'underwater', label:'🌊 Су Астында', bg:'linear-gradient(to bottom,#001a33,#003875,#005caa)' },
-  { id:'cave',       label:'⛰️ Тау Ішінде', bg:'linear-gradient(to bottom,#0a0500,#1a0e00,#2d2200)' },
-  { id:'space',      label:'🚀 Ғарыш',      bg:'linear-gradient(to bottom,#000005,#05001a,#100030)' },
-  { id:'forest',     label:'🌿 Орман',       bg:'linear-gradient(to bottom,#010d01,#052805,#0a3d0a)' },
-  { id:'steppe',     label:'🌅 Қазақ Даласы',bg:'linear-gradient(to bottom,#ff7b1c,#ffca3a 45%,#5a9e6f 80%,#2e7d32)' }
+  { id:'underwater', label:'🌊 Су Астында',   bg:'linear-gradient(to bottom,#001a33,#003875,#005caa)' },
+  { id:'cave',       label:'⛰️ Тау Ішінде',   bg:'linear-gradient(to bottom,#0a0500,#1a0e00,#2d2200)' },
+  { id:'space',      label:'🚀 Ғарыш',        bg:'linear-gradient(to bottom,#000005,#05001a,#100030)' },
+  { id:'forest',     label:'🌿 Орман',         bg:'linear-gradient(to bottom,#010d01,#052805,#0a3d0a)' },
+  { id:'steppe',     label:'🌅 Қазақ Даласы', bg:'linear-gradient(to bottom,#ff7b1c,#ffca3a 45%,#5a9e6f 80%,#2e7d32)' },
+  { id:'cyberpunk',  label:'🌆 Киберпанк',    bg:'linear-gradient(to bottom,#000010,#0a001a,#0d0030)' },
+  { id:'volcano',    label:'🌋 Вулкан',        bg:'linear-gradient(to bottom,#1a0000,#3d0800,#7a1200)' },
+  { id:'arctic',     label:'🧊 Арктика',       bg:'linear-gradient(to bottom,#000d1a,#001433,#002055)' },
+  { id:'retro',      label:'🕹️ Ретро Аркада', bg:'linear-gradient(to bottom,#0a0015,#100028,#140040)' },
+  { id:'magic',      label:'✨ Сиқыр',         bg:'linear-gradient(to bottom,#08001a,#140040,#1e0060)' },
 ];
 const GTYPES = [
   { id:'quiz',      icon:'📋', name:'Викторина',           desc:'4 нұсқадан дұрыс жауапты таңда' },
@@ -391,6 +397,143 @@ function animateThemePreview(id) {
       background-image:repeating-linear-gradient(45deg,#fff 0,#fff 1px,transparent 0,transparent 50%);
       background-size:8px 8px;`;
     el.appendChild(pat);
+  } else if (id === 'cyberpunk') {
+    // neon grid
+    const grid = document.createElement('div');
+    grid.style.cssText = `position:absolute;inset:0;opacity:.25;
+      background-image:linear-gradient(rgba(0,255,249,.5) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(0,255,249,.5) 1px,transparent 1px);
+      background-size:18px 18px;`;
+    el.appendChild(grid);
+    // neon particles
+    ['#00fff9','#ff00ff','#ff00ff','#00fff9'].forEach((c,i) => {
+      const d = document.createElement('div');
+      d.style.cssText = `position:absolute;border-radius:50%;
+        left:${15+i*22}%;top:${20+Math.random()*50}%;
+        width:4px;height:4px;background:${c};
+        box-shadow:0 0 6px ${c};animation:twinkle ${1+i*.3}s ${i*.2}s infinite alternate;`;
+      el.appendChild(d);
+    });
+    // horizon line
+    const hl = document.createElement('div');
+    hl.style.cssText = `position:absolute;bottom:28%;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,#00fff9,#ff00ff,transparent);opacity:.6;`;
+    el.appendChild(hl);
+    // city silhouette
+    [8,22,36,50,64,78,88].forEach((x,i) => {
+      const b = document.createElement('div');
+      const h = 10+Math.floor(Math.random()*22);
+      b.style.cssText = `position:absolute;bottom:28%;left:${x}%;width:9px;height:${h}px;
+        background:rgba(0,0,20,.9);border:1px solid rgba(0,255,249,.2);`;
+      el.appendChild(b);
+    });
+  } else if (id === 'volcano') {
+    // lava glow at bottom
+    const lava = document.createElement('div');
+    lava.style.cssText = `position:absolute;bottom:0;left:0;right:0;height:28px;
+      background:linear-gradient(to top,#ff4400,#ff8800,transparent);opacity:.85;`;
+    el.appendChild(lava);
+    // volcano cone
+    const cone = document.createElement('div');
+    cone.style.cssText = `position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+      width:0;height:0;border-left:32px solid transparent;border-right:32px solid transparent;
+      border-bottom:40px solid #2a0000;`;
+    el.appendChild(cone);
+    // ember particles rising
+    for (let i=0;i<8;i++) {
+      const e = document.createElement('div');
+      const sz = 2+Math.random()*4;
+      e.style.cssText = `position:absolute;bottom:${10+Math.random()*15}%;
+        left:${35+Math.random()*30}%;
+        width:${sz}px;height:${sz}px;border-radius:50%;
+        background:${Math.random()>.5?'#ff6600':'#ffcc00'};
+        animation:bubbleRise ${1.5+Math.random()*2}s ${Math.random()*2}s infinite ease-in;`;
+      el.appendChild(e);
+    }
+  } else if (id === 'arctic') {
+    // aurora stripe
+    const aurora = document.createElement('div');
+    aurora.style.cssText = `position:absolute;top:0;left:0;right:0;height:30px;
+      background:linear-gradient(to bottom,rgba(0,255,136,.3),transparent);
+      animation:sunPulse 3s infinite alternate;`;
+    el.appendChild(aurora);
+    const aurora2 = document.createElement('div');
+    aurora2.style.cssText = `position:absolute;top:10px;left:0;right:0;height:20px;
+      background:linear-gradient(90deg,transparent,rgba(0,150,255,.4),rgba(0,255,136,.3),transparent);
+      animation:sunPulse 4s 1s infinite alternate;`;
+    el.appendChild(aurora2);
+    // ice crystals
+    ['#a8f0ff','#e0ffff','#80e0ff'].forEach((c,i) => {
+      const cr = document.createElement('div');
+      cr.style.cssText = `position:absolute;bottom:4px;left:${15+i*28}%;
+        width:8px;height:14px;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+        background:${c};opacity:.8;animation:crystalGlow 2.5s ${i*.4}s infinite alternate;`;
+      el.appendChild(cr);
+    });
+    // snowflakes
+    for (let i=0;i<6;i++) {
+      const s = document.createElement('div');
+      s.textContent = '❄';
+      s.style.cssText = `position:absolute;top:-4px;left:${8+i*16}%;
+        font-size:9px;color:#e0ffff;opacity:.7;
+        animation:leafFall ${2+Math.random()*2}s ${Math.random()*2}s infinite linear;`;
+      el.appendChild(s);
+    }
+  } else if (id === 'retro') {
+    // scanlines
+    const scan = document.createElement('div');
+    scan.style.cssText = `position:absolute;inset:0;pointer-events:none;
+      background-image:repeating-linear-gradient(transparent,transparent 2px,rgba(0,0,0,.25) 2px,rgba(0,0,0,.25) 4px);`;
+    el.appendChild(scan);
+    // pixel blocks
+    const colors = ['#39ff14','#ff2d78','#00eeff','#ffdd00'];
+    for (let i=0;i<10;i++) {
+      const px = document.createElement('div');
+      const c = colors[Math.floor(Math.random()*colors.length)];
+      const sz = 5+Math.floor(Math.random()*6);
+      px.style.cssText = `position:absolute;
+        left:${Math.random()*85}%;top:${Math.random()*80}%;
+        width:${sz}px;height:${sz}px;background:${c};
+        animation:twinkle ${.8+Math.random()*1.2}s ${Math.random()}s infinite alternate;`;
+      el.appendChild(px);
+    }
+    // retro text
+    const txt = document.createElement('div');
+    txt.textContent = 'PLAY';
+    txt.style.cssText = `position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+      font-size:9px;font-weight:900;color:#39ff14;letter-spacing:3px;
+      text-shadow:0 0 6px #39ff14;font-family:monospace;`;
+    el.appendChild(txt);
+  } else if (id === 'magic') {
+    // sparkle stars
+    ['✦','✧','★','✦','✧'].forEach((s,i) => {
+      const sp = document.createElement('div');
+      sp.textContent = s;
+      sp.style.cssText = `position:absolute;left:${10+i*18}%;top:${5+Math.random()*65}%;
+        font-size:${8+Math.random()*8}px;
+        color:${i%2===0?'#ffd700':'#ff69b4'};
+        animation:twinkle ${1+Math.random()*1.5}s ${i*.25}s infinite alternate;`;
+      el.appendChild(sp);
+    });
+    // central glowing orb
+    const orb = document.createElement('div');
+    orb.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      width:22px;height:22px;border-radius:50%;
+      background:radial-gradient(circle,#ffe680,#c850ff);
+      box-shadow:0 0 14px #c850ff,0 0 28px rgba(200,80,255,.4);
+      animation:sunPulse 2s infinite alternate;`;
+    el.appendChild(orb);
+    // magic sparkles ring
+    for (let i=0;i<6;i++) {
+      const r = document.createElement('div');
+      const angle = (i/6)*360;
+      r.style.cssText = `position:absolute;top:50%;left:50%;
+        width:3px;height:3px;border-radius:50%;
+        background:#ffd700;
+        transform:translate(-50%,-50%) rotate(${angle}deg) translateX(18px);
+        animation:twinkle 1.5s ${i*.2}s infinite alternate;`;
+      el.appendChild(r);
+    }
   }
 }
 
