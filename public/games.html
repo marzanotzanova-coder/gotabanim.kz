@@ -199,15 +199,30 @@
         <a href="/game/" target="_blank" class="btn-play">ОЙЫНДЫ БАСТАУ →</a>
       </div>
     </div>
-    <div class="game-card" style="opacity:.55;pointer-events:none">
-      <div class="game-card-banner" style="background:linear-gradient(135deg,#f8fafc,#eef2ff)">
-        <div style="font-size:48px">🚧</div>
+    <div class="game-card">
+      <div class="game-card-banner" style="background:linear-gradient(135deg,#0d1b2a 0%,#1b2838 60%,#0a2240 100%)">
+        <div class="game-card-dots"></div>
+        <canvas id="angle-canvas" width="240" height="140" style="position:relative;z-index:1"></canvas>
       </div>
       <div class="game-card-body">
-        <div class="game-card-tag" style="background:rgba(148,163,184,.1);color:#94a3b8">ЖАҚЫНДА</div>
-        <div class="game-card-title">Келесі ойын <span class="soon-badge">SOON</span></div>
-        <div class="game-card-desc">Жаңа математика ойыны дайындалуда. Күтіп қалыңыз!</div>
-        <div class="btn-play" style="opacity:.4;cursor:not-allowed">ЖАҚЫНДА...</div>
+        <div class="game-card-tag">8 СЫНЫП</div>
+        <div class="game-card-title">Бұрыш Шебері</div>
+        <div class="game-card-desc">Көпбұрыштың сыртқы бұрышы тақырыбы бойынша 3 кезеңді ойын: сәйкестендіру, викторина және есептер.</div>
+        <div class="game-card-meta">
+          <div class="game-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ~15 минут
+          </div>
+          <div class="game-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            3 кезең · 24 ұпай
+          </div>
+          <div class="game-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            8 сынып
+          </div>
+        </div>
+        <a href="/game-angle/" target="_blank" class="btn-play">ОЙЫНДЫ БАСТАУ →</a>
       </div>
     </div>
   </div>
@@ -251,7 +266,62 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  const cv = document.getElementById('angle-canvas');
+  if (!cv) return;
+  const c = cv.getContext('2d');
+  const W=240, H=140, cx=W/2, cy=H/2, r=48, n=5;
+  let angle = 0;
+
+  function draw() {
+    c.clearRect(0,0,W,H);
+
+    // rotating polygon
+    c.beginPath();
+    for(let i=0;i<n;i++){
+      const a=(i*2*Math.PI/n)-Math.PI/2+angle;
+      i===0 ? c.moveTo(cx+r*Math.cos(a), cy+r*Math.sin(a))
+             : c.lineTo(cx+r*Math.cos(a), cy+r*Math.sin(a));
+    }
+    c.closePath();
+    c.strokeStyle='#ffd700'; c.lineWidth=2;
+    c.shadowColor='#ffd700'; c.shadowBlur=8;
+    c.stroke();
+    c.shadowBlur=0;
+    c.fillStyle='rgba(255,215,0,.07)'; c.fill();
+
+    // exterior angle highlight at vertex 0
+    const a0 = -Math.PI/2 + angle;
+    const a1 = (2*Math.PI/n) - Math.PI/2 + angle;
+    const vx=cx+r*Math.cos(a0), vy=cy+r*Math.sin(a0);
+    const px=cx+r*Math.cos(a1), py=cy+r*Math.sin(a1);
+    const dx=vx-px, dy=vy-py, len=Math.hypot(dx,dy);
+    const ex=vx+(dx/len)*28, ey=vy+(dy/len)*28;
+
+    c.beginPath(); c.moveTo(px,py); c.lineTo(vx,vy); c.lineTo(ex,ey);
+    c.strokeStyle='#ff8c00'; c.lineWidth=2.2;
+    c.shadowColor='#ff8c00'; c.shadowBlur=6;
+    c.stroke(); c.shadowBlur=0;
+
+    // labels
+    c.font='bold 13px Arial'; c.textAlign='left';
+    c.fillStyle='#ff8c00'; c.fillText('β', ex+4, ey);
+    c.fillStyle='#ffd700'; c.fillText('α', vx+5, vy+4);
+
+    // title text
+    c.font='bold 11px Arial'; c.textAlign='center';
+    c.fillStyle='rgba(255,215,0,.5)';
+    c.fillText('БҰРЫШ ШЕБЕРІ', cx, H-10);
+
+    angle += 0.005;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
+<script src="supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script>
 let currentUser = null;
@@ -273,11 +343,8 @@ let currentUser = null;
 
   let isPaid = false;
   try {
-    const timer = new Promise(r => setTimeout(() => r(null), 3000));
-    const query = sb.from('profiles').select('is_paid,paid_until,is_banned').eq('id', user.id).single();
-    const { data: profile } = await Promise.race([query, timer.then(() => ({ data: null }))]);
-    if (profile?.is_banned) { await sb.auth.signOut(); window.location.href = 'login.html?banned=1'; return; }
-    isPaid = !!(profile?.is_paid && profile?.paid_until && new Date(profile.paid_until) > new Date());
+    const { data: paid } = await sb.rpc('check_paid_user', { check_id: user.id });
+    isPaid = paid === true;
   } catch (_) { isPaid = false; }
 
   if (!isPaid) {

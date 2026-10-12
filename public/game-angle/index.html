@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Бұрыш Шебері — Көпбұрыштың сыртқы бұрышы</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 50%, #0a2240 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+.screen { display: none; width: 100%; max-width: 820px; padding: 16px; }
+.screen.active { display: block; }
+
+.card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 22px;
+  padding: 28px 32px;
+  color: #f0f0f0;
+}
+
+h1 { text-align: center; font-size: 2.2em; background: linear-gradient(135deg,#ffd700,#ff8c00); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+h2 { text-align: center; font-size: 1.6em; color: #ffd700; margin-bottom: 16px; }
+
+.subtitle { text-align: center; color: #9db0c8; margin-bottom: 22px; font-size: 1em; }
+
+.btn {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  border: none; color: #1a1a1a; padding: 14px 44px;
+  border-radius: 50px; font-size: 1.15em; cursor: pointer;
+  font-weight: bold; transition: transform .2s, box-shadow .2s;
+  display: block; margin: 18px auto;
+}
+.btn:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(255,215,0,.45); }
+.btn:active { transform: scale(.98); }
+
+/* Progress dots */
+.progress-bar { display: flex; justify-content: center; gap: 12px; margin-bottom: 18px; }
+.pd {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; font-size: .9em; transition: all .3s;
+}
+.pd.done { background: #4caf50; color: #fff; }
+.pd.cur  { background: #ffd700; color: #333; box-shadow: 0 0 10px rgba(255,215,0,.5); }
+.pd.todo { background: rgba(255,255,255,.1); color: #666; }
+
+/* Score bar */
+.sbar {
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(0,0,0,.25); border-radius: 50px;
+  padding: 7px 20px; margin-bottom: 14px; font-size: .95em;
+}
+.sbar .pts { font-weight: bold; color: #ffd700; font-size: 1.1em; }
+
+/* Formula box */
+.fbox {
+  background: rgba(255,215,0,.08); border: 1px solid rgba(255,215,0,.4);
+  border-radius: 10px; padding: 10px 18px; text-align: center;
+  font-size: 1.05em; margin: 10px auto 18px; max-width: 480px;
+  color: #ffd700;
+}
+
+/* ---------- STAGE 1: MATCHING ---------- */
+.match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+.mcol { display: flex; flex-direction: column; gap: 10px; }
+.mitem {
+  background: rgba(255,255,255,.07); border: 2px solid rgba(255,255,255,.18);
+  border-radius: 12px; padding: 12px 14px; cursor: pointer;
+  transition: all .2s; text-align: center; font-size: .92em; line-height: 1.4;
+  user-select: none;
+}
+.mitem:hover:not(.ok):not(.locked) { background: rgba(255,215,0,.18); border-color: #ffd700; }
+.mitem.sel  { background: rgba(255,215,0,.25); border-color: #ffd700; }
+.mitem.ok   { background: rgba(76,175,80,.25); border-color: #4caf50; cursor: default; }
+.mitem.err  { background: rgba(244,67,54,.25); border-color: #f44336; animation: shake .35s; }
+.mitem.locked { cursor: default; }
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25%      { transform: translateX(-6px); }
+  75%      { transform: translateX(6px); }
+}
+
+/* ---------- STAGE 2: QUIZ ---------- */
+.qhdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.qtimer { font-size: 1.6em; font-weight: bold; color: #ffd700; transition: color .3s; }
+.qnum   { color: #9db0c8; }
+
+.qtxt { font-size: 1.25em; text-align: center; margin: 18px 0; line-height: 1.55; }
+
+.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+.opt {
+  background: rgba(255,255,255,.07); border: 2px solid rgba(255,255,255,.18);
+  border-radius: 12px; padding: 14px; cursor: pointer; text-align: center;
+  font-size: 1.1em; font-weight: bold; transition: all .2s; user-select: none;
+}
+.opt:hover:not(.dis) { background: rgba(255,215,0,.2); border-color: #ffd700; transform: scale(1.02); }
+.opt.ok  { background: rgba(76,175,80,.35); border-color: #4caf50; }
+.opt.bad { background: rgba(244,67,54,.35); border-color: #f44336; }
+.opt.dis { cursor: default; }
+
+/* Timer ring */
+.timer-ring { position: relative; width: 54px; height: 54px; }
+.timer-ring svg { transform: rotate(-90deg); }
+.timer-ring circle { fill: none; stroke-width: 4; }
+.ring-bg    { stroke: rgba(255,255,255,.1); }
+.ring-track { stroke: #ffd700; stroke-linecap: round; transition: stroke-dashoffset .9s linear, stroke .3s; }
+.timer-txt  {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  font-weight: bold; font-size: 1em; color: #ffd700;
+}
+
+/* ---------- STAGE 3: CALC ---------- */
+.cprob {
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px; padding: 18px 20px; margin: 12px 0;
+}
+.cprob p { font-size: 1.05em; margin-bottom: 8px; line-height: 1.5; }
+.cformula { color: #ffd700; font-size: .9em; margin-bottom: 10px; }
+.crow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cinput {
+  background: rgba(255,255,255,.1); border: 2px solid rgba(255,255,255,.25);
+  border-radius: 8px; color: #fff; padding: 9px 14px; font-size: 1.2em;
+  width: 110px; text-align: center; transition: border-color .2s;
+}
+.cinput:focus { outline: none; border-color: #ffd700; background: rgba(255,215,0,.1); }
+.cinput.ok  { border-color: #4caf50; background: rgba(76,175,80,.2); }
+.cinput.bad { border-color: #f44336; background: rgba(244,67,54,.2); }
+
+/* ---------- FEEDBACK ---------- */
+.fb { text-align: center; font-size: 1.05em; min-height: 28px; margin: 8px 0; }
+.fb.ok  { color: #4caf50; }
+.fb.bad { color: #f44336; }
+.fb.warn { color: #ffd700; }
+
+/* ---------- RESULTS ---------- */
+.result-score { text-align: center; margin: 14px 0; }
+.rs-num  { font-size: 4.5em; font-weight: bold; color: #ffd700; line-height: 1; }
+.rs-max  { color: #9db0c8; font-size: 1em; }
+.stars   { font-size: 2.4em; margin: 8px 0; }
+
+.breakdown {
+  background: rgba(0,0,0,.2); border-radius: 12px; padding: 14px 18px; margin: 16px 0;
+}
+.brow {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.brow:last-child { border: none; font-weight: bold; font-size: 1.1em; }
+.bval { color: #ffd700; font-weight: bold; }
+
+.rmsg { text-align: center; font-size: 1.2em; color: #ffd700; margin: 12px 0; }
+
+/* Confetti */
+.cf {
+  position: fixed; border-radius: 3px; pointer-events: none;
+  animation: cffall linear forwards;
+}
+@keyframes cffall {
+  0%   { transform: translateY(-30px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(105vh) rotate(800deg); opacity: 0; }
+}
+
+/* Start screen illustration */
+.start-illo { display: flex; justify-content: center; margin-bottom: 10px; }
+
+.stage-icons { display: flex; justify-content: center; gap: 28px; margin: 18px 0; }
+.si { text-align: center; }
+.si-icon { font-size: 2em; margin-bottom: 4px; }
+.si-label { color: #9db0c8; font-size: .85em; }
+
+/* Replay button */
+.rbtn {
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25);
+  color: #f0f0f0; border-radius: 20px; padding: 5px 12px; font-size: .82em;
+  cursor: pointer; transition: all .2s; white-space: nowrap;
+}
+.rbtn:hover { background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.5); transform: scale(1.04); }
+
+/* Polygon canvas */
+canvas { display: block; margin: 0 auto; }
+
+/* Responsive */
+@media (max-width: 560px) {
+  .match-grid { grid-template-columns: 1fr; }
+  .opts { grid-template-columns: 1fr; }
+  .card { padding: 20px 16px; }
+  h1 { font-size: 1.7em; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== START SCREEN ========== -->
+<div id="s-start" class="screen active">
+  <div class="card">
+    <div class="start-illo"><canvas id="cv-start" width="220" height="130"></canvas></div>
+    <h1>Бұрыш Шебері 🔺</h1>
+    <p class="subtitle" style="font-size:1.1em; margin-top:6px">Көпбұрыштың сыртқы бұрышы · 8-сынып</p>
+
+    <div class="fbox">
+      α + β = 180° &nbsp;·&nbsp; Σ<sub>сырт</sub> = 360° &nbsp;·&nbsp; (n−2)·180°
+    </div>
+
+    <div class="stage-icons">
+      <div class="si"><div class="si-icon">🃏</div><div class="si-label">Сәйкестендір</div></div>
+      <div class="si"><div class="si-icon">❓</div><div class="si-label">Викторина</div></div>
+      <div class="si"><div class="si-icon">🧮</div><div class="si-label">Есептер</div></div>
+    </div>
+
+    <p style="text-align:center; color:#9db0c8; margin-bottom:6px">
+      Жалпы ұпай: <strong style="color:#ffd700">24</strong> · 3 кезең
+    </p>
+    <button class="btn" onclick="startGame()">▶ Ойынды бастау</button>
+  </div>
+</div>
+
+<!-- ========== STAGE 1: MATCHING ========== -->
+<div id="s-1" class="screen">
+  <div class="card">
+    <div class="progress-bar">
+      <div class="pd cur" id="p1">1</div>
+      <div class="pd todo" id="p2">2</div>
+      <div class="pd todo" id="p3">3</div>
+    </div>
+    <div class="sbar">
+      <span>🃏 Сәйкестендір</span>
+      <span class="pts" id="sc1">0 ұпай</span>
+      <button class="rbtn" onclick="replayStage1()">🔄 Қайталау</button>
+    </div>
+    <h2>Дұрысын тап!</h2>
+    <p class="subtitle">Сол жақтағы тұжырымды оң жақтағы мәнмен сәйкестендір</p>
+
+    <div class="match-grid">
+      <div class="mcol" id="mcol-l"></div>
+      <div class="mcol" id="mcol-r"></div>
+    </div>
+
+    <div class="fb" id="fb1"></div>
+    <div id="m-done" style="display:none; text-align:center">
+      <p style="color:#4caf50; font-size:1.1em; margin-bottom:12px">✅ Барлық сәйкестік табылды!</p>
+      <button class="btn" onclick="gotoStage2()">Келесі кезең →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== STAGE 2: QUIZ ========== -->
+<div id="s-2" class="screen">
+  <div class="card">
+    <div class="progress-bar">
+      <div class="pd done">✓</div>
+      <div class="pd cur">2</div>
+      <div class="pd todo">3</div>
+    </div>
+    <div class="sbar">
+      <span class="qnum" id="qnum">Сұрақ 1/5</span>
+      <span class="pts" id="sc2">0 ұпай</span>
+      <button class="rbtn" onclick="replayStage2()">🔄 Қайталау</button>
+    </div>
+
+    <div class="qhdr">
+      <span style="color:#9db0c8" id="qlab">Сұрақ 1</span>
+      <div class="timer-ring">
+        <svg width="54" height="54" viewBox="0 0 54 54">
+          <circle class="ring-bg" cx="27" cy="27" r="23"/>
+          <circle class="ring-track" id="ring" cx="27" cy="27" r="23"
+            stroke-dasharray="144.5" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-txt" id="qtxt-timer">20</div>
+      </div>
+    </div>
+
+    <div class="qtxt" id="qtxt"></div>
+    <div class="opts" id="qopts"></div>
+    <div class="fb" id="fb2"></div>
+  </div>
+</div>
+
+<!-- ========== STAGE 3: CALCULATION ========== -->
+<div id="s-3" class="screen">
+  <div class="card">
+    <div class="progress-bar">
+      <div class="pd done">✓</div>
+      <div class="pd done">✓</div>
+      <div class="pd cur">3</div>
+    </div>
+    <div class="sbar">
+      <span>🧮 Есептер</span>
+      <span class="pts" id="sc3">0 ұпай</span>
+      <button class="rbtn" onclick="replayStage3()">🔄 Қайталау</button>
+    </div>
+    <h2>Есепте!</h2>
+    <p class="subtitle">Формуланы қолданып жауапты жазыңыз</p>
+
+    <div class="fbox">
+      β = 180° − α &nbsp;&nbsp;|&nbsp;&nbsp; n = 360° ÷ β<sub>сырт</sub>
+    </div>
+
+    <div id="cprobs"></div>
+    <div class="fb" id="fb3"></div>
+    <button class="btn" id="cbtn" onclick="checkCalc()">Тексеру ✓</button>
+  </div>
+</div>
+
+<!-- ========== RESULTS ========== -->
+<div id="s-res" class="screen">
+  <div class="card">
+    <h2>🏆 Нәтиже!</h2>
+    <div class="result-score">
+      <div class="rs-num" id="rs-num">0</div>
+      <div class="rs-max" id="rs-max">/ 24 ұпай</div>
+      <div class="stars" id="rs-stars"></div>
+    </div>
+
+    <div class="breakdown" id="breakdown"></div>
+    <div class="rmsg" id="rmsg"></div>
+
+    <canvas id="cv-res" width="260" height="160"></canvas>
+    <p style="text-align:center; color:#9db0c8; font-size:.9em; margin-top:4px" id="res-caption"></p>
+
+    <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:20px">
+      <button class="btn" onclick="restartGame()" style="background:linear-gradient(135deg,#4caf50,#388e3c)">
+        🔄 Қайта ойнау
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== DATA ===================== */
+const MATCHES = [
+  { id:1, left:'Ішкі бұрыш + оған сыбайлас сыртқы бұрыш қосындысы', right:'180°' },
+  { id:2, left:'Дөңес көпбұрыштың барлық сыртқы бұрыштар қосындысы', right:'360°' },
+  { id:3, left:'Дұрыс алтыбұрыштың бір сыртқы бұрышы', right:'60°' },
+  { id:4, left:'Дөңес бесбұрыштың ішкі бұрыштар қосындысы', right:'540°' },
+];
+
+const QUIZ = [
+  {
+    q:'Дөңес көпбұрыштың ішкі бұрышы 132°.\nОған сыбайлас сыртқы бұрыш қанша?',
+    opts:['48°','58°','68°','38°'], ans:0, hint:'180° − 132° = 48°'
+  },
+  {
+    q:'Дұрыс көпбұрыштың сыртқы бұрышы 30°.\nҚабырғалар саны нешеу?',
+    opts:['6','10','12','8'], ans:2, hint:'360° ÷ 30° = 12'
+  },
+  {
+    q:'Дөңес 8-бұрыштың ішкі бұрыштарының қосындысы қанша?',
+    opts:['900°','1080°','1260°','720°'], ans:1, hint:'(8−2)×180° = 1080°'
+  },
+  {
+    q:'Дұрыс үшбұрыштың бір сыртқы бұрышы қанша?',
+    opts:['90°','60°','120°','150°'], ans:2, hint:'360° ÷ 3 = 120°'
+  },
+  {
+    q:'Дұрыс көпбұрыштың сыртқы бұрышы 45°.\nҚабырғалар саны нешеу?',
+    opts:['6','8','9','10'], ans:1, hint:'360° ÷ 45° = 8'
+  },
+];
+
+const CALCS = [
+  { text:'Дөңес көпбұрыштың ішкі бұрышы <strong>147°</strong>. Оған сыбайлас сыртқы бұрышты табыңыз.', formula:'β = 180° − 147° = ?', ans:33, unit:'°' },
+  { text:'Дұрыс көпбұрыштың сыртқы бұрышы <strong>24°</strong>. Қабырғалар санын табыңыз.',             formula:'n = 360° ÷ 24° = ?',   ans:15, unit:'' },
+  { text:'Дөңес көпбұрыштың ішкі бұрышы <strong>118°</strong>. Сыртқы бұрышты табыңыз.',               formula:'β = 180° − 118° = ?', ans:62, unit:'°' },
+];
+
+const MAX = { stage1: MATCHES.length * 2, stage2: QUIZ.length * 2, stage3: CALCS.length * 2 };
+
+/* ===================== STATE ===================== */
+let score = { stage1:0, stage2:0, stage3:0 };
+let selL = null, selR = null, matched = 0;
+let qi = 0, timerID = null, timeLeft = 20;
+const CIRC = 2 * Math.PI * 23; // circumference
+
+/* ===================== SCREENS ===================== */
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ===================== CANVAS: START ===================== */
+function drawStart() {
+  const cv = document.getElementById('cv-start');
+  const c  = cv.getContext('2d');
+  const cx=110, cy=65, r=48, n=5;
+
+  c.clearRect(0,0,220,130);
+
+  // polygon
+  c.beginPath();
+  for (let i=0;i<n;i++) {
+    const a=(i*2*Math.PI/n)-Math.PI/2;
+    i===0 ? c.moveTo(cx+r*Math.cos(a), cy+r*Math.sin(a))
+           : c.lineTo(cx+r*Math.cos(a), cy+r*Math.sin(a));
+  }
+  c.closePath();
+  c.strokeStyle='#ffd700'; c.lineWidth=2.2; c.stroke();
+  c.fillStyle='rgba(255,215,0,.07)'; c.fill();
+
+  // exterior angle at vertex 1
+  const a0=(1*2*Math.PI/n)-Math.PI/2, a1=(2*2*Math.PI/n)-Math.PI/2;
+  const vx=cx+r*Math.cos(a0), vy=cy+r*Math.sin(a0);
+  const px=cx+r*Math.cos(a1), py=cy+r*Math.sin(a1);
+  const dx=vx-px, dy=vy-py, len=Math.hypot(dx,dy);
+  const ex=vx+(dx/len)*36, ey=vy+(dy/len)*36;
+
+  c.beginPath(); c.moveTo(px,py); c.lineTo(vx,vy); c.lineTo(ex,ey);
+  c.strokeStyle='#ff6b35'; c.lineWidth=2.5; c.stroke();
+
+  c.font='bold 14px Arial';
+  c.fillStyle='#ff6b35'; c.fillText('β', ex+4, ey-4);
+  c.fillStyle='#ffd700'; c.fillText('α', vx+5, vy+4);
+}
+
+/* ===================== GAME FLOW ===================== */
+function startGame() {
+  score = {stage1:0, stage2:0, stage3:0};
+  selL=null; selR=null; matched=0;
+  qi=0;
+  initMatching();
+  show('s-1');
+}
+
+/* ===================== STAGE 1 ===================== */
+function initMatching() {
+  const lc=document.getElementById('mcol-l');
+  const rc=document.getElementById('mcol-r');
+  lc.innerHTML=''; rc.innerHTML='';
+  document.getElementById('fb1').textContent='';
+  document.getElementById('m-done').style.display='none';
+  document.getElementById('sc1').textContent='0 ұпай';
+
+  const shuffled=[...MATCHES].sort(()=>Math.random()-.5);
+
+  MATCHES.forEach(p => {
+    const el=makeMatchEl(p.left, p.id, 'L');
+    lc.appendChild(el);
+  });
+  shuffled.forEach(p => {
+    const el=makeMatchEl(p.right, p.id, 'R');
+    rc.appendChild(el);
+  });
+}
+
+function makeMatchEl(text, id, side) {
+  const el=document.createElement('div');
+  el.className='mitem'; el.textContent=text;
+  el.dataset.id=id; el.dataset.side=side;
+  el.addEventListener('click', ()=>pickMatch(el));
+  return el;
+}
+
+function pickMatch(el) {
+  if(el.classList.contains('ok') || el.classList.contains('locked')) return;
+  const side=el.dataset.side;
+
+  if(side==='L') {
+    if(selL) selL.classList.remove('sel');
+    selL=el; el.classList.add('sel');
+  } else {
+    if(selR) selR.classList.remove('sel');
+    selR=el; el.classList.add('sel');
+  }
+  if(selL && selR) evalMatch();
+}
+
+function evalMatch() {
+  const fb=document.getElementById('fb1');
+  if(selL.dataset.id===selR.dataset.id) {
+    [selL,selR].forEach(e=>{
+      e.classList.remove('sel'); e.classList.add('ok','locked');
+      e.removeEventListener('click', ()=>pickMatch(e));
+    });
+    matched++;
+    score.stage1 += 2;
+    document.getElementById('sc1').textContent=score.stage1+' ұпай';
+    fb.className='fb ok'; fb.textContent='✅ Дұрыс!';
+    if(matched===MATCHES.length) {
+      setTimeout(()=>{ fb.textContent=''; document.getElementById('m-done').style.display='block'; }, 700);
+    }
+  } else {
+    [selL,selR].forEach(e => e.classList.add('err'));
+    fb.className='fb bad'; fb.textContent='❌ Қате. Тағы көр!';
+    setTimeout(()=>{
+      [selL,selR].forEach(e=>e.classList.remove('err','sel'));
+      fb.textContent='';
+    }, 800);
+  }
+  selL=null; selR=null;
+}
+
+/* ===================== STAGE 2 ===================== */
+function gotoStage2() {
+  qi=0; score.stage2=0;
+  document.getElementById('sc2').textContent='0 ұпай';
+  show('s-2');
+  loadQ();
+}
+
+function loadQ() {
+  if(qi>=QUIZ.length){ endQuiz(); return; }
+  const q=QUIZ[qi];
+  document.getElementById('qlab').textContent=`Сұрақ ${qi+1}`;
+  document.getElementById('qnum').textContent=`Сұрақ ${qi+1}/${QUIZ.length}`;
+  document.getElementById('qtxt').textContent=q.q;
+  document.getElementById('fb2').textContent='';
+
+  const oc=document.getElementById('qopts'); oc.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const d=document.createElement('div');
+    d.className='opt'; d.textContent=o;
+    d.addEventListener('click',()=>pickOpt(d,i));
+    oc.appendChild(d);
+  });
+
+  clearInterval(timerID);
+  timeLeft=20;
+  updateRing(20,20);
+  timerID=setInterval(()=>{
+    timeLeft--;
+    updateRing(timeLeft,20);
+    if(timeLeft<=0){ clearInterval(timerID); revealQ(-1); }
+  },1000);
+}
+
+function updateRing(t, max) {
+  const pct=Math.max(0,t/max);
+  const offset=CIRC*(1-pct);
+  const ring=document.getElementById('ring');
+  ring.style.strokeDashoffset=offset;
+  ring.style.stroke = t<=5 ? '#f44336' : '#ffd700';
+  const txt=document.getElementById('qtxt-timer');
+  txt.textContent=t;
+  txt.style.color = t<=5 ? '#f44336' : '#ffd700';
+}
+
+function pickOpt(el,i) {
+  clearInterval(timerID);
+  document.querySelectorAll('.opt').forEach(o=>{ o.classList.add('dis'); o.removeEventListener('click',()=>{}); });
+  revealQ(i);
+}
+
+function revealQ(i) {
+  const q=QUIZ[qi];
+  const opts=document.querySelectorAll('.opt');
+  opts[q.ans].classList.add('ok');
+  const fb=document.getElementById('fb2');
+  if(i===q.ans){
+    score.stage2+=2;
+    document.getElementById('sc2').textContent=score.stage2+' ұпай';
+    fb.className='fb ok'; fb.textContent=`✅ Дұрыс! — ${q.hint}`;
+  } else {
+    if(i>=0) opts[i].classList.add('bad');
+    fb.className='fb bad'; fb.textContent=`❌ Қате. Дұрыс жауап: ${q.hint}`;
+  }
+  qi++;
+  setTimeout(loadQ,1900);
+}
+
+function endQuiz(){ show('s-3'); initCalc(); }
+
+/* ===================== STAGE 3 ===================== */
+function initCalc() {
+  document.getElementById('fb3').textContent='';
+  document.getElementById('sc3').textContent='0 ұпай';
+  document.getElementById('cbtn').disabled=false;
+  document.getElementById('cbtn').textContent='Тексеру ✓';
+
+  const cont=document.getElementById('cprobs'); cont.innerHTML='';
+  CALCS.forEach((p,i)=>{
+    const d=document.createElement('div');
+    d.className='cprob';
+    d.innerHTML=`
+      <p>${i+1}. ${p.text}</p>
+      <div class="cformula">Формула: ${p.formula}</div>
+      <div class="crow">
+        <span style="color:#9db0c8">Жауап:</span>
+        <input type="number" id="ci${i}" class="cinput" placeholder="?">
+        <span style="color:#9db0c8">${p.unit||'қабырға'}</span>
+      </div>`;
+    cont.appendChild(d);
+  });
+}
+
+function checkCalc() {
+  let allFilled=true;
+  CALCS.forEach((_,i)=>{ if(!document.getElementById(`ci${i}`).value) allFilled=false; });
+  if(!allFilled){
+    const fb=document.getElementById('fb3');
+    fb.className='fb warn'; fb.textContent='⚠️ Барлық жауапты толтырыңыз!'; return;
+  }
+
+  let s=0, allOk=true;
+  CALCS.forEach((p,i)=>{
+    const inp=document.getElementById(`ci${i}`);
+    inp.classList.remove('ok','bad');
+    if(parseInt(inp.value)===p.ans){ inp.classList.add('ok'); s+=2; }
+    else { inp.classList.add('bad'); allOk=false; }
+  });
+
+  score.stage3=s;
+  document.getElementById('sc3').textContent=s+' ұпай';
+  document.getElementById('cbtn').disabled=true;
+
+  const fb=document.getElementById('fb3');
+  if(allOk){
+    fb.className='fb ok'; fb.textContent='🎉 Барлық есеп дұрыс!';
+    setTimeout(showResults,1400);
+  } else {
+    fb.className='fb bad'; fb.textContent='❌ Кейбір есеп қате.';
+    setTimeout(()=>{
+      CALCS.forEach((p,i)=>{
+        const inp=document.getElementById(`ci${i}`);
+        if(!inp.classList.contains('ok')){ inp.value=p.ans; inp.classList.remove('bad'); inp.classList.add('ok'); }
+      });
+      fb.className='fb warn'; fb.textContent='✅ Дұрыс жауаптар көрсетілді.';
+      setTimeout(showResults, 2200);
+    },1800);
+  }
+}
+
+/* ===================== RESULTS ===================== */
+function showResults() {
+  show('s-res');
+  const total=score.stage1+score.stage2+score.stage3;
+  const maxTot=MAX.stage1+MAX.stage2+MAX.stage3;
+  document.getElementById('rs-num').textContent=total;
+  document.getElementById('rs-max').textContent=`/ ${maxTot} ұпай`;
+
+  const pct=total/maxTot;
+  document.getElementById('rs-stars').textContent=pct>=.85?'⭐⭐⭐':pct>=.6?'⭐⭐':'⭐';
+
+  const msgs=[
+    [.88,'🏆 Тамаша! Сен шынайы Бұрыш Шебері!'],
+    [.65,'👍 Жақсы нәтиже! Тырыса бер!'],
+    [.4, '💡 Формулаларды қайталап, тағы бір рет сынай!'],
+    [0,  '📖 Тақырыпты оқып, қайта келіп ойна!'],
+  ];
+  document.getElementById('rmsg').textContent=msgs.find(([t])=>pct>=t)[1];
+
+  document.getElementById('breakdown').innerHTML=`
+    <div class="brow"><span>🃏 Сәйкестендіру (max ${MAX.stage1})</span><span class="bval">${score.stage1}</span></div>
+    <div class="brow"><span>❓ Викторина (max ${MAX.stage2})</span><span class="bval">${score.stage2}</span></div>
+    <div class="brow"><span>🧮 Есептер (max ${MAX.stage3})</span><span class="bval">${score.stage3}</span></div>
+    <div class="brow"><span>Жалпы (max ${maxTot})</span><span class="bval" style="font-size:1.15em">${total}</span></div>
+  `;
+
+  drawResultPolygon(total, maxTot);
+  if(pct>=.5) confetti();
+}
+
+function drawResultPolygon(total, max) {
+  const cv=document.getElementById('cv-res');
+  const c=cv.getContext('2d');
+  c.clearRect(0,0,260,160);
+  const n=Math.max(3,Math.min(9,Math.round(3+(total/max)*6)));
+  const cx=130, cy=78, r=58;
+
+  c.beginPath();
+  for(let i=0;i<n;i++){
+    const a=(i*2*Math.PI/n)-Math.PI/2;
+    i===0 ? c.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a))
+           : c.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+  }
+  c.closePath();
+  c.strokeStyle='#ffd700'; c.lineWidth=2.4; c.stroke();
+  c.fillStyle='rgba(255,215,0,.07)'; c.fill();
+
+  // vertex labels
+  c.fillStyle='#9db0c8'; c.font='11px Arial'; c.textAlign='center';
+  for(let i=0;i<n;i++){
+    const a=(i*2*Math.PI/n)-Math.PI/2;
+    c.fillText(String.fromCharCode(65+i), cx+(r+14)*Math.cos(a), cy+(r+14)*Math.sin(a)+4);
+  }
+
+  // caption
+  c.fillStyle='#ffd700'; c.font='bold 12px Arial';
+  c.fillText(`${n}-бұрыш · ішкі бұрыштар қосындысы = ${(n-2)*180}°`, 130, 152);
+}
+
+function confetti() {
+  const colors=['#ffd700','#ff8c00','#4caf50','#2196f3','#e91e63','#9c27b0','#00bcd4'];
+  for(let i=0;i<70;i++){
+    setTimeout(()=>{
+      const el=document.createElement('div');
+      el.className='cf';
+      el.style.cssText=`
+        left:${Math.random()*100}vw; top:-15px;
+        width:${6+Math.random()*9}px; height:${6+Math.random()*9}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        animation-duration:${2.2+Math.random()*2.2}s;
+        border-radius:${Math.random()>.5?'50%':'3px'};
+      `;
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),5000);
+    }, i*45);
+  }
+}
+
+function replayStage1() {
+  selL=null; selR=null; matched=0;
+  score.stage1=0;
+  initMatching();
+}
+
+function replayStage2() {
+  clearInterval(timerID);
+  qi=0; score.stage2=0;
+  document.getElementById('sc2').textContent='0 ұпай';
+  document.getElementById('fb2').textContent='';
+  loadQ();
+}
+
+function replayStage3() {
+  score.stage3=0;
+  initCalc();
+}
+
+function restartGame() {
+  document.querySelectorAll('.cf').forEach(e=>e.remove());
+  show('s-start');
+}
+
+/* ===================== INIT ===================== */
+drawStart();
+</script>
+</body>
+</html>
