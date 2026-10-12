@@ -38,7 +38,7 @@
 .tlab{padding:9px 12px;background:#fff;font-size:11px;font-weight:700;color:var(--text);text-align:center}
 
 /* Game type cards */
-.gtype-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.gtype-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
 @media(max-width:680px){.gtype-grid{grid-template-columns:repeat(2,1fr)}}
 .gtype-card{padding:22px 14px;background:#fff;border:2.5px solid var(--border);border-radius:14px;
   cursor:pointer;text-align:center;transition:all .25s}
@@ -275,19 +275,24 @@ const THEMES = [
   { id:'steppe',     label:'🌅 Қазақ Даласы',bg:'linear-gradient(to bottom,#ff7b1c,#ffca3a 45%,#5a9e6f 80%,#2e7d32)' }
 ];
 const GTYPES = [
-  { id:'quiz',     icon:'📋', name:'Викторина',           desc:'4 нұсқадан дұрыс жауапты таңда' },
-  { id:'match',    icon:'🃏', name:'Сәйкестендіру',       desc:'Сұрақ пен жауапты жұптастыр' },
-  { id:'carousel', icon:'🎠', name:'Карусель',            desc:'Карточкаларды аударып, жауапты ашшы' },
-  { id:'sort',     icon:'📦', name:'Сұрыптау',            desc:'Элементтерді дұрыс қорапшаға сал' }
+  { id:'quiz',      icon:'📋', name:'Викторина',           desc:'4 нұсқадан дұрыс жауапты таңда' },
+  { id:'match',     icon:'🃏', name:'Сәйкестендіру',       desc:'Сұрақ пен жауапты жұптастыр' },
+  { id:'carousel',  icon:'🎠', name:'Карусель',            desc:'Карточкаларды аударып, жауапты ашшы' },
+  { id:'sort',      icon:'📦', name:'Сұрыптау',            desc:'Элементтерді дұрыс қорапшаға сал' },
+  { id:'target',    icon:'🎯', name:'Нысана',              desc:'Ұшқан бөлбекшені — дұрыс жауапты ату' },
+  { id:'lightning', icon:'⚡', name:'Найзағай',            desc:'10 секунд — жылдам жауап беру!' },
 ];
 const GTYPE_HINTS = {
-  quiz:     'Сұрақ + Дұрыс жауап + 3 қате нұсқа',
-  match:    'Сұрақ (сол жақ) + Жауап (оң жақ)',
-  carousel: 'Алдыңғы жақ (сұрақ) + Артқы жақ (жауап)',
-  sort:     'Элемент + Қай қорапша? (дұрыс топ атауы)'
+  quiz:      'Сұрақ + Дұрыс жауап + 3 қате нұсқа',
+  match:     'Сұрақ (сол жақ) + Жауап (оң жақ)',
+  carousel:  'Алдыңғы жақ (сұрақ) + Артқы жақ (жауап)',
+  sort:      'Элемент + Қай қорапша? (дұрыс топ атауы)',
+  target:    'Сұрақ + Дұрыс жауап + 3 қате нұсқа (бөлбекшелер ұшады)',
+  lightning: 'Сұрақ + Дұрыс жауап + 3 қате нұсқа (10 сек таймер)',
 };
 
-let state = { step:1, theme:'underwater', gtype:'quiz', title:'', grade:'', subject:'', questions:[] };
+const _urlType = new URLSearchParams(location.search).get('type');
+let state = { step:1, theme:'underwater', gtype: _urlType || 'quiz', title:'', grade:'', subject:'', questions:[] };
 let currentUser = null;
 
 // ── Init ──

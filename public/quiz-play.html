@@ -247,6 +247,35 @@ body{font-family:'Inter',sans-serif;min-height:100vh;overflow:hidden;
   font-family:'Inter',sans-serif;transition:all .2s;backdrop-filter:blur(12px)}
 .btn-share:hover{border-color:var(--acc);color:var(--acc)}
 
+/* ─── TARGET GAME ─── */
+.tgt-bubble{
+  position:absolute;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;font-size:12px;font-weight:700;color:#fff;
+  padding:10px;cursor:pointer;transition:transform .1s;
+  animation:bubFloat var(--dur,6s) var(--del,0s) linear;
+  border:2px solid rgba(255,255,255,.3);
+  background:var(--card);backdrop-filter:blur(10px);
+  line-height:1.3;
+}
+.tgt-bubble:hover{transform:scale(1.08)}
+.tgt-bubble.correct{background:rgba(0,255,157,.25)!important;border-color:var(--ok)!important;animation:none!important;transform:scale(1.2)}
+.tgt-bubble.wrong{background:rgba(255,77,109,.2)!important;border-color:var(--bad)!important;animation:none!important}
+@keyframes bubFloat{0%{bottom:-80px;opacity:0}5%{opacity:1}90%{opacity:1}100%{bottom:110%;opacity:0}}
+
+/* ─── LIGHTNING GAME ─── */
+.ltg-choice{
+  padding:16px 20px;background:var(--card);backdrop-filter:blur(12px);
+  border:1.5px solid var(--border);border-radius:14px;color:var(--txt);
+  font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;
+  transition:all .15s;text-align:left;display:flex;align-items:center;gap:12px;
+}
+.ltg-choice:hover:not(:disabled){background:rgba(255,255,255,.1);border-color:var(--acc);transform:scale(1.02)}
+.ltg-choice.correct{background:rgba(0,255,157,.15);border-color:var(--ok);color:var(--ok)}
+.ltg-choice.wrong{background:rgba(255,77,109,.1);border-color:var(--bad);color:var(--bad);animation:shake .3s}
+.ltg-choice:disabled{cursor:default}
+@keyframes lightning{0%{filter:brightness(1)}30%{filter:brightness(3)}100%{filter:brightness(1)}}
+
 /* ─── ANIMATIONS ─── */
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes bubRise{0%{transform:translateY(0) scale(.5);opacity:0}20%{opacity:.7}100%{transform:translateY(-110vh) scale(1.2);opacity:0}}
@@ -344,6 +373,28 @@ body{font-family:'Inter',sans-serif;min-height:100vh;overflow:hidden;
   </div>
 </div>
 
+<!-- Target game -->
+<div class="screen" id="sTarget">
+  <div class="q-card" style="margin-bottom:16px;max-width:580px">
+    <div class="q-num" id="tgtNum">1 / 10</div>
+    <div class="q-text" id="tgtText" style="font-size:clamp(15px,3vw,20px)"></div>
+  </div>
+  <div id="tgtField" style="position:relative;width:min(560px,92vw);height:320px;border-radius:16px;border:1px solid var(--border);background:rgba(0,0,0,.2);overflow:hidden"></div>
+</div>
+
+<!-- Lightning game -->
+<div class="screen" id="sLightning">
+  <div class="q-card" style="max-width:640px;width:100%">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="q-num" id="ltgNum">1 / 10</div>
+      <div id="ltgTimer" style="font-size:22px;font-weight:900;color:var(--acc)">10</div>
+    </div>
+    <div class="q-text" id="ltgText" style="margin-bottom:0"></div>
+    <div id="ltgBar" style="height:4px;background:var(--acc);border-radius:2px;margin-top:14px;transition:width 1s linear;width:100%"></div>
+  </div>
+  <div class="choices-grid" id="ltgChoices" style="max-width:640px"></div>
+</div>
+
 <!-- Sort boxes -->
 <div class="screen" id="sSort" style="overflow-y:auto">
   <div class="sort-info" id="sortInfo">Элементтерді дұрыс қорапшаға орналастырыңыз</div>
@@ -435,7 +486,9 @@ function startGame() {
   if      (quiz.game_type === 'quiz')     startQuizGame(qs);
   else if (quiz.game_type === 'match')    startMatchGame(qs);
   else if (quiz.game_type === 'carousel') startCarouselGame(qs);
-  else if (quiz.game_type === 'sort')     startSortGame(qs);
+  else if (quiz.game_type === 'sort')      startSortGame(qs);
+  else if (quiz.game_type === 'target')   startTargetGame(qs);
+  else if (quiz.game_type === 'lightning') startLightningGame(qs);
 }
 
 function updateHud(idx) {
@@ -712,6 +765,146 @@ function clickBox(box) {
   document.querySelectorAll('.sort-box.highlight').forEach(b => b.classList.remove('highlight'));
   document.querySelectorAll('.sort-chip.selected').forEach(c => c.classList.remove('selected'));
   sortSelected = null;
+}
+
+// ══════════════════════════════════════
+// TARGET GAME — click the right floating bubble
+// ══════════════════════════════════════
+let tgtIndex = 0;
+let tgtBubbles = [];
+let tgtTimeout = null;
+
+function startTargetGame(qs) {
+  show('sTarget');
+  tgtIndex = 0; score = 0; total = qs.length;
+  renderTargetQ(qs, 0);
+}
+
+function renderTargetQ(qs, i) {
+  if (i >= qs.length) { showResults(); return; }
+  tgtIndex = i;
+  const q = qs[i];
+  document.getElementById('tgtNum').textContent = (i+1) + ' / ' + qs.length;
+  document.getElementById('tgtText').textContent = q.q;
+  updateHud(i);
+
+  const field = document.getElementById('tgtField');
+  field.innerHTML = '';
+  clearTimeout(tgtTimeout);
+
+  const wrong = q.wrong?.length >= 3 ? q.wrong.slice(0,3) : autoWrong(qs, i, q.a);
+  const opts = shuffle([{ text: q.a, correct: true }, ...wrong.slice(0,3).map(w => ({ text: w, correct: false }))]);
+  const colors = ['rgba(0,212,255,.2)','rgba(192,132,252,.2)','rgba(255,180,0,.2)','rgba(0,255,157,.15)'];
+
+  opts.forEach((opt, j) => {
+    const sz = 80 + Math.random() * 40;
+    const b = document.createElement('div');
+    b.className = 'tgt-bubble';
+    b.textContent = opt.text;
+    b.style.cssText = `
+      width:${sz}px;height:${sz}px;
+      left:${5 + (j * 22) + Math.random()*10}%;
+      background:${colors[j]};
+      --dur:${5 + Math.random()*4}s;
+      --del:${j * 0.6}s;
+      font-size:${sz < 90 ? '11px' : '12px'};
+    `;
+    b.onclick = () => clickBubble(b, opt.correct, q.a, qs, i);
+    field.appendChild(b);
+  });
+
+  tgtTimeout = setTimeout(() => {
+    showFeedback('⏰ Уақыт аяқталды!', false);
+    setTimeout(() => renderTargetQ(qs, i+1), 1200);
+  }, 8000);
+}
+
+function clickBubble(el, correct, correctText, qs, i) {
+  clearTimeout(tgtTimeout);
+  document.querySelectorAll('.tgt-bubble').forEach(b => {
+    b.onclick = null;
+    b.style.animationPlayState = 'paused';
+  });
+  if (correct) {
+    el.classList.add('correct');
+    score++;
+    document.getElementById('hudScore').textContent = score + ' ⭐';
+    showFeedback('🎯 Нысана!', true);
+  } else {
+    el.classList.add('wrong');
+    showFeedback('✗ Қате! Дұрысы: ' + correctText, false);
+  }
+  setTimeout(() => renderTargetQ(qs, i+1), 1600);
+}
+
+// ══════════════════════════════════════
+// LIGHTNING GAME — 10-second rapid fire
+// ══════════════════════════════════════
+let ltgIndex = 0;
+let ltgTimer = null;
+let ltgSec = 10;
+
+function startLightningGame(qs) {
+  show('sLightning');
+  ltgIndex = 0; score = 0; total = qs.length;
+  renderLtgQ(qs, 0);
+}
+
+function renderLtgQ(qs, i) {
+  if (i >= qs.length) { showResults(); return; }
+  ltgIndex = i;
+  const q = qs[i];
+  document.getElementById('ltgNum').textContent = (i+1) + ' / ' + qs.length;
+  document.getElementById('ltgText').textContent = q.q;
+  updateHud(i);
+
+  const wrong = q.wrong?.length >= 3 ? q.wrong.slice(0,3) : autoWrong(qs, i, q.a);
+  const opts = shuffle([q.a, ...wrong.slice(0,3)]);
+  const letters = ['A','B','C','D'];
+  document.getElementById('ltgChoices').innerHTML = opts.map((opt, j) => `
+    <button class="choice-btn ltg-choice" onclick="answerLtg(this,'${escQ(q.a)}','${escQ(opt)}',${i})">
+      <div class="choice-ltr">${letters[j]}</div>
+      <span>${opt}</span>
+    </button>`).join('');
+
+  ltgSec = 10;
+  const timerEl = document.getElementById('ltgTimer');
+  const barEl = document.getElementById('ltgBar');
+  timerEl.style.color = 'var(--acc)';
+  barEl.style.width = '100%';
+  barEl.style.background = 'var(--acc)';
+  clearInterval(ltgTimer);
+  ltgTimer = setInterval(() => {
+    ltgSec--;
+    timerEl.textContent = ltgSec;
+    barEl.style.width = (ltgSec/10*100) + '%';
+    if (ltgSec <= 3) { timerEl.style.color = 'var(--bad)'; barEl.style.background = 'var(--bad)'; }
+    if (ltgSec <= 0) {
+      clearInterval(ltgTimer);
+      document.querySelectorAll('#ltgChoices .choice-btn').forEach(b => b.disabled = true);
+      showFeedback('⏰ Тым баяу!', false);
+      setTimeout(() => renderLtgQ(qs, i+1), 1200);
+    }
+  }, 1000);
+}
+
+function answerLtg(btn, correct, chosen, i) {
+  clearInterval(ltgTimer);
+  document.querySelectorAll('#ltgChoices .choice-btn').forEach(b => b.disabled = true);
+  const isOk = chosen === correct;
+  if (isOk) {
+    btn.classList.add('correct');
+    score += Math.max(1, ltgSec);
+    document.getElementById('hudScore').textContent = score + ' ⭐';
+    showFeedback(`⚡ +${Math.max(1,ltgSec)} ұпай!`, true);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('#ltgChoices .choice-btn').forEach(b => {
+      if (b.querySelector('span')?.textContent === correct) b.classList.add('correct');
+    });
+    showFeedback('✗ Қате. Дұрысы: ' + correct, false);
+  }
+  setTimeout(() => renderLtgQ(quiz.questions, i+1), 1800);
 }
 
 // ══════════════════════════════════════
