@@ -236,7 +236,7 @@
       <!-- Math Detective -->
       <div class="fgcard">
         <div class="fgcard-banner" style="background:linear-gradient(135deg,#050810,#0a0e1a)">
-          <div class="fgcard-dots"></div>
+          <canvas id="md-canvas" width="560" height="170" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
           <div class="fgcard-title-wrap">
             <span class="t">MATH</span>
             <span class="t">DETECTIVE</span>
@@ -317,6 +317,63 @@
 </div>
 
 <script>
+// ── Math Detective canvas ──
+(function(){
+  const cv=document.getElementById('md-canvas');
+  if(!cv)return;
+  const c=cv.getContext('2d'),W=560,H=170,midY=H/2;
+  let t=0;
+  function draw(){
+    c.clearRect(0,0,W,H);
+    // subtle grid
+    c.strokeStyle='rgba(0,212,255,0.05)';c.lineWidth=1;
+    for(let x=0;x<W;x+=28){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
+    for(let y=0;y<H;y+=20){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
+    // x-axis
+    c.strokeStyle='rgba(0,212,255,0.18)';c.lineWidth=1;
+    c.beginPath();c.moveTo(0,midY);c.lineTo(W,midY);c.stroke();
+    // sine wave (cyan)
+    c.beginPath();c.strokeStyle='#00d4ff';c.lineWidth=2.5;
+    c.shadowColor='#00d4ff';c.shadowBlur=10;
+    for(let x=0;x<=W;x+=2){
+      const y=midY-Math.sin((x/W)*Math.PI*4.5+t)*60;
+      x===0?c.moveTo(x,y):c.lineTo(x,y);
+    }
+    c.stroke();c.shadowBlur=0;
+    // cosine wave (purple, subtle)
+    c.beginPath();c.strokeStyle='rgba(192,132,252,0.5)';c.lineWidth=1.5;
+    c.shadowColor='#c084fc';c.shadowBlur=6;
+    for(let x=0;x<=W;x+=2){
+      const y=midY-Math.cos((x/W)*Math.PI*4.5+t)*40;
+      x===0?c.moveTo(x,y):c.lineTo(x,y);
+    }
+    c.stroke();c.shadowBlur=0;
+    // moving dot on sine
+    const dotX=((t*55)%W);
+    const dotY=midY-Math.sin((dotX/W)*Math.PI*4.5+t)*60;
+    c.beginPath();c.arc(dotX,dotY,5,0,Math.PI*2);
+    c.fillStyle='#00d4ff';c.shadowColor='#00d4ff';c.shadowBlur=18;c.fill();c.shadowBlur=0;
+    // vertical line from dot to axis
+    c.strokeStyle='rgba(0,212,255,0.25)';c.lineWidth=1;c.setLineDash([3,3]);
+    c.beginPath();c.moveTo(dotX,dotY);c.lineTo(dotX,midY);c.stroke();c.setLineDash([]);
+    // magnifying glass (top-right corner)
+    const mgX=W-38,mgY=28,mgR=16;
+    c.beginPath();c.arc(mgX,mgY,mgR,0,Math.PI*2);
+    c.strokeStyle='rgba(255,215,0,0.5)';c.lineWidth=2.5;c.stroke();
+    c.beginPath();c.moveTo(mgX+mgR*.65,mgY+mgR*.65);c.lineTo(mgX+mgR*1.7,mgY+mgR*1.7);
+    c.strokeStyle='rgba(255,215,0,0.5)';c.lineWidth=3.5;c.lineCap='round';c.stroke();c.lineCap='butt';
+    // sin label
+    c.font='bold 11px monospace';c.fillStyle='rgba(0,212,255,0.6)';
+    c.fillText('sin(x)',8,12);
+    c.fillStyle='rgba(192,132,252,0.5)';
+    c.fillText('cos(x)',8,26);
+    t+=0.022;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── Бұрыш Шебері canvas ──
 (function(){
   const cv=document.getElementById('angle-canvas');
   if(!cv)return;
