@@ -609,16 +609,11 @@ let currentUser = null;
     || (CONTENT[grade] ? Object.values(CONTENT[grade])[0] : null);
   const localLessons = (subjectData && subjectData.lessons) || [];
 
-  // Supabase lesson_num-дері + файлы бар жергілікті сабақтар — екеуін біріктіреміз
+  // Барлық жергілікті сабақтар + Supabase қосқандарын біріктіреміз
+  // Файлдар болмаса да "Жақында" белгісімен көрінеді — filter жоқ
   const sbNums = Object.keys(sbByNum).map(Number);
-  const localNums = localLessons
-    .map((l, idx) => ({ num: idx + 1, hasFile: !!(
-      (l.ppt && l.ppt.src) || (l.qmj && l.qmj.src) ||
-      (l.video && l.video.src) || (l.slides && l.slides.length > 0)
-    )}))
-    .filter(x => x.hasFile)
-    .map(x => x.num);
-  const allNums = [...new Set([...sbNums, ...localNums])].sort((a, b) => a - b);
+  const localNums = localLessons.map((_, idx) => idx + 1);
+  const allNums = [...new Set([...localNums, ...sbNums])].sort((a, b) => a - b);
 
   function buildLesson(num) {
     const sbRow = sbByNum[num] || {};
