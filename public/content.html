@@ -542,7 +542,7 @@
 <script src="supabase-client.js"></script>
 <script>
 const GRADES_LABEL = {5:'5-сынып',6:'6-сынып',7:'7-сынып',8:'8-сынып',9:'9-сынып',10:'10-сынып',11:'11-сынып'};
-const SUBJECT_LABEL = {math:'Математика',algebra:'Алгебра',geometry:'Геометрия'};
+const SUBJECT_LABEL = {math:'Математика',algebra:'Алгебра',geometry:'Геометрия',informatics:'Информатика'};
 
 const params  = new URLSearchParams(location.search);
 const grade   = parseInt(params.get('grade')) || 5;
@@ -552,15 +552,23 @@ document.title = `GoTAB — ${GRADES_LABEL[grade]} ${SUBJECT_LABEL[subject]}`;
 
 function initSwitcher() {
   document.getElementById('gradeSel').value = grade;
-  const isLower = grade <= 6;
-  document.getElementById('subjectSel').innerHTML = isLower
-    ? '<option value="math">Математика</option>'
-    : '<option value="algebra">Алгебра</option><option value="geometry">Геометрия</option>';
+  if (subject === 'informatics') {
+    document.getElementById('subjectSel').innerHTML = '<option value="informatics">Информатика</option>';
+  } else {
+    const isLower = grade <= 6;
+    document.getElementById('subjectSel').innerHTML = isLower
+      ? '<option value="math">Математика</option>'
+      : '<option value="algebra">Алгебра</option><option value="geometry">Геометрия</option>';
+  }
   document.getElementById('subjectSel').value = subject;
 }
 function changeGrade() {
   const g = parseInt(document.getElementById('gradeSel').value);
-  window.location.href = `content.html?grade=${g}&subject=${g <= 6 ? 'math' : 'algebra'}`;
+  if (subject === 'informatics') {
+    window.location.href = `content.html?grade=${g}&subject=informatics`;
+  } else {
+    window.location.href = `content.html?grade=${g}&subject=${g <= 6 ? 'math' : 'algebra'}`;
+  }
 }
 function changeSubject() {
   window.location.href = `content.html?grade=${grade}&subject=${document.getElementById('subjectSel').value}`;
@@ -929,13 +937,22 @@ function openModal()  { document.getElementById('payModal').classList.add('open'
 function closeModal() { document.getElementById('payModal').classList.remove('open'); }
 document.getElementById('payModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
 
+let _receiptSending = false;
 async function sendReceipt() {
+  if (_receiptSending) return;
+  _receiptSending = true;
+  const btn = document.querySelector('.btn-whatsapp');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
   if (currentUser) {
-    await sb.from('payment_requests').insert({
-      user_id: currentUser.id,
-      user_email: currentUser.email,
-      user_name: currentUser.user_metadata?.name || currentUser.email
-    });
+    const { data: existing } = await sb.from('payment_requests')
+      .select('id').eq('user_id', currentUser.id).eq('status', 'pending').maybeSingle();
+    if (!existing) {
+      await sb.from('payment_requests').insert({
+        user_id: currentUser.id,
+        user_email: currentUser.email,
+        user_name: currentUser.user_metadata?.name || currentUser.email
+      });
+    }
   }
   const msg = encodeURIComponent('Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. Чекті жіберемін.');
   window.open(`https://wa.me/77055894347?text=${msg}`, '_blank');

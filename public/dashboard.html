@@ -5,6 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GoTAB — Сынып таңдаңыз</title>
 <link rel="stylesheet" href="gotab.css">
+<style>
+.main-subject-grid{display:flex;gap:14px;flex-wrap:wrap}
+.main-subject-btn{
+  flex:1;min-width:200px;
+  padding:20px 28px;
+  background:var(--surface);
+  border:2px solid var(--border);
+  border-radius:16px;
+  color:var(--text);font-size:16px;font-weight:700;
+  font-family:'Inter',sans-serif;cursor:pointer;
+  transition:all .2s;
+  box-shadow:0 2px 8px rgba(0,0,0,.04);
+  display:flex;align-items:center;gap:10px;
+}
+.main-subject-btn:hover{border-color:var(--primary);color:var(--primary)}
+.main-subject-btn.active{
+  background:linear-gradient(135deg,var(--primary),var(--cyan));
+  border-color:transparent;color:#fff;
+  box-shadow:0 6px 20px rgba(26,86,219,.25);
+}
+.main-subject-btn .subj-icon{font-size:22px}
+@media(max-width:600px){
+  .main-subject-btn{min-width:140px;padding:16px 18px;font-size:14px}
+}
+</style>
 </head>
 <body>
 <nav class="top-nav">
@@ -37,26 +62,40 @@
   </div>
 
   <div class="dash-section">
-    <div class="dash-section-title">Сынып таңдаңыз</div>
-    <div class="grade-grid">
-      <button class="grade-btn" onclick="selectGrade(5)">5-сынып</button>
-      <button class="grade-btn" onclick="selectGrade(6)">6-сынып</button>
-      <button class="grade-btn" onclick="selectGrade(7)">7-сынып</button>
-      <button class="grade-btn" onclick="selectGrade(8)">8-сынып</button>
-      <button class="grade-btn" onclick="selectGrade(9)">9-сынып</button>
-      <button class="grade-btn" onclick="selectGrade(10)">10-сынып</button>
-      <button class="grade-btn" onclick="selectGrade(11)">11-сынып</button>
+    <div class="dash-section-title">Пән таңдаңыз</div>
+    <div class="main-subject-grid">
+      <button class="main-subject-btn" onclick="selectMainSubject('math')">
+        <span class="subj-icon">📐</span> Математика пәні
+      </button>
+      <button class="main-subject-btn" onclick="selectMainSubject('informatics')">
+        <span class="subj-icon">💻</span> Информатика пәні
+      </button>
     </div>
   </div>
 
-  <div class="dash-section subject-section" id="subjectSection">
-    <div class="dash-section-title">Пән таңдаңыз</div>
-    <div class="subject-grid" id="subjectsMath56" style="display:none">
-      <button class="subject-btn" onclick="selectSubject('math')">Математика</button>
+  <div id="gradeSectionWrapper" style="display:none">
+    <div class="dash-section">
+      <div class="dash-section-title">Сынып таңдаңыз</div>
+      <div class="grade-grid">
+        <button class="grade-btn" onclick="selectGrade(5)">5-сынып</button>
+        <button class="grade-btn" onclick="selectGrade(6)">6-сынып</button>
+        <button class="grade-btn" onclick="selectGrade(7)">7-сынып</button>
+        <button class="grade-btn" onclick="selectGrade(8)">8-сынып</button>
+        <button class="grade-btn" onclick="selectGrade(9)">9-сынып</button>
+        <button class="grade-btn" onclick="selectGrade(10)">10-сынып</button>
+        <button class="grade-btn" onclick="selectGrade(11)">11-сынып</button>
+      </div>
     </div>
-    <div class="subject-grid" id="subjectsAlgGeo" style="display:none">
-      <button class="subject-btn" onclick="selectSubject('algebra')">Алгебра</button>
-      <button class="subject-btn" onclick="selectSubject('geometry')">Геометрия</button>
+
+    <div class="dash-section subject-section" id="subjectSection">
+      <div class="dash-section-title">Бөлім таңдаңыз</div>
+      <div class="subject-grid" id="subjectsMath56" style="display:none">
+        <button class="subject-btn" onclick="selectSubject('math')">Математика</button>
+      </div>
+      <div class="subject-grid" id="subjectsAlgGeo" style="display:none">
+        <button class="subject-btn" onclick="selectSubject('algebra')">Алгебра</button>
+        <button class="subject-btn" onclick="selectSubject('geometry')">Геометрия</button>
+      </div>
     </div>
   </div>
 
@@ -65,10 +104,22 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script>
-let selectedGrade = null, selectedSubject = null;
+let selectedMainSubject = null, selectedGrade = null, selectedSubject = null;
+
+function selectMainSubject(main) {
+  selectedMainSubject = main;
+  selectedGrade = null;
+  selectedSubject = main === 'informatics' ? 'informatics' : null;
+  document.querySelectorAll('.main-subject-btn').forEach(b => b.classList.remove('active'));
+  event.target.closest('.main-subject-btn').classList.add('active');
+  document.getElementById('gradeSectionWrapper').style.display = 'block';
+  document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('subjectSection').classList.remove('visible');
+  document.getElementById('continueBtn').disabled = true;
+}
 
 (async () => {
   const user = await requireAuth();
@@ -91,16 +142,24 @@ async function logout() {
 }
 
 function selectGrade(grade) {
-  selectedGrade = grade; selectedSubject = null;
+  selectedGrade = grade;
   document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
   event.target.classList.add('active');
-  document.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('subjectSection').classList.add('visible');
-  const math56  = document.getElementById('subjectsMath56');
-  const algGeo  = document.getElementById('subjectsAlgGeo');
-  if (grade <= 6) { math56.style.display = 'flex'; algGeo.style.display = 'none'; }
-  else            { math56.style.display = 'none';  algGeo.style.display = 'flex'; }
-  document.getElementById('continueBtn').disabled = true;
+
+  if (selectedMainSubject === 'informatics') {
+    selectedSubject = 'informatics';
+    document.getElementById('subjectSection').classList.remove('visible');
+    document.getElementById('continueBtn').disabled = false;
+  } else {
+    selectedSubject = null;
+    document.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('subjectSection').classList.add('visible');
+    const math56 = document.getElementById('subjectsMath56');
+    const algGeo = document.getElementById('subjectsAlgGeo');
+    if (grade <= 6) { math56.style.display = 'flex'; algGeo.style.display = 'none'; }
+    else            { math56.style.display = 'none';  algGeo.style.display = 'flex'; }
+    document.getElementById('continueBtn').disabled = true;
+  }
 }
 
 function selectSubject(subject) {
