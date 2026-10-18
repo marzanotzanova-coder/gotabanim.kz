@@ -25,7 +25,7 @@
   border-color:transparent;color:#fff;
   box-shadow:0 6px 20px rgba(26,86,219,.25);
 }
-.main-subject-btn .subj-icon{font-size:22px}
+.main-subject-btn .subj-icon{width:26px;height:26px;flex-shrink:0}
 @media(max-width:600px){
   .main-subject-btn{min-width:140px;padding:16px 18px;font-size:14px}
 }
@@ -65,10 +65,16 @@
     <div class="dash-section-title">Пән таңдаңыз</div>
     <div class="main-subject-grid">
       <button class="main-subject-btn" onclick="selectMainSubject('math')">
-        <span class="subj-icon">📐</span> Математика пәні
+        <svg class="subj-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+        </svg>
+        Математика пәні
       </button>
       <button class="main-subject-btn" onclick="selectMainSubject('informatics')">
-        <span class="subj-icon">💻</span> Информатика пәні
+        <svg class="subj-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+        </svg>
+        Информатика пәні
       </button>
     </div>
   </div>

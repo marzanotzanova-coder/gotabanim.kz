@@ -613,8 +613,7 @@ let currentUser = null;
     }
   } catch(_) {}
 
-  const subjectData = (CONTENT[grade] || {})[subject]
-    || (CONTENT[grade] ? Object.values(CONTENT[grade])[0] : null);
+  const subjectData = (CONTENT[grade] || {})[subject] || null;
   const localLessons = (subjectData && subjectData.lessons) || [];
 
   // Supabase қосқандар + кем дегенде бір нақты файлы/слайды/суреті бар жергілікті сабақтар
