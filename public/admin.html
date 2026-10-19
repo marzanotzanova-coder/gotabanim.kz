@@ -331,6 +331,7 @@ tr:hover td{background:#f8faff}
           <option value="math">Математика (5-6)</option>
           <option value="algebra">Алгебра (7-11)</option>
           <option value="geometry">Геометрия (7-11)</option>
+          <option value="informatics">Информатика (5-11)</option>
         </select>
       </div>
       <div class="form-row">
@@ -440,6 +441,7 @@ tr:hover td{background:#f8faff}
         <option value="math">Математика</option>
         <option value="algebra">Алгебра</option>
         <option value="geometry">Геометрия</option>
+        <option value="informatics">Информатика</option>
       </select>
       <input class="form-input" id="upLessonNum" type="number" placeholder="Сабақ №" min="1">
     </div>
@@ -673,7 +675,7 @@ function renderLessons() {
     grid.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:20px 0">Материалдар жоқ</div>';
     return;
   }
-  const SUBJ = { math:'Математика', algebra:'Алгебра', geometry:'Геометрия' };
+  const SUBJ = { math:'Математика', algebra:'Алгебра', geometry:'Геометрия', informatics:'Информатика' };
   const sorted = [...allLessons].sort((a,b) => a.grade - b.grade || a.lesson_num - b.lesson_num);
   grid.innerHTML = sorted.map(l => {
     const slideCount = Array.isArray(l.slides_urls) ? l.slides_urls.length : 0;
@@ -929,7 +931,7 @@ function openSlidesModal(lessonId) {
   slidesModalLesson = allLessons.find(l => l.id === lessonId);
   if (!slidesModalLesson) return;
   const l = slidesModalLesson;
-  const SUBJ = { math:'Математика', algebra:'Алгебра', geometry:'Геометрия' };
+  const SUBJ = { math:'Математика', algebra:'Алгебра', geometry:'Геометрия', informatics:'Информатика' };
   document.getElementById('slideModalTitle').textContent = l.title || '—';
   document.getElementById('slideModalSub').textContent =
     `${l.grade}-сынып · ${SUBJ[l.subject]||l.subject} · ${l.lesson_num}-сабақ`;
@@ -996,10 +998,11 @@ async function uploadSlidesNow() {
   progressBar.style.width = '5%';
 
   const urls = [];
+  const batchTs = Date.now();
   for (let i = 0; i < pendingSlideFiles.length; i++) {
     const file = pendingSlideFiles[i];
     const ext  = file.name.split('.').pop().toLowerCase();
-    const path = `grade${l.grade}/${l.subject}/lesson${l.lesson_num}/slides/slide_${String(i+1).padStart(2,'0')}.${ext}`;
+    const path = `grade${l.grade}/${l.subject}/lesson${l.lesson_num}/slides/${batchTs}_${String(i+1).padStart(2,'0')}.${ext}`;
 
     const { error } = await sb.storage
       .from('lesson-videos')
