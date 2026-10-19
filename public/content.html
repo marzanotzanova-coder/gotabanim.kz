@@ -587,14 +587,24 @@ let currentUser = null;
   if (user.email === ADMIN_EMAIL) { userIsPaid = true; }
   else {
     try {
-      console.log('[GoTAB] user.id:', user.id);
       const { data: paid, error: rpcErr } = await sb.rpc('check_paid_user', { check_id: user.id });
-      console.log('[GoTAB] check_paid_user result:', paid, 'error:', rpcErr);
-      userIsPaid = paid === true;
-      console.log('[GoTAB] userIsPaid:', userIsPaid);
+      if (!rpcErr) {
+        userIsPaid = paid === true;
+      } else {
+        // Резервтік: check_my_subscription арқылы тексеру
+        const { data: sub } = await sb.rpc('check_my_subscription');
+        const row = Array.isArray(sub) ? sub[0] : sub;
+        userIsPaid = row?.is_paid === true &&
+          (!row?.paid_until || new Date(row.paid_until) > new Date());
+      }
     } catch (e) {
-      console.error('[GoTAB] catch error:', e);
-      userIsPaid = false;
+      // Соңғы резерв: check_my_subscription
+      try {
+        const { data: sub } = await sb.rpc('check_my_subscription');
+        const row = Array.isArray(sub) ? sub[0] : sub;
+        userIsPaid = row?.is_paid === true &&
+          (!row?.paid_until || new Date(row.paid_until) > new Date());
+      } catch(_) { userIsPaid = false; }
     }
   }
 
