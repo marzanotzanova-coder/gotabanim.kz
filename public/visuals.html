@@ -473,9 +473,21 @@ let currentUser = null;
   if (user.email === ADMIN_EMAIL) { userIsPaid = true; initDownloads(); return; }
 
   try {
-    const { data: paid } = await sb.rpc('check_paid_user', { check_id: user.id });
-    userIsPaid = paid === true;
-  } catch (_) { userIsPaid = false; }
+    const { data: paid, error: rpcErr } = await sb.rpc('check_paid_user', { check_id: user.id });
+    if (!rpcErr) {
+      userIsPaid = paid === true;
+    } else {
+      const { data: sub } = await sb.rpc('check_my_subscription');
+      const row = Array.isArray(sub) ? sub[0] : sub;
+      userIsPaid = row?.is_paid === true && (!row?.paid_until || new Date(row.paid_until) > new Date());
+    }
+  } catch (_) {
+    try {
+      const { data: sub } = await sb.rpc('check_my_subscription');
+      const row = Array.isArray(sub) ? sub[0] : sub;
+      userIsPaid = row?.is_paid === true && (!row?.paid_until || new Date(row.paid_until) > new Date());
+    } catch(__) { userIsPaid = false; }
+  }
 
   if (!userIsPaid) {
     document.getElementById('payBar').style.display = 'flex';
@@ -526,13 +538,22 @@ function openModal()  { document.getElementById('payModal').classList.add('open'
 function closeModal() { document.getElementById('payModal').classList.remove('open'); }
 document.getElementById('payModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
 
+let _receiptSending = false;
 async function sendReceipt() {
+  if (_receiptSending) return;
+  _receiptSending = true;
+  const btn = document.querySelector('.btn-whatsapp');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
   if (currentUser) {
-    await sb.from('payment_requests').insert({
-      user_id: currentUser.id,
-      user_email: currentUser.email,
-      user_name: currentUser.user_metadata?.name || currentUser.email
-    });
+    const { data: existing } = await sb.from('payment_requests')
+      .select('id').eq('user_id', currentUser.id).eq('status', 'pending').maybeSingle();
+    if (!existing) {
+      await sb.from('payment_requests').insert({
+        user_id: currentUser.id,
+        user_email: currentUser.email,
+        user_name: currentUser.user_metadata?.name || currentUser.email
+      });
+    }
   }
   const msg = encodeURIComponent('Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. Чекті жіберемін.');
   window.open(`https://wa.me/77055894347?text=${msg}`, '_blank');

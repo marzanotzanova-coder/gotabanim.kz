@@ -437,7 +437,13 @@ const TYPE_NAMES={quiz:'Викторина',match:'Сәйкестендіру',c
     document.querySelector('.nav-user').prepend(btn);
   } else {
     let isPaid=false;
-    try{const{data:p}=await sb.rpc('check_paid_user',{check_id:user.id});isPaid=p===true;}catch(_){}
+    try{
+      const{data:p,error:e}=await sb.rpc('check_paid_user',{check_id:user.id});
+      if(!e){isPaid=p===true;}
+      else{const{data:s}=await sb.rpc('check_my_subscription');const r=Array.isArray(s)?s[0]:s;isPaid=r?.is_paid===true&&(!r?.paid_until||new Date(r.paid_until)>new Date());}
+    }catch(_){
+      try{const{data:s}=await sb.rpc('check_my_subscription');const r=Array.isArray(s)?s[0]:s;isPaid=r?.is_paid===true&&(!r?.paid_until||new Date(r.paid_until)>new Date());}catch(__){}
+    }
     if(!isPaid)document.getElementById('payWall').style.display='flex';
   }
 })();
@@ -480,8 +486,16 @@ async function loadTeacherQuizzes(){
 }
 
 async function logout(){localStorage.removeItem('gotab_last_page');await sb.auth.signOut();window.location.href='index.html';}
+let _receiptSending = false;
 async function sendReceipt(){
-  if(currentUser)await sb.from('payment_requests').insert({user_id:currentUser.id,user_email:currentUser.email,user_name:currentUser.user_metadata?.name||currentUser.email}).catch(()=>{});
+  if(_receiptSending) return;
+  _receiptSending = true;
+  const btn = document.querySelector('.btn-whatsapp');
+  if(btn){ btn.disabled = true; btn.style.opacity = '0.6'; }
+  if(currentUser){
+    const{data:existing}=await sb.from('payment_requests').select('id').eq('user_id',currentUser.id).eq('status','pending').maybeSingle();
+    if(!existing)await sb.from('payment_requests').insert({user_id:currentUser.id,user_email:currentUser.email,user_name:currentUser.user_metadata?.name||currentUser.email}).catch(()=>{});
+  }
   window.open('https://wa.me/77055894347?text='+encodeURIComponent('Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. Чекті жіберемін.'),'_blank');
 }
 </script>
