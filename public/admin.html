@@ -620,12 +620,16 @@ async function loadPaymentRequests() {
     const badge = r.status === 'pending'
       ? `<span class="badge-pending">⏳ Күтуде</span>`
       : `<span class="badge-approved">✓ Белсендірілді</span>`;
+    const isInfo = r.subject === 'informatics';
+    const subjBadge = isInfo
+      ? `<span style="padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.25)">💻 Информатика</span>`
+      : `<span style="padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;background:rgba(26,86,219,.10);color:#60a5fa;border:1px solid rgba(26,86,219,.2)">📐 Математика</span>`;
     const btn = r.status === 'pending'
-      ? `<button class="btn-approve" onclick="approveRequest('${r.id}','${r.user_id}')">✓ 1 айға белсендіру</button>`
+      ? `<button class="btn-approve" onclick="approveRequest('${r.id}','${r.user_id}','${r.subject||'math'}')">✓ 1 айға белсендіру</button>`
       : '';
     return `<div class="pay-req-card ${r.status}">
       <div class="pay-req-info">
-        <div class="pay-req-name">${r.user_name || '—'}</div>
+        <div class="pay-req-name">${r.user_name || '—'} ${subjBadge}</div>
         <div class="pay-req-email">${r.user_email || '—'}</div>
         <div class="pay-req-date">${dt} · ${badge}</div>
       </div>
@@ -634,8 +638,9 @@ async function loadPaymentRequests() {
   }).join('');
 }
 
-async function approveRequest(reqId, userId) {
-  const { error } = await sb.rpc('approve_payment_request', { req_id: reqId, uid: userId });
+async function approveRequest(reqId, userId, subj) {
+  const fn = subj === 'informatics' ? 'approve_informatics_payment' : 'approve_payment_request';
+  const { error } = await sb.rpc(fn, { req_id: reqId, uid: userId });
   if (error) { alert('Қате: ' + error.message); return; }
   await Promise.all([loadPaymentRequests(), loadUsers()]);
 }

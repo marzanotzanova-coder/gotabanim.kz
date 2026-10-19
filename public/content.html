@@ -448,7 +448,7 @@
 
 <!-- PAYMENT BAR -->
 <div class="pay-bar" id="payBar" style="display:none">
-  <span class="pay-bar-text">Барлық материалдарға толық қол жеткізу</span>
+  <span class="pay-bar-text" id="payBarText">Барлық материалдарға толық қол жеткізу</span>
   <button class="btn-pay-top" onclick="openModal()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
     Төлем жасау — 4 990 ₸/ай
@@ -480,7 +480,7 @@
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div class="modal-title">GoTAB Premium</div>
-    <div class="modal-sub">Барлық материалдарға толық қол жеткізу</div>
+    <div class="modal-sub" id="modalSubText">Барлық материалдарға толық қол жеткізу</div>
     <div class="price-tag">
       <div class="price-amount">4 990 ₸</div>
       <div class="price-period">1 айға жазылу</div>
@@ -584,27 +584,36 @@ let currentUser = null;
   currentUser = user;
   document.getElementById('userName').textContent = user.user_metadata?.name || user.email;
 
+  const isInfoSubject = subject === 'informatics';
+
+  if (isInfoSubject) {
+    document.getElementById('payBarText').textContent = 'Информатика пәні — материалдарға толық қол жеткізу';
+    document.getElementById('modalSubText').textContent = 'Информатика пәні — барлық сыныптар';
+  }
+
   if (user.email === ADMIN_EMAIL) { userIsPaid = true; }
   else {
     try {
-      const { data: paid, error: rpcErr } = await sb.rpc('check_paid_user', { check_id: user.id });
+      const rpcName = isInfoSubject ? 'check_paid_informatics' : 'check_paid_user';
+      const rpcArg  = isInfoSubject ? { check_id: user.id } : { check_id: user.id };
+      const { data: paid, error: rpcErr } = await sb.rpc(rpcName, rpcArg);
       if (!rpcErr) {
         userIsPaid = paid === true;
-      } else {
-        // Резервтік: check_my_subscription арқылы тексеру
+      } else if (!isInfoSubject) {
         const { data: sub } = await sb.rpc('check_my_subscription');
         const row = Array.isArray(sub) ? sub[0] : sub;
         userIsPaid = row?.is_paid === true &&
           (!row?.paid_until || new Date(row.paid_until) > new Date());
       }
     } catch (e) {
-      // Соңғы резерв: check_my_subscription
-      try {
-        const { data: sub } = await sb.rpc('check_my_subscription');
-        const row = Array.isArray(sub) ? sub[0] : sub;
-        userIsPaid = row?.is_paid === true &&
-          (!row?.paid_until || new Date(row.paid_until) > new Date());
-      } catch(_) { userIsPaid = false; }
+      if (!isInfoSubject) {
+        try {
+          const { data: sub } = await sb.rpc('check_my_subscription');
+          const row = Array.isArray(sub) ? sub[0] : sub;
+          userIsPaid = row?.is_paid === true &&
+            (!row?.paid_until || new Date(row.paid_until) > new Date());
+        } catch(_) { userIsPaid = false; }
+      }
     }
   }
 
@@ -952,18 +961,21 @@ async function sendReceipt() {
   _receiptSending = true;
   const btn = document.querySelector('.btn-whatsapp');
   if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+  const paySubject = subject === 'informatics' ? 'informatics' : 'math';
   if (currentUser) {
     const { data: existing } = await sb.from('payment_requests')
-      .select('id').eq('user_id', currentUser.id).eq('status', 'pending').maybeSingle();
+      .select('id').eq('user_id', currentUser.id).eq('status', 'pending').eq('subject', paySubject).maybeSingle();
     if (!existing) {
       await sb.from('payment_requests').insert({
         user_id: currentUser.id,
         user_email: currentUser.email,
-        user_name: currentUser.user_metadata?.name || currentUser.email
+        user_name: currentUser.user_metadata?.name || currentUser.email,
+        subject: paySubject
       });
     }
   }
-  const msg = encodeURIComponent('Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. Чекті жіберемін.');
+  const subjLabel = paySubject === 'informatics' ? 'Информатика пәні' : 'Математика пәні';
+  const msg = encodeURIComponent(`Сәлем! GoTAB платформасына ${subjLabel} жазылымы үшін төлем жасадым. Чекті жіберемін.`);
   window.open(`https://wa.me/77055894347?text=${msg}`, '_blank');
 }
 
