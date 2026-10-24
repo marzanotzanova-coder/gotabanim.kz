@@ -3,143 +3,472 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GoTAB — Сынып таңдаңыз</title>
+<title>GoTAB — Жеке Кабинет</title>
 <link rel="stylesheet" href="gotab.css">
 <style>
-.main-subject-grid{display:flex;gap:14px;flex-wrap:wrap}
-.main-subject-btn{
-  flex:1;min-width:200px;
-  padding:20px 28px;
-  background:var(--surface);
-  border:2px solid var(--border);
-  border-radius:16px;
-  color:var(--text);font-size:16px;font-weight:700;
-  font-family:'Inter',sans-serif;cursor:pointer;
-  transition:all .2s;
-  box-shadow:0 2px 8px rgba(0,0,0,.04);
-  display:flex;align-items:center;gap:10px;
+.student-layout{display:flex;min-height:100vh;background:var(--bg)}
+
+/* ── SIDEBAR ── */
+.student-sidebar{
+  width:260px;min-width:260px;
+  background:#fff;
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  padding:20px 18px 20px;
+  position:sticky;top:0;height:100vh;
+  overflow-y:auto;
 }
-.main-subject-btn:hover{border-color:var(--primary);color:var(--primary)}
-.main-subject-btn.active{
+
+.sidebar-logo-wrap{
+  padding:4px 2px;
+  margin-bottom:12px;
+}
+.sidebar-logo-wrap img{height:32px;display:block}
+
+.sidebar-cabinet-label{
+  font-size:11px;color:#94a3b8;
+  font-weight:600;letter-spacing:.5px;
+  text-transform:uppercase;margin-bottom:14px;
+  padding-left:2px;
+}
+
+.sidebar-user-card{
+  background:#f8fafc;border:1px solid var(--border);
+  border-radius:14px;padding:16px;margin-bottom:18px;
+}
+
+.sidebar-avatar{
+  width:46px;height:46px;border-radius:50%;
   background:linear-gradient(135deg,var(--primary),var(--cyan));
-  border-color:transparent;color:#fff;
-  box-shadow:0 6px 20px rgba(26,86,219,.25);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:800;color:#fff;
+  margin-bottom:10px;cursor:pointer;
+  transition:transform .15s;
 }
-.main-subject-btn .subj-icon{width:26px;height:26px;flex-shrink:0}
-@media(max-width:600px){
-  .main-subject-btn{min-width:140px;padding:16px 18px;font-size:14px}
+.sidebar-avatar:hover{transform:scale(1.06)}
+
+.sidebar-user-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px}
+.sidebar-user-id{font-size:12px;color:var(--muted);margin-bottom:10px}
+
+.sidebar-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+
+.badge-pkg{
+  padding:3px 10px;background:var(--primary);
+  border-radius:20px;font-size:12px;font-weight:700;color:#fff;
+}
+.badge-role{
+  padding:3px 10px;border:1.5px solid var(--primary);
+  border-radius:20px;font-size:12px;font-weight:700;color:var(--primary);
+}
+
+.sidebar-avatar-hint{font-size:11px;color:#b0bec5;line-height:1.4}
+
+.sidebar-nav{display:flex;flex-direction:column;gap:10px}
+
+.btn-sb-course{
+  width:100%;padding:12px 14px;
+  background:linear-gradient(135deg,#22c55e,#06b6d4);
+  border:none;border-radius:12px;color:#fff;
+  font-size:14px;font-weight:700;font-family:'Inter',sans-serif;
+  cursor:pointer;display:flex;align-items:center;gap:8px;
+  transition:opacity .2s;text-decoration:none;
+}
+.btn-sb-course:hover{opacity:.88}
+
+.btn-sb-secondary{
+  width:100%;padding:11px 14px;
+  background:#fff;border:1.5px solid var(--border);
+  border-radius:12px;color:#334155;
+  font-size:14px;font-weight:600;font-family:'Inter',sans-serif;
+  cursor:pointer;display:flex;align-items:center;gap:8px;
+  transition:all .2s;
+}
+.btn-sb-secondary:hover{border-color:var(--primary);color:var(--primary)}
+
+.btn-sb-logout{
+  width:100%;padding:11px 14px;
+  background:#fff5f5;border:1.5px solid #fca5a5;
+  border-radius:12px;color:#dc2626;
+  font-size:14px;font-weight:600;font-family:'Inter',sans-serif;
+  cursor:pointer;display:flex;align-items:center;gap:8px;
+  transition:background .2s;
+}
+.btn-sb-logout:hover{background:#fef2f2}
+
+.sidebar-mountain{margin-top:auto;padding-top:12px}
+.sidebar-mountain img{width:100%;display:block;border-radius:12px}
+
+/* ── MAIN ── */
+.student-main{
+  flex:1;padding:24px 28px;
+  display:flex;flex-direction:column;gap:20px;
+  overflow-y:auto;
+}
+
+/* Header card */
+.student-header-card{
+  background:linear-gradient(120deg,#eef2ff 0%,#f0f9ff 100%);
+  border:1px solid #c7d7fc;border-radius:20px;
+  padding:26px 28px;
+  display:flex;align-items:flex-start;justify-content:space-between;
+  position:relative;overflow:hidden;
+  min-height:120px;
+}
+
+.header-card-text{flex:1;padding-right:16px;padding-top:4px}
+
+.header-card-greeting{font-size:14px;color:var(--muted);margin-bottom:6px}
+
+.header-card-title{
+  font-size:26px;font-weight:900;color:var(--text);
+  letter-spacing:-.5px;margin-bottom:7px;line-height:1.15;
+}
+
+.header-card-subtitle{font-size:13px;color:var(--muted)}
+
+.header-card-illus{
+  flex-shrink:0;
+  width:160px;height:130px;
+  object-fit:contain;
+  object-position:center;
+  margin-top:30px;
+  user-select:none;
+  pointer-events:none;
+}
+
+.header-card-actions{
+  position:absolute;top:16px;right:20px;
+  display:flex;gap:8px;align-items:center;
+}
+
+.btn-lang{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 12px;background:#fff;
+  border:1px solid var(--border);border-radius:10px;
+  font-size:13px;font-weight:600;color:#334155;
+  cursor:pointer;font-family:'Inter',sans-serif;
+  transition:border-color .2s;
+}
+.btn-lang:hover{border-color:var(--primary)}
+
+.btn-info-hdr{
+  padding:7px 12px;background:#fff;
+  border:1px solid var(--border);border-radius:10px;
+  font-size:13px;font-weight:600;color:#334155;
+  cursor:pointer;font-family:'Inter',sans-serif;
+  transition:border-color .2s;
+}
+.btn-info-hdr:hover{border-color:var(--primary)}
+
+/* 2-col grid */
+.student-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+.student-card{
+  background:#fff;border:1px solid var(--border);
+  border-radius:18px;padding:22px 22px 20px;
+}
+
+.student-card-title{
+  font-size:15px;font-weight:800;color:var(--text);
+  margin-bottom:14px;display:flex;align-items:center;gap:7px;
+}
+
+/* Plan card */
+.plan-subtitle{font-size:12px;color:var(--muted);margin:-10px 0 10px}
+
+.plan-textarea{
+  width:100%;height:86px;
+  border:1.5px solid var(--border);border-radius:12px;
+  padding:11px 13px;font-size:13px;
+  font-family:'Inter',sans-serif;color:#334155;
+  resize:none;outline:none;background:#fafcff;
+  margin-bottom:8px;transition:border-color .2s;
+}
+.plan-textarea::placeholder{color:#b0bec5}
+.plan-textarea:focus{border-color:var(--primary)}
+
+.plan-counter-row{display:flex;justify-content:flex-end;margin-bottom:12px}
+
+.plan-counter-badge{
+  padding:3px 10px;background:#dcfce7;color:#16a34a;
+  font-size:12px;font-weight:700;border-radius:20px;
+  transition:background .2s,color .2s;
+}
+.plan-counter-badge.incomplete{background:#f1f5f9;color:#64748b}
+
+.plan-checklist{display:flex;flex-direction:column;gap:9px;margin-bottom:12px}
+
+.plan-check-item{
+  display:flex;align-items:center;gap:9px;
+  font-size:14px;color:#334155;font-weight:500;cursor:pointer;
+}
+.plan-check-item input[type="checkbox"]{
+  width:18px;height:18px;accent-color:var(--primary);cursor:pointer;flex-shrink:0;
+}
+
+.plan-note{font-size:11px;color:#b0bec5;line-height:1.4}
+
+/* Analytics card */
+.analytics-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+
+.stat-item{
+  background:#f8fafc;border:1px solid var(--border);
+  border-radius:12px;padding:13px;
+}
+.stat-value{font-size:24px;font-weight:900;color:var(--text);margin-bottom:2px}
+.stat-label{font-size:12px;color:var(--muted);font-weight:500}
+
+.analytics-progress{margin-bottom:14px}
+
+.progress-row{
+  display:flex;justify-content:space-between;
+  align-items:center;margin-bottom:6px;
+}
+.progress-label{font-size:13px;font-weight:700;color:var(--text)}
+.progress-pct{font-size:22px;font-weight:900;color:var(--text)}
+
+.progress-bg{height:8px;background:#e2e8f4;border-radius:8px;overflow:hidden}
+.progress-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--primary),var(--cyan));
+  border-radius:8px;transition:width .6s;
+}
+
+.analytics-chart-box{
+  background:#f8fafc;border:1px solid var(--border);
+  border-radius:12px;padding:13px;
+}
+.analytics-chart-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
+.analytics-chart-hint{font-size:12px;color:var(--muted)}
+.analytics-chart-visual{
+  margin-top:8px;height:42px;background:#eff3fa;
+  border-radius:8px;display:flex;align-items:center;
+  justify-content:center;
+}
+.analytics-chart-visual span{font-size:11px;color:#b0bec5}
+
+/* Grades card */
+.grade-row{
+  display:flex;align-items:center;
+  justify-content:space-between;padding-top:8px;
+}
+.grade-empty-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.grade-empty-sub{font-size:12px;color:var(--muted)}
+
+.badge-wait{
+  padding:5px 13px;background:#fef3c7;color:#d97706;
+  font-size:12px;font-weight:700;border-radius:8px;
+  white-space:nowrap;
+}
+
+/* Achievements card */
+.ach-item{
+  display:flex;align-items:center;
+  justify-content:space-between;
+  padding:12px 0;border-bottom:1px solid #f1f5f9;
+}
+.ach-item:last-child{border-bottom:none;padding-bottom:0}
+.ach-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px}
+.ach-sub{font-size:12px;color:var(--muted)}
+
+.badge-start{
+  padding:5px 13px;background:#fef3c7;color:#d97706;
+  font-size:12px;font-weight:700;border-radius:8px;
+  border:none;cursor:pointer;font-family:'Inter',sans-serif;
+  white-space:nowrap;
+}
+
+@media(max-width:960px){
+  .student-sidebar{width:220px;min-width:220px}
+  .student-grid-2{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .student-sidebar{display:none}
+  .student-main{padding:16px}
 }
 </style>
 </head>
 <body>
-<nav class="top-nav">
-  <img src="gotab_logo.png" alt="GoTAB">
-  <div class="nav-user">
-    <span class="nav-user-name" id="userName"></span>
-    <button class="btn-logout" onclick="logout()">Шығу</button>
-  </div>
-</nav>
+<div class="student-layout">
 
-<div class="sub-nav">
-  <a href="dashboard.html" class="active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    Материалдар
-  </a>
-  <a href="visuals.html">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-    Көрнекіліктер
-  </a>
-  <a href="games.html" class="active-game">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="15.5" cy="11" r="0.5" fill="currentColor"/><circle cx="17.5" cy="13" r="0.5" fill="currentColor"/><path d="M6 20h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg>
-    Ойындар
-  </a>
-</div>
+  <!-- SIDEBAR -->
+  <aside class="student-sidebar">
+    <div class="sidebar-logo-wrap">
+      <img src="gotab_logo_nobg.png" alt="GoTAB">
+    </div>
 
-<div class="dash-page">
-  <div class="dash-header">
-    <h1>GoTAB мұғалімдерге</h1>
-    <p>Сынып пен пәнді таңдап, материалдарға кіріңіз</p>
-  </div>
+    <div class="sidebar-cabinet-label">Студент Кабинеті</div>
 
-  <div class="dash-section">
-    <div class="dash-section-title">Пән таңдаңыз</div>
-    <div class="main-subject-grid">
-      <button class="main-subject-btn" onclick="selectMainSubject('math')">
-        <svg class="subj-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
-        </svg>
-        Математика пәні
+    <div class="sidebar-user-card">
+      <div class="sidebar-avatar" onclick="changeAvatar()" id="avatarCircle">
+        <span id="avatarLetter">?</span>
+      </div>
+      <div class="sidebar-user-name" id="sidebarName">Оқушы</div>
+      <div class="sidebar-user-id" id="sidebarId">ID: —</div>
+      <div class="sidebar-badges">
+        <span class="badge-pkg" id="packageBadge">Пакет: База</span>
+        <span class="badge-role">Role: student</span>
+      </div>
+      <div class="sidebar-avatar-hint">* Аватарды бас → өз фотоңды таңда</div>
+    </div>
+
+    <div class="sidebar-nav">
+      <a class="btn-sb-course" href="content.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Курсқа өту
+      </a>
+      <button class="btn-sb-secondary" onclick="location.reload()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Жаңарту
       </button>
-      <button class="main-subject-btn" onclick="selectMainSubject('informatics')">
-        <svg class="subj-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
-        </svg>
-        Информатика пәні
+      <button class="btn-sb-logout" onclick="logout()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Шығу
       </button>
     </div>
-  </div>
 
-  <div id="gradeSectionWrapper" style="display:none">
-    <div class="dash-section">
-      <div class="dash-section-title">Сынып таңдаңыз</div>
-      <div class="grade-grid">
-        <button class="grade-btn" onclick="selectGrade(5)">5-сынып</button>
-        <button class="grade-btn" onclick="selectGrade(6)">6-сынып</button>
-        <button class="grade-btn" onclick="selectGrade(7)">7-сынып</button>
-        <button class="grade-btn" onclick="selectGrade(8)">8-сынып</button>
-        <button class="grade-btn" onclick="selectGrade(9)">9-сынып</button>
-        <button class="grade-btn" onclick="selectGrade(10)">10-сынып</button>
-        <button class="grade-btn" onclick="selectGrade(11)">11-сынып</button>
+    <!-- Mountain illustration -->
+    <div class="sidebar-mountain">
+      <img src="mountain_nobg.png" alt="">
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="student-main">
+
+    <!-- Header -->
+    <div class="student-header-card">
+      <div class="header-card-text">
+        <div class="header-card-greeting">Сәлем, оқушы! 👋</div>
+        <div class="header-card-title">Бұл сенің жеке кабинетің.</div>
+        <div class="header-card-subtitle">Бізбен бірге алған білім арқылы үлкен белестерді бағындыр.</div>
+      </div>
+      <img class="header-card-illus" src="trophy_nobg.png" alt="">
+      <div class="header-card-actions">
+        <button class="btn-lang">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Қазақша ∨
+        </button>
+        <button class="btn-info-hdr">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Info
+        </button>
       </div>
     </div>
 
-    <div class="dash-section subject-section" id="subjectSection">
-      <div class="dash-section-title">Бөлім таңдаңыз</div>
-      <div class="subject-grid" id="subjectsMath56" style="display:none">
-        <button class="subject-btn" onclick="selectSubject('math')">Математика</button>
+    <!-- Plan + Analytics -->
+    <div class="student-grid-2">
+
+      <div class="student-card">
+        <div class="student-card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Бүгінгі жоспар
+        </div>
+        <div class="plan-subtitle">Бүгін қай тақырыпты оқытыныңды жаз</div>
+        <textarea class="plan-textarea" id="planTextarea"
+          placeholder="Мысалы: Рационал сандар, теңдеулер, үшбұрыштар..."></textarea>
+        <div class="plan-counter-row">
+          <span class="plan-counter-badge incomplete" id="planCounter">0/4</span>
+        </div>
+        <div class="plan-checklist">
+          <label class="plan-check-item">
+            <input type="checkbox" onchange="updateCounter()"> Видео көру
+          </label>
+          <label class="plan-check-item">
+            <input type="checkbox" onchange="updateCounter()"> Тапсырма жүктеу
+          </label>
+          <label class="plan-check-item">
+            <input type="checkbox" onchange="updateCounter()"> Тақырып аралық сынақтардан өту
+          </label>
+          <label class="plan-check-item">
+            <input type="checkbox" onchange="updateCounter()"> ЖИ қолдану
+          </label>
+        </div>
+        <div class="plan-note">* Барлық тапсырманы толық орындағаннан кейін ғана белгі қойыңыз.</div>
       </div>
-      <div class="subject-grid" id="subjectsAlgGeo" style="display:none">
-        <button class="subject-btn" onclick="selectSubject('algebra')">Алгебра</button>
-        <button class="subject-btn" onclick="selectSubject('geometry')">Геометрия</button>
+
+      <div class="student-card">
+        <div class="student-card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Аналитика
+        </div>
+        <div class="analytics-stats">
+          <div class="stat-item">
+            <div class="stat-value" id="avgGrade">0</div>
+            <div class="stat-label">Орташа баға</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value"><span id="gradedCount">0</span>/50</div>
+            <div class="stat-label">Бағаланған сабақ</div>
+          </div>
+        </div>
+        <div class="analytics-progress">
+          <div class="progress-row">
+            <span class="progress-label">Жалпы прогресс</span>
+            <span class="progress-pct" id="progressPct">0%</span>
+          </div>
+          <div class="progress-bg">
+            <div class="progress-fill" id="progressBar" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="analytics-chart-box">
+          <div class="analytics-chart-title">Соңғы 10 баға</div>
+          <div class="analytics-chart-hint">Баға аз — график кейін шығады</div>
+          <div class="analytics-chart-visual">
+            <span id="gradeChartPlaceholder"></span>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="dash-continue">
-    <button id="continueBtn" onclick="goToContent()" disabled>Жалғастыру →</button>
-  </div>
+    <!-- Grades + Achievements -->
+    <div class="student-grid-2">
+
+      <div class="student-card">
+        <div class="student-card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          Соңғы бағалар
+        </div>
+        <div class="grade-row" id="gradesContent">
+          <div>
+            <div class="grade-empty-title">Әзірге баға жоқ</div>
+            <div class="grade-empty-sub">Admin баға қойған кезде көрінеді.</div>
+          </div>
+          <span class="badge-wait">WAIT</span>
+        </div>
+      </div>
+
+      <div class="student-card">
+        <div class="student-card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+          Жетістіктер
+        </div>
+        <div class="ach-item">
+          <div>
+            <div class="ach-title" style="display:flex;align-items:center;gap:6px">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#f97316" stroke="#f97316" stroke-width="0"><path d="M12 2c-1 2.5-3 4-3 7a3 3 0 0 0 6 0c0-3-2-4.5-3-7zm-4 13c-.83 1-1 2-1 3a5 5 0 0 0 10 0c0-1-.17-2-1-3-1 1-2.5 1.5-4 1.5S9 16 8 15z"/></svg>
+              Күндік серия
+            </div>
+            <div class="ach-sub">1 күн қатарынан кірдің</div>
+          </div>
+          <button class="badge-start">START</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
 </div>
 
 <script src="supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script>
-let selectedMainSubject = null, selectedGrade = null, selectedSubject = null;
-
-function selectMainSubject(main) {
-  selectedMainSubject = main;
-  selectedGrade = null;
-  selectedSubject = main === 'informatics' ? 'informatics' : null;
-  document.querySelectorAll('.main-subject-btn').forEach(b => b.classList.remove('active'));
-  event.target.closest('.main-subject-btn').classList.add('active');
-  document.getElementById('gradeSectionWrapper').style.display = 'block';
-  document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('subjectSection').classList.remove('visible');
-  document.getElementById('continueBtn').disabled = true;
+function updateCounter() {
+  const all = document.querySelectorAll('.plan-check-item input');
+  const done = document.querySelectorAll('.plan-check-item input:checked').length;
+  const badge = document.getElementById('planCounter');
+  badge.textContent = done + '/' + all.length;
+  badge.classList.toggle('incomplete', done < all.length);
 }
-
-(async () => {
-  const user = await requireAuth();
-  if (!user) return;
-  const name = user.user_metadata?.name || user.email;
-  document.getElementById('userName').textContent = name;
-  if (user.email === ADMIN_EMAIL) {
-    const adminBtn = document.createElement('a');
-    adminBtn.href = 'admin.html';
-    adminBtn.textContent = 'Админ';
-    adminBtn.style.cssText = 'padding:7px 16px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);border-radius:8px;color:#c4b5fd;font-size:13px;font-weight:700;text-decoration:none';
-    document.querySelector('.nav-user').prepend(adminBtn);
-  }
-})();
 
 async function logout() {
   localStorage.removeItem('gotab_last_page');
@@ -147,39 +476,36 @@ async function logout() {
   window.location.href = 'index.html';
 }
 
-function selectGrade(grade) {
-  selectedGrade = grade;
-  document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
+function changeAvatar() {
+  alert('Жақында қосылады!');
+}
 
-  if (selectedMainSubject === 'informatics') {
-    selectedSubject = 'informatics';
-    document.getElementById('subjectSection').classList.remove('visible');
-    document.getElementById('continueBtn').disabled = false;
-  } else {
-    selectedSubject = null;
-    document.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('subjectSection').classList.add('visible');
-    const math56 = document.getElementById('subjectsMath56');
-    const algGeo = document.getElementById('subjectsAlgGeo');
-    if (grade <= 6) { math56.style.display = 'flex'; algGeo.style.display = 'none'; }
-    else            { math56.style.display = 'none';  algGeo.style.display = 'flex'; }
-    document.getElementById('continueBtn').disabled = true;
+(async () => {
+  const params = new URLSearchParams(location.search);
+  const previewId = params.get('previewStudentId');
+
+  if (previewId) {
+    document.getElementById('sidebarId').textContent = 'ID: ' + previewId;
+    document.getElementById('avatarLetter').textContent = previewId.charAt(3).toUpperCase();
+    return;
   }
-}
 
-function selectSubject(subject) {
-  selectedSubject = subject;
-  document.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('continueBtn').disabled = false;
-}
+  const user = await requireAuth();
+  if (!user) return;
 
-function goToContent() {
-  if (!selectedGrade || !selectedSubject) return;
-  window.location.href = `content.html?grade=${selectedGrade}&subject=${selectedSubject}`;
-}
+  const name = user.user_metadata?.name || user.email?.split('@')[0] || 'Оқушы';
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarId').textContent = 'ID: ' + (user.id?.slice(0, 12) || '—');
+  document.getElementById('avatarLetter').textContent = name.charAt(0).toUpperCase();
+
+  if (user.email === ADMIN_EMAIL) {
+    const adminLink = document.createElement('a');
+    adminLink.href = 'admin.html';
+    adminLink.textContent = 'Админ панель';
+    adminLink.style.cssText = 'display:block;text-align:center;margin-top:8px;padding:8px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);border-radius:10px;color:#c4b5fd;font-size:13px;font-weight:700;text-decoration:none';
+    document.querySelector('.sidebar-nav').appendChild(adminLink);
+  }
+})();
 </script>
-<script src="math-bg.js"></script>
 </body>
 </html>
