@@ -12,7 +12,7 @@ async function requireAuth() {
   }
   // Remember last visited page for auto-return (admin pages excluded)
   const here = location.pathname.split('/').pop() + location.search;
-  const excluded = ['login.html', 'index.html', 'register.html', 'admin.html'];
+  const excluded = ['login.html', 'index.html', 'register.html', 'admin.html', 'games.html'];
   if (here && !excluded.includes(here.split('?')[0])) {
     localStorage.setItem('gotab_last_page', here);
   }
