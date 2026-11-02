@@ -852,7 +852,7 @@ async function saveLesson() {
 
   if(extraFiles.length){
     prog.textContent='Қосымша құжаттар жүктелуде…';
-    try{const {data:previous}=await sb.from('materials').select('extra_files').eq('grade',grade).eq('subject',subject).eq('lesson_num',lesson_num).maybeSingle();const old=GoTABExtras.files(previous?.extra_files);if(old.length+extraFiles.length>20)throw Error('Бір сабаққа 20 құжатқа дейін қосылады');uploadedExtraFiles=await GoTABExtras.upload(extraFiles,grade,subject,lesson_num);payload.extra_files=[...old,...uploadedExtraFiles];}
+    try{const {data:previous,error:previousError}=await sb.from('materials').select('extra_files').eq('grade',grade).eq('subject',subject).eq('lesson_num',lesson_num).maybeSingle();if(previousError)throw Error('Бұрынғы құжаттарды тексеру мүмкін болмады: '+previousError.message);const old=GoTABExtras.files(previous?.extra_files);if(old.length+extraFiles.length>20)throw Error('Бір сабаққа 20 құжатқа дейін қосылады');uploadedExtraFiles=await GoTABExtras.upload(extraFiles,grade,subject,lesson_num);payload.extra_files=[...old,...uploadedExtraFiles];}
     catch(e){prog.textContent=e.message;return;}
   }
   prog.textContent = 'Дерекқорға сақталуда...';
