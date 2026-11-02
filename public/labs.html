@@ -36,8 +36,8 @@
     <div class="lcard soon"><div class="ic">⚪</div><h3>Айналу денелері</h3><p>Жақында</p></div>
   </div>
 </div>
-<script src="supabase.js"></script><script src="supabase-client.js"></script>
-<script>(async()=>{const u=await requireAuth();if(u)document.getElementById('userName').textContent=u.user_metadata?.name||u.email;})();</script>
+<script src="supabase.js"></script><script src="supabase-client.js"></script><script src="lab-paywall.js"></script>
+<script>(async()=>{const u=await labGate();if(u)document.getElementById('userName').textContent=u.user_metadata?.name||u.email;})();</script>
 <script src="math-bg.js"></script>
 </body>
 </html>
