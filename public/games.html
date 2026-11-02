@@ -656,9 +656,9 @@ const TYPE_NAMES={quiz:'Викторина',match:'Сәйкестендіру',c
     try{
       const{data:p,error:e}=await sb.rpc('check_paid_user',{check_id:user.id});
       if(!e){isPaid=p===true;}
-      else{const{data:s}=await sb.rpc('check_my_subscription');const r=Array.isArray(s)?s[0]:s;isPaid=r?.is_paid===true&&(!r?.paid_until||new Date(r.paid_until)>new Date());}
+      else{const{data:s}=await sb.rpc('check_my_subscription');const r=Array.isArray(s)?s[0]:s;isPaid=r?.is_paid===true&&(r?.paid_until&&new Date(r.paid_until)>new Date());}
     }catch(_){
-      try{const{data:s}=await sb.rpc('check_my_subscription');const r=Array.isArray(s)?s[0]:s;isPaid=r?.is_paid===true&&(!r?.paid_until||new Date(r.paid_until)>new Date());}catch(__){}
+      try{const{data:s}=await sb.rpc('check_my_subscription');const r=Array.isArray(s)?s[0]:s;isPaid=r?.is_paid===true&&(r?.paid_until&&new Date(r.paid_until)>new Date());}catch(__){}
     }
     if(!isPaid)document.getElementById('payWall').style.display='flex';
   }
