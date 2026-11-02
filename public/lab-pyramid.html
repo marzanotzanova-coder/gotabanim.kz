@@ -64,7 +64,7 @@ const controls = new OrbitControls(camera, renderer.domElement); controls.target
 const sph = new THREE.Spherical();
 function orbit(dAz, dPol) { const off = camera.position.clone().sub(controls.target); sph.setFromVector3(off); sph.theta += dAz; sph.phi = Math.min(controls.maxPolarAngle, Math.max(.05, sph.phi + dPol)); off.setFromSpherical(sph); camera.position.copy(controls.target).add(off); camera.lookAt(controls.target); }
 view.addEventListener('wheel', e => { const mouse = e.deltaMode !== 0 || (e.wheelDeltaY && Math.abs(e.wheelDeltaY) % 120 === 0 && !e.deltaX);
-  if (e.ctrlKey || mouse) return; e.preventDefault(); e.stopPropagation(); if (!fly) orbit(-e.deltaX * .006, -e.deltaY * .006); }, { capture: true, passive: false });
+  if (e.ctrlKey || mouse) return; e.preventDefault(); e.stopPropagation(); if (!fly) orbit(e.deltaX * .006, -e.deltaY * .006); }, { capture: true, passive: false });
 scene.add(new THREE.HemisphereLight(0xffffff, 0xb8c6e0, 1.1)); const dl = new THREE.DirectionalLight(0xffffff, 1.2); dl.position.set(4, 8, 5); scene.add(dl);
 scene.add(new THREE.GridHelper(8, 16, 0x9fb3d8, 0xd3ddef));
 function resize() { const w = view.clientWidth, h = view.clientHeight; renderer.setSize(w, h); labels.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
