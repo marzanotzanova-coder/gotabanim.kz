@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoTAB — Зертхана: Пирамида және қима</title>
+<link rel="stylesheet" href="gotab.css">
+<style>
+body{overflow:hidden}
+.lab{display:flex;height:calc(100vh - 64px)}
+#view{flex:1;position:relative;background:radial-gradient(ellipse at 50% 35%,#ffffff 0%,#e8eefb 70%,#dbe4f6 100%);touch-action:none}
+#view canvas{display:block}
+.side{width:380px;flex-shrink:0;background:#fff;border-left:1px solid var(--border);padding:22px;overflow-y:auto}
+.side h2{font-size:20px;font-weight:900;margin-bottom:4px}.side .sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+.st{display:flex;gap:12px;padding:12px 14px;border:1.5px solid var(--border);border-radius:14px;margin-bottom:10px;opacity:.5;transition:all .2s}
+.st.on{opacity:1;border-color:var(--primary);background:var(--surface2);box-shadow:0 4px 14px rgba(26,86,219,.1)}.st.done{opacity:.85}
+.st .n{width:30px;height:30px;border-radius:9px;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.st.on .n{background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff}.st.done .n{background:var(--success);color:#fff}
+.st b{display:block;font-size:15px;margin-bottom:3px}.st p{font-size:13px;color:var(--muted);line-height:1.45}
+.ctl{display:none;margin-top:10px}.st.on .ctl{display:block}
+.row{display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:600;margin:6px 0}
+.row input[type=range]{width:150px;accent-color:var(--primary)}
+.btn{width:100%;padding:11px;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;margin-top:6px}
+.btn.p{background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff}.btn.g{background:#fff;border:1.5px solid var(--border);color:var(--text)}
+.btn:disabled{opacity:.4;cursor:default}
+.bar{display:flex;gap:8px;margin-top:6px}.bar .btn{margin-top:0}
+#msg{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:700;display:none}
+#msg.ok{display:block;background:rgba(16,185,129,.12);color:#047857}#msg.no{display:block;background:rgba(239,68,68,.1);color:#b91c1c}
+#tip{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(15,23,42,.88);color:#fff;border-radius:12px;padding:10px 18px;font-size:15px;font-weight:700;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+.lbl{font:800 18px Inter,sans-serif;color:#0f172a;text-shadow:0 0 4px #fff,0 0 4px #fff;pointer-events:none}.lbl.k{color:#e11d48}
+@media(max-width:820px){.lab{flex-direction:column;height:auto}#view{height:62vh}.side{width:auto;border-left:none}body{overflow:auto}#tip{font-size:13px}}
+</style>
+</head>
+<body>
+<nav class="top-nav"><img src="gotab_logo.png" alt="GoTAB"><div class="nav-user"><a href="labs.html" style="font-weight:700;color:var(--primary);text-decoration:none">← Зертханалар</a></div></nav>
+<div class="lab">
+  <div id="view"><div id="tip"></div></div>
+  <div class="side">
+    <h2>Пирамиданы құрастыр және қимасын сал</h2><div class="sub">Геометриялық зертханалық жұмыс · 10–11-сынып</div>
+    <div class="st" data-s="base"><div class="n">1</div><div><b>Табанын сал</b><p>Еденнің торын басып, табанның төбелерін қой (3–6 нүкте). Тұйықтау үшін бірінші нүктені (A) қайта бас.</p>
+      <div class="ctl"><div class="bar"><button class="btn g" id="undo">↶ Артқа</button><button class="btn p" id="close">Табанды тұйықта</button></div></div></div></div>
+    <div class="st" data-s="apex"><div class="n">2</div><div><b>Төбесін қой</b><p>Табанның ішінен S төбесінің проекциясын (H нүктесін) бас, сосын биіктігін таңда.</p>
+      <div class="ctl"><div class="row">Биіктігі SH <input type="range" id="h" min="1" max="3.6" step="0.1" value="2.4"></div><button class="btn p" id="okApex" disabled>Төбені бекіту</button></div></div></div>
+    <div class="st" data-s="edges"><div class="n">3</div><div><b>Бүйір қырларын қос</b><p>Табанның әр төбесін бас — ол S төбесімен қосылады.</p></div></div>
+    <div class="st" data-s="section"><div class="n">4</div><div><b>Қима сал</b><p>Пирамиданың қырларын басып <b style="display:inline;color:var(--primary)">3 нүкте</b> қой. Жазықтық пен қима өздігінен шығады.</p>
+      <div class="ctl"><button class="btn g" id="clear">↺ Қима нүктелерін өшіру</button>
+        <div style="margin-top:12px;font-size:14px;line-height:1.5"><b style="display:inline">Тапсырма:</b> қималық жазықтық <b style="display:inline;color:var(--primary)">SA, SB, SC</b> қырларының ортасы арқылы өтсін. Қима қандай фигура?</div>
+        <button class="btn p" id="check">✓ Тексеру</button><div id="msg"></div></div></div></div>
+    <div class="bar" style="margin-top:14px"><button class="btn g" id="reset">⟲ Басынан бастау</button><button class="btn g" id="demo">Дайын үлгі</button></div>
+  </div>
+</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+const $ = id => document.getElementById(id), view = $('view');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); view.appendChild(renderer.domElement);
+const labels = new CSS2DRenderer(); labels.domElement.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none'; view.appendChild(labels.domElement);
+const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100); camera.position.set(0.01, 8.5, 6.5);
+const controls = new OrbitControls(camera, renderer.domElement); controls.target.set(0, 0.6, 0); controls.enableDamping = true; controls.minDistance = 3; controls.maxDistance = 16;
+scene.add(new THREE.HemisphereLight(0xffffff, 0xb8c6e0, 1.1)); const dl = new THREE.DirectionalLight(0xffffff, 1.2); dl.position.set(4, 8, 5); scene.add(dl);
+scene.add(new THREE.GridHelper(8, 16, 0x9fb3d8, 0xd3ddef));
+function resize() { const w = view.clientWidth, h = view.clientHeight; renderer.setSize(w, h); labels.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+
+const NAMES = ['A', 'B', 'C', 'D', 'E', 'F'], V = (x, y, z) => new THREE.Vector3(x, y, z);
+// construction state
+const S = { mode: 'base', base: [], H: null, h: 2.4, lat: [], pts: [], hover: null };
+const apex = () => S.H ? V(S.H.x, S.h, S.H.z) : null;
+function edges() { const e = [], n = S.base.length, closed = S.mode !== 'base'; for (let i = 0; i < n - (closed ? 0 : 1); i++) e.push([S.base[i], S.base[(i + 1) % n], NAMES[i] + NAMES[(i + 1) % n]]);
+  S.lat.forEach(i => e.push([S.base[i], apex(), 'S' + NAMES[i]])); return e; }
+
+const M = { edge: new THREE.MeshStandardMaterial({ color: 0x1a56db, roughness: .4 }), ghost: new THREE.MeshBasicMaterial({ color: 0x1a56db, transparent: true, opacity: .35 }),
+  dot: new THREE.MeshStandardMaterial({ color: 0x0f172a }), apex: new THREE.MeshStandardMaterial({ color: 0x7c3aed }), red: new THREE.MeshStandardMaterial({ color: 0xe11d48 }) };
+function rod(a, b, mat, r = .028) { const d = new THREE.Vector3().subVectors(b, a), L = d.length(); const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, Math.max(L, 1e-4), 12), mat); m.position.copy(a).addScaledVector(d, .5); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.clone().normalize()); return m; }
+function ball(p, mat, r = .07) { const s = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 16), mat); s.position.copy(p); return s; }
+function dashed(a, b, color = 0x7c3aed) { const g = new THREE.BufferGeometry().setFromPoints([a, b]), l = new THREE.Line(g, new THREE.LineDashedMaterial({ color, dashSize: .1, gapSize: .07 })); l.computeLineDistances(); return l; }
+function label(text, pos, cls = '') { const el = document.createElement('div'); el.className = 'lbl ' + cls; el.textContent = text; const o = new CSS2DObject(el); o.position.copy(pos); return o; }
+let grp = new THREE.Group(); scene.add(grp);
+
+function draw() { grp.traverse(o => { if (o.isCSS2DObject) o.element.remove(); }); scene.remove(grp); grp = new THREE.Group(); scene.add(grp);
+  const n = S.base.length, cen = n ? S.base.reduce((s, p) => s.clone().add(p), V(0, 0, 0)).multiplyScalar(1 / n) : V(0, 0, 0);
+  edges().forEach(([a, b]) => grp.add(rod(a, b, M.edge)));
+  S.base.forEach((p, i) => { const pick = S.mode === 'edges' && !S.lat.includes(i), first = S.mode === 'base' && i === 0 && n >= 3; grp.add(ball(p, pick || first ? M.red : M.dot, pick || first ? .11 : .07));
+    const off = p.clone().sub(cen); off.y = 0; if (off.length() < 1e-6) off.set(1, 0, 0); off.setLength(.3); grp.add(label(NAMES[i], p.clone().add(off).setY(-.05))); });
+  // ghost preview while placing the base or the foot H
+  if (S.mode === 'base' && S.hover && n < 6) { grp.add(ball(S.hover, M.ghost, .08)); if (n) grp.add(rod(S.base[n - 1], S.hover, M.ghost, .02)); }
+  if (S.mode === 'apex' && S.hover && !S.H) grp.add(ball(S.hover, M.ghost, .08));
+  const A = apex(); if (A) { grp.add(ball(A, M.apex, .09)); grp.add(label('S', A.clone().add(V(0, .25, 0)))); grp.add(ball(S.H, M.apex, .05)); grp.add(label('H', S.H.clone().add(V(.18, 0, .18))));
+    if (S.mode !== 'section') grp.add(dashed(S.H, A)); }
+  // faces once every lateral edge is connected
+  if (A && S.lat.length === n) { const pos = []; for (let i = 0; i < n; i++) pos.push(...S.base[i].toArray(), ...S.base[(i + 1) % n].toArray(), ...A.toArray());
+    for (let i = 1; i < n - 1; i++) pos.push(...S.base[0].toArray(), ...S.base[i].toArray(), ...S.base[i + 1].toArray());
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals();
+    grp.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x5aa9ff, transparent: true, opacity: .18, side: THREE.DoubleSide, depthWrite: false }))); }
+  S.pts.forEach((p, i) => { grp.add(ball(p.v, M.red)); grp.add(label(['K', 'L', 'M'][i], p.v.clone().add(V(.15, .15, 0)), 'k')); });
+  if (S.pts.length === 3) section(); ui(); }
+
+function section() { const [a, b, c] = S.pts.map(p => p.v), nrm = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a)); if (nrm.length() < 1e-4) return; nrm.normalize();
+  const d = -nrm.dot(a), out = [];
+  edges().forEach(([p, q]) => { const sp = nrm.dot(p) + d, sq = nrm.dot(q) + d; if (Math.abs(sp) < 1e-6) out.push(p.clone()); else if (sp * sq < 0) out.push(p.clone().lerp(q, sp / (sp - sq))); if (Math.abs(sq) < 1e-6) out.push(q.clone()); });
+  const u = []; out.forEach(p => { if (!u.some(x => x.distanceTo(p) < 1e-3)) u.push(p); }); if (u.length < 3) return;
+  const cen = u.reduce((s, p) => s.add(p), V(0, 0, 0)).multiplyScalar(1 / u.length), e1 = new THREE.Vector3().subVectors(u[0], cen).normalize(), e2 = new THREE.Vector3().crossVectors(nrm, e1), ang = p => Math.atan2(e2.dot(p.clone().sub(cen)), e1.dot(p.clone().sub(cen)));
+  u.sort((p, q) => ang(p) - ang(q)); const pos = []; for (let i = 0; i < u.length; i++) pos.push(...cen.toArray(), ...u[i].toArray(), ...u[(i + 1) % u.length].toArray());
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  grp.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: .55, side: THREE.DoubleSide, depthWrite: false })));
+  for (let i = 0; i < u.length; i++) grp.add(rod(u[i], u[(i + 1) % u.length], new THREE.MeshBasicMaterial({ color: 0xea580c }), .02));
+  const pl = new THREE.Mesh(new THREE.PlaneGeometry(6, 6), new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: .1, side: THREE.DoubleSide, depthWrite: false })); pl.position.copy(cen); pl.lookAt(cen.clone().add(nrm)); grp.add(pl); }
+
+// UI: step cards, hints, buttons
+const TIPS = { base: () => S.base.length < 3 ? `Табанның ${NAMES[S.base.length]} төбесін қой: торды бас` : S.base.length < 6 ? 'Тағы нүкте қой немесе A нүктесін басып тұйықта' : 'A нүктесін басып табанды тұйықта',
+  apex: () => S.H ? 'Биіктікті таңдап, «Төбені бекіту» батырмасын бас' : 'Табанның ішінен H нүктесін бас', edges: () => `Табанның төбесін бас (${S.lat.length} / ${S.base.length} қыр қосылды)`,
+  section: () => S.pts.length < 3 ? `Қырды басып ${['K', 'L', 'M'][S.pts.length]} нүктесін қой` : 'Қима дайын! Пирамиданы айналдырып қара' };
+function ui() { const order = ['base', 'apex', 'edges', 'section'], k = order.indexOf(S.mode);
+  document.querySelectorAll('.st').forEach(el => { const i = order.indexOf(el.dataset.s); el.classList.toggle('on', i === k); el.classList.toggle('done', i < k); });
+  $('tip').textContent = TIPS[S.mode](); $('close').disabled = S.base.length < 3; $('undo').disabled = !S.base.length; $('okApex').disabled = !S.H; }
+const msg = (t, ok) => { const m = $('msg'); m.className = ok ? 'ok' : 'no'; m.innerHTML = t; };
+function convex(P) { let sg = 0; for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length], c = P[(i + 2) % P.length], cr = (b.x - a.x) * (c.z - b.z) - (b.z - a.z) * (c.x - b.x); if (Math.abs(cr) < 1e-6) return false; if (sg && Math.sign(cr) !== sg) return false; sg = Math.sign(cr); } return true; }
+function inside(p) { const P = S.base; let s = 0; for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length], cr = (b.x - a.x) * (p.z - a.z) - (b.z - a.z) * (p.x - a.x); if (Math.abs(cr) < 1e-6) return false; if (s && Math.sign(cr) !== s) return false; s = Math.sign(cr); } return true; }
+function closeBase() { if (S.base.length < 3) return; if (!convex(S.base)) { $('tip').textContent = '⚠ Табан дөңес көпбұрыш болуы керек — «Артқа» басып түзет'; return; } S.mode = 'apex'; S.hover = null; draw(); }
+
+// pointer: floor point (snapped to the grid) and screen-space picking
+const ray = new THREE.Raycaster(), floor = new THREE.Plane(V(0, 1, 0), 0);
+function floorAt(e) { const rc = renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX - rc.left) / rc.width * 2 - 1, -(e.clientY - rc.top) / rc.height * 2 + 1), camera);
+  const p = new THREE.Vector3(); if (!ray.ray.intersectPlane(floor, p)) return null; const sn = v => Math.max(-3.5, Math.min(3.5, Math.round(v * 2) / 2)); return V(sn(p.x), 0, sn(p.z)); }
+function scr(v) { const rc = renderer.domElement.getBoundingClientRect(), p = v.clone().project(camera); return [(p.x + 1) / 2 * rc.width + rc.left, (1 - p.y) / 2 * rc.height + rc.top]; }
+const near = (v, e, r = 30) => { const s = scr(v); return Math.hypot(s[0] - e.clientX, s[1] - e.clientY) < r; };
+let down = null; renderer.domElement.addEventListener('pointerdown', e => down = [e.clientX, e.clientY]);
+renderer.domElement.addEventListener('pointermove', e => { if (S.mode !== 'base' && S.mode !== 'apex') return; const p = floorAt(e); if (!p || (S.hover && S.hover.equals(p))) return; S.hover = p; draw(); });
+renderer.domElement.addEventListener('pointerup', e => { if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return;
+  if (S.mode === 'base') { if (S.base.length >= 3 && near(S.base[0], e)) return closeBase(); if (S.base.length >= 6) return; const p = floorAt(e); if (!p || S.base.some(q => q.equals(p))) return; S.base.push(p); draw(); }
+  else if (S.mode === 'apex') { const p = floorAt(e); if (!p) return; if (!inside(p)) { $('tip').textContent = '⚠ H нүктесі табанның ішінде болуы керек'; return; } S.H = p; draw(); }
+  else if (S.mode === 'edges') { const i = S.base.findIndex((p, j) => !S.lat.includes(j) && near(p, e)); if (i < 0) return; S.lat.push(i); if (S.lat.length === S.base.length) { S.mode = 'section'; flyTo(V(4.2, 3.4, 5.6)); } draw(); }
+  else if (S.mode === 'section' && S.pts.length < 3) { let best = null;
+    edges().forEach(([p, q, nm]) => { const A = scr(p), B = scr(q), dx = B[0] - A[0], dy = B[1] - A[1], t = Math.max(0, Math.min(1, ((e.clientX - A[0]) * dx + (e.clientY - A[1]) * dy) / (dx * dx + dy * dy))), dist = Math.hypot(A[0] + t * dx - e.clientX, A[1] + t * dy - e.clientY);
+      if (dist < 30 && (!best || dist < best.dist)) best = { dist, t: Math.abs(t - .5) < .1 ? .5 : t, p, q, nm }; });
+    if (best) { S.pts.push({ v: best.p.clone().lerp(best.q, best.t), t: best.t, e: best.nm }); draw(); } } });
+// smooth camera move to a new viewpoint
+let fly = null; function flyTo(to) { fly = { from: camera.position.clone(), to, t: 0 }; }
+$('undo').onclick = () => { S.base.pop(); draw(); }; $('close').onclick = closeBase;
+$('h').oninput = e => { S.h = +e.target.value; draw(); };
+$('okApex').onclick = () => { S.mode = 'edges'; flyTo(V(5, 4.2, 6.5)); draw(); };
+$('clear').onclick = () => { S.pts = []; $('msg').className = ''; draw(); };
+$('reset').onclick = () => { Object.assign(S, { mode: 'base', base: [], H: null, lat: [], pts: [], hover: null }); $('msg').className = ''; flyTo(V(0.01, 8.5, 6.5)); draw(); };
+$('demo').onclick = () => { Object.assign(S, { mode: 'section', base: [V(-1.5, 0, 1.5), V(1.5, 0, 1.5), V(1.5, 0, -1.5), V(-1.5, 0, -1.5)], H: V(0, 0, 0), h: 2.4, lat: [0, 1, 2, 3], pts: [], hover: null }); $('h').value = 2.4; $('msg').className = ''; flyTo(V(4.2, 3.4, 5.6)); draw(); };
+$('check').onclick = () => { const ok = S.pts.length === 3 && ['SA', 'SB', 'SC'].every(nm => S.pts.some(p => p.e === nm && Math.abs(p.t - .5) < .01)), n = S.base.length;
+  if (ok) msg(`✓ Дұрыс! Қима — табанға параллель ${n === 3 ? 'үшбұрыш' : n === 4 ? 'төртбұрыш' : n + '-бұрыш'}, оның қабырғалары табанның қабырғаларынан 2 есе кіші.`, true);
+  else msg(S.pts.length < 3 ? 'Алдымен 3 нүкте қойыңыз.' : 'Қате. Нүктелер SA, SB, SC қырларының дәл ортасында болуы керек.', false); };
+draw();
+(function loop() { requestAnimationFrame(loop); if (fly) { fly.t = Math.min(1, fly.t + 1 / 60); const k = fly.t < .5 ? 2 * fly.t * fly.t : 1 - Math.pow(-2 * fly.t + 2, 2) / 2; camera.position.lerpVectors(fly.from, fly.to, k); if (fly.t >= 1) fly = null; }
+  controls.update(); renderer.render(scene, camera); labels.render(scene, camera); })();
+</script>
+<script src="supabase.js"></script><script src="supabase-client.js"></script>
+<script>(async()=>{ if (typeof requireAuth==='function') await requireAuth(); })();</script>
+</body>
+</html>

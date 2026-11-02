@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoTAB — Виртуалды зертхана</title>
+<link rel="stylesheet" href="gotab.css">
+<link rel="stylesheet" href="teacher-theme.css?v=20261102">
+<script src="teacher-ui.js?v=20261102" defer></script>
+<style>
+.labs{max-width:1040px;margin:0 auto;padding:36px 20px 60px}
+.labs h1{font-size:28px;font-weight:900;margin-bottom:6px}.labs .s{color:var(--muted);font-size:14px;margin-bottom:26px}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.lcard{background:#fff;border:1px solid var(--border);border-radius:20px;padding:22px;text-decoration:none;color:var(--text);box-shadow:0 4px 20px rgba(26,86,219,.06);transition:all .2s;display:block}
+.lcard:hover{transform:translateY(-3px);border-color:var(--primary)}
+.lcard .ic{width:100%;height:150px;border-radius:14px;background:radial-gradient(ellipse at 50% 30%,#fff,#e3ebfa);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.lcard h3{font-size:17px;font-weight:800;margin-bottom:4px}.lcard p{font-size:13px;color:var(--muted)}
+.tag{display:inline-block;margin-top:10px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(26,86,219,.08);color:var(--primary)}
+.lcard.soon{opacity:.55;pointer-events:none}
+</style>
+</head>
+<body>
+<nav class="top-nav"><img src="gotab_logo.png" alt="GoTAB"><div class="nav-user"><span class="nav-user-name" id="userName"></span></div></nav>
+<div class="sub-nav">
+  <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Материалдар</a>
+  <a href="visuals.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Көрнекіліктер</a>
+  <a href="games.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><path d="M6 20h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg>Ойындар</a>
+  <a href="labs.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 3h6M10 3v6L4 20a1 1 0 0 0 .9 1.5h14.2A1 1 0 0 0 20 20l-6-11V3"/></svg>Зертхана</a>
+</div>
+<div class="labs">
+  <h1>Виртуалды зертхана</h1><div class="s">Оқушылар 3D фигураларды өз қолымен құрастырып, зерттейді. Интерактивті тақтада да жұмыс істейді.</div>
+  <div class="lgrid">
+    <a class="lcard" href="lab-pyramid.html"><div class="ic"><svg width="120" height="110" viewBox="0 0 120 110"><polygon points="60,8 14,86 70,100" fill="#5aa9ff" fill-opacity=".25" stroke="#1a56db" stroke-width="3"/><polygon points="60,8 70,100 108,78" fill="#5aa9ff" fill-opacity=".15" stroke="#1a56db" stroke-width="3"/><polygon points="37,47 65,54 84,43" fill="#f97316" fill-opacity=".6" stroke="#ea580c" stroke-width="2.5"/></svg></div>
+      <h3>Пирамида және оның қимасы</h3><p>Пирамиданы құрастыр, жазықтықпен қимасын сал</p><span class="tag">Геометрия · 10–11-сынып</span></a>
+    <div class="lcard soon"><div class="ic">🧊</div><h3>Призма және жазбасы</h3><p>Жақында</p></div>
+    <div class="lcard soon"><div class="ic">⚪</div><h3>Айналу денелері</h3><p>Жақында</p></div>
+  </div>
+</div>
+<script src="supabase.js"></script><script src="supabase-client.js"></script>
+<script>(async()=>{const u=await requireAuth();if(u)document.getElementById('userName').textContent=u.user_metadata?.name||u.email;})();</script>
+<script src="math-bg.js"></script>
+</body>
+</html>
