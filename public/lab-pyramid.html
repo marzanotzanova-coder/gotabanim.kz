@@ -60,6 +60,11 @@ const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); rend
 const labels = new CSS2DRenderer(); labels.domElement.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none'; view.appendChild(labels.domElement);
 const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100); camera.position.set(0.01, 8.5, 6.5);
 const controls = new OrbitControls(camera, renderer.domElement); controls.target.set(0, 0.6, 0); controls.enableDamping = true; controls.minDistance = 3; controls.maxDistance = 16; controls.maxPolarAngle = Math.PI * .92;
+// trackpad: two-finger swipe orbits the camera, pinch (ctrl+wheel) zooms; a real mouse wheel still zooms
+const sph = new THREE.Spherical();
+function orbit(dAz, dPol) { const off = camera.position.clone().sub(controls.target); sph.setFromVector3(off); sph.theta += dAz; sph.phi = Math.min(controls.maxPolarAngle, Math.max(.05, sph.phi + dPol)); off.setFromSpherical(sph); camera.position.copy(controls.target).add(off); camera.lookAt(controls.target); }
+view.addEventListener('wheel', e => { const mouse = e.deltaMode !== 0 || (e.wheelDeltaY && Math.abs(e.wheelDeltaY) % 120 === 0 && !e.deltaX);
+  if (e.ctrlKey || mouse) return; e.preventDefault(); e.stopPropagation(); if (!fly) orbit(-e.deltaX * .006, -e.deltaY * .006); }, { capture: true, passive: false });
 scene.add(new THREE.HemisphereLight(0xffffff, 0xb8c6e0, 1.1)); const dl = new THREE.DirectionalLight(0xffffff, 1.2); dl.position.set(4, 8, 5); scene.add(dl);
 scene.add(new THREE.GridHelper(8, 16, 0x9fb3d8, 0xd3ddef));
 function resize() { const w = view.clientWidth, h = view.clientHeight; renderer.setSize(w, h); labels.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
@@ -128,9 +133,9 @@ function floorAt(e) { const rc = renderer.domElement.getBoundingClientRect(); ra
 function scr(v) { const rc = renderer.domElement.getBoundingClientRect(), p = v.clone().project(camera); return [(p.x + 1) / 2 * rc.width + rc.left, (1 - p.y) / 2 * rc.height + rc.top]; }
 const near = (v, e, r = 30) => { const s = scr(v); return Math.hypot(s[0] - e.clientX, s[1] - e.clientY) < r; };
 let down = null; renderer.domElement.addEventListener('pointerdown', e => down = [e.clientX, e.clientY]);
-renderer.domElement.addEventListener('pointermove', e => { if (e.buttons || (S.mode !== 'base' && S.mode !== 'apex')) return; const p = floorAt(e); if (!p || (S.hover && S.hover.equals(p))) return; S.hover = p; draw(); });
+renderer.domElement.addEventListener('pointermove', e => { if (e.buttons || (S.mode !== 'base' && S.mode !== 'apex')) return; const j = S.mode === 'base' ? S.base.findIndex(q => near(q, e)) : -1, p = j >= 0 ? S.base[j].clone() : floorAt(e); if (!p || (S.hover && S.hover.equals(p))) return; S.hover = p; draw(); });
 renderer.domElement.addEventListener('pointerup', e => { if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return;
-  if (S.mode === 'base') { if (S.base.length >= 3 && near(S.base[0], e)) return closeBase(); if (S.base.length >= 6) return; const p = floorAt(e); if (!p || S.base.some(q => q.equals(p))) return; S.base.push(p); draw(); }
+  if (S.mode === 'base') { const j = S.base.findIndex(q => near(q, e)); if (j >= 0) { if (S.base.length - j >= 3) { if (j > 0) S.base.splice(0, j); return closeBase(); } $('tip').textContent = '⚠ Бұл нүкте бұрыннан бар — жаңа нүктені басқа жерге қой'; return; } if (S.base.length >= 6) return; const p = floorAt(e); if (!p || S.base.some(q => q.equals(p))) return; S.base.push(p); draw(); }
   else if (S.mode === 'apex') { const p = floorAt(e); if (!p) return; if (!inside(p)) { $('tip').textContent = '⚠ H нүктесі табанның ішінде болуы керек'; return; } S.H = p; flyTo(V(5, 3.6, 6.2)); draw(); }
   else if (S.mode === 'edges') { const i = S.base.findIndex((p, j) => !S.lat.includes(j) && near(p, e)); if (i < 0) return; S.lat.push(i); if (S.lat.length === S.base.length) { S.mode = 'section'; flyTo(V(4.2, 3.4, 5.6)); } draw(); }
   else if (S.mode === 'section' && S.pts.length < 3) { let best = null;
