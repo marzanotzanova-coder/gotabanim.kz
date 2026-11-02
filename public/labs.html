@@ -30,7 +30,7 @@
 <div class="labs">
   <h1>Виртуалды зертхана</h1><div class="s">Оқушылар 3D фигураларды өз қолымен құрастырып, зерттейді. Интерактивті тақтада да жұмыс істейді.</div>
   <div class="lgrid">
-    <a class="lcard" href="lab-pyramid.html"><div class="ic"><svg width="120" height="110" viewBox="0 0 120 110"><polygon points="60,8 14,86 70,100" fill="#5aa9ff" fill-opacity=".25" stroke="#1a56db" stroke-width="3"/><polygon points="60,8 70,100 108,78" fill="#5aa9ff" fill-opacity=".15" stroke="#1a56db" stroke-width="3"/><polygon points="37,47 65,54 84,43" fill="#f97316" fill-opacity=".6" stroke="#ea580c" stroke-width="2.5"/></svg></div>
+    <a class="lcard" href="lab-pyramid.html"><div class="ic"><canvas id="pyrc" width="520" height="300" style="width:260px;height:150px"></canvas></div>
       <h3>Пирамида және оның қимасы</h3><p>Пирамиданы құрастыр, жазықтықпен қимасын сал</p><span class="tag">Геометрия · 10–11-сынып</span></a>
     <div class="lcard soon"><div class="ic">🧊</div><h3>Призма және жазбасы</h3><p>Жақында</p></div>
     <div class="lcard soon"><div class="ic">⚪</div><h3>Айналу денелері</h3><p>Жақында</p></div>
@@ -38,6 +38,18 @@
 </div>
 <script src="supabase.js"></script><script src="supabase-client.js"></script><script src="lab-paywall.js"></script>
 <script>(async()=>{const u=await labGate();if(u)document.getElementById('userName').textContent=u.user_metadata?.name||u.email;})();</script>
+<script>
+// spinning pyramid with its mid-height section on the lab card
+(function(){const c=document.getElementById('pyrc');if(!c)return;const g=c.getContext('2d'),W=c.width,H=c.height;
+const B=[[-1,0,-1],[1,0,-1],[1,0,1],[-1,0,1]],S=[0,2.3,0],M=B.map(v=>[v[0]/2,1.15,v[2]/2]);
+function P(v,a){const x=v[0]*Math.cos(a)-v[2]*Math.sin(a),z=v[0]*Math.sin(a)+v[2]*Math.cos(a),y=v[1],tx=.28,yy=y*Math.cos(tx)-z*Math.sin(tx),zz=y*Math.sin(tx)+z*Math.cos(tx),k=3.6/(3.6+zz);return[W/2+x*k*100,H*.8-yy*k*100,zz];}
+function poly(pts,fill,stroke,lw){g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();if(fill){g.fillStyle=fill;g.fill();}if(stroke){g.strokeStyle=stroke;g.lineWidth=lw;g.lineJoin='round';g.stroke();}}
+function frame(t){const a=t/1600;g.clearRect(0,0,W,H);const b=B.map(v=>P(v,a)),s=P(S,a),m=M.map(v=>P(v,a));
+poly(b,'rgba(90,169,255,.18)');const faces=[0,1,2,3].map(i=>[b[i],b[(i+1)%4],s]).sort((p,q)=>(q[0][2]+q[1][2])-(p[0][2]+p[1][2]));
+faces.forEach(f=>poly(f,'rgba(90,169,255,.16)'));poly(m,'rgba(249,115,22,.55)','#ea580c',4);
+g.setLineDash([]);[0,1,2,3].forEach(i=>{poly([b[i],b[(i+1)%4]],null,'#1a56db',5);poly([b[i],s],null,'#1a56db',5);});
+g.fillStyle='#7c3aed';g.beginPath();g.arc(s[0],s[1],7,0,7);g.fill();requestAnimationFrame(frame);}requestAnimationFrame(frame);})();
+</script>
 <script src="math-bg.js"></script>
 </body>
 </html>
