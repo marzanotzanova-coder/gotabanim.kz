@@ -254,6 +254,7 @@ tr:hover td{background:#f8faff}
 </nav>
 
 <div class="admin-page">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="btn-show-form" onclick="document.getElementById('addLessonForm').classList.add('open');document.getElementById('lessonManagement').scrollIntoView({block:'start'});document.getElementById('fGrade').focus({preventScroll:true})">Сабақ қосу</button></div>
 
   <div class="stats-row">
     <div class="stat-card">
@@ -279,17 +280,17 @@ tr:hover td{background:#f8faff}
   </div>
 
   <!-- ── Төлем сұраныстары ── -->
-  <div class="admin-section">
+  <div class="admin-section admin-list-card">
     <div class="admin-section-title">💳 Төлем сұраныстары <span class="req-count-badge" id="pendingCount" style="display:none">0</span></div>
-    <div class="pay-req-list" id="payReqList">
+    <div class="pay-req-list admin-list-scroll" id="payReqList" tabindex="0" role="region" aria-label="Төлем сұраныстары тізімі">
       <div style="color:var(--muted);font-size:14px;padding:10px 0">Жүктелуде...</div>
     </div>
   </div>
 
-  <div class="admin-section">
+  <div class="admin-section admin-list-card">
     <div class="admin-section-title">👥 Тіркелген мұғалімдер</div>
     <input class="search-input" id="searchInput" placeholder="Аты немесе email бойынша іздеу..." oninput="filterUsers()">
-    <div class="users-table-wrap">
+    <div class="users-table-wrap admin-list-scroll" tabindex="0" role="region" aria-label="Тіркелген мұғалімдер тізімі">
       <table>
         <thead>
           <tr>
@@ -310,7 +311,7 @@ tr:hover td{background:#f8faff}
   </div>
 
   <!-- ── Сынып материалдары ── -->
-  <div class="admin-section">
+  <div class="admin-section admin-list-card" id="lessonManagement">
     <div class="section-top-row">
       <div class="admin-section-title" style="margin-bottom:0">📚 Сынып материалдары</div>
       <button class="btn-show-form" onclick="toggleAddForm()">➕ Сабақ қосу</button>
@@ -391,7 +392,7 @@ tr:hover td{background:#f8faff}
       </div>
     </div>
 
-    <div class="lessons-grid" id="lessonsGrid">
+    <div class="lessons-grid admin-list-scroll" id="lessonsGrid" tabindex="0" role="region" aria-label="Салынған сабақтар тізімі">
       <div style="color:var(--muted);font-size:14px;padding:20px 0">Жүктелуде...</div>
     </div>
   </div>

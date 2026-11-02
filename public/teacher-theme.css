@@ -20,3 +20,17 @@ body.teacher-app{--bg:#f4f7fb;--surface:#fff;--surface2:#f1f5fb;--border:#e0e8f3
 .teacher-app .btn-primary,.teacher-app .btn-solid,.teacher-app .btn-pay-top,.teacher-app .btn-create-big,.teacher-app .btn-add-save,.teacher-app .btn-dl-all{background:#2864df;color:#fff;box-shadow:none}.teacher-app .btn-dl-all:hover{background:#2058ce}.teacher-app .btn-logout,.teacher-app .content-header-back{background:#fff;color:#617590;border-color:#dce5f1}.teacher-app .btn-logout:hover,.teacher-app .content-header-back:hover{background:#f1f5fb;color:#2858a6}
 .teacher-app .main-subject-btn.active,.teacher-app .grade-btn.active,.teacher-app .subject-btn.active{background:#edf3ff;color:#245bc4;border-color:#bfd2f1;box-shadow:none}.teacher-app .extras-heading>.gt-icon{width:25px;height:25px}.teacher-app .extras-heading{gap:10px}.teacher-app .extras-empty{padding:12px;background:#fff;border-color:#dce5f1}.teacher-app .extras-card{background:#fafcff}
 @media(max-width:600px){.teacher-app .content-page{padding-top:16px}.teacher-app .lessons-grid{gap:14px}.teacher-app .btn-dl-sm{min-height:44px}.teacher-app .lesson-dl-footer{padding:12px}.teacher-app .sub-card{padding:12px}.teacher-app .content-header{margin-bottom:16px}}
+
+/* Admin lists scroll independently so lesson tools remain easy to reach. */
+.teacher-app .admin-list-card{background:#fff;border:1px solid #dfe7f2;border-radius:18px;padding:20px;margin-bottom:20px;box-shadow:0 3px 16px #17365d05}
+.teacher-app .admin-list-scroll{max-height:320px;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:#aabfdf #f2f6fc}
+.teacher-app .admin-list-scroll:focus-visible{outline:2px solid #2864df;outline-offset:3px}
+.teacher-app .admin-list-scroll::-webkit-scrollbar{width:8px;height:8px}
+.teacher-app .admin-list-scroll::-webkit-scrollbar-thumb{background:#aabfdf;border-radius:8px}
+.teacher-app .admin-list-scroll::-webkit-scrollbar-track{background:#f2f6fc}
+.teacher-app .users-table-wrap.admin-list-scroll thead th{position:sticky;top:0;z-index:1;background:#f0f5fd}
+.teacher-app #lessonsGrid.admin-list-scroll{padding:4px 6px 6px 2px;align-items:start}
+.teacher-app #payReqList.admin-list-scroll{padding-right:8px}
+@media(max-width:600px){.teacher-app .admin-list-card{padding:14px;border-radius:14px}.teacher-app .admin-list-scroll{max-height:300px}.teacher-app .section-top-row{gap:10px;flex-wrap:wrap}}
+
+.teacher-app #lessonManagement{scroll-margin-top:90px}
