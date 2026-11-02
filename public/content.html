@@ -420,8 +420,10 @@
   .content-header-back{margin-left:0}
 }
 </style>
+<link rel="stylesheet" href="teacher-theme.css?v=20261102">
+<script src="teacher-ui.js?v=20261102" defer></script>
 </head>
-<body>
+<body class="teacher-app">
 
 <nav class="top-nav">
   <img src="gotab_logo.png" alt="GoTAB">
@@ -540,6 +542,7 @@
 
 <script src="supabase.js"></script>
 <script src="supabase-client.js"></script>
+<script src="lesson-extras.js?v=20261102"></script>
 <script>
 const GRADES_LABEL = {5:'5-сынып',6:'6-сынып',7:'7-сынып',8:'8-сынып',9:'9-сынып',10:'10-сынып',11:'11-сынып'};
 const SUBJECT_LABEL = {math:'Математика',algebra:'Алгебра',geometry:'Геометрия',informatics:'Информатика'};
@@ -664,6 +667,7 @@ let currentUser = null;
                 src:  sbRow.ppt_url  || (local.ppt  && local.ppt.src)  || null,
                 thumb: pptThumb },
       slides,
+      extra_files: GoTABExtras.files(sbRow.extra_files),
       qmj:    { meta: (local.qmj  && local.qmj.meta)  || 'ҚМЖ',
                 src:  sbRow.qmj_url  || (local.qmj  && local.qmj.src)  || null,
                 thumb: qmjThumb },
@@ -826,7 +830,7 @@ function render(overrideLessons) {
     const hasPptSrc  = lesson.ppt  && lesson.ppt.src;
     const hasQmjSrc  = lesson.qmj  && lesson.qmj.src;
     const hasVidSrc  = lesson.video && lesson.video.src;
-    const hasAnySrc  = hasPptSrc || hasQmjSrc || hasVidSrc;
+    const hasAnySrc  = hasPptSrc || hasQmjSrc || hasVidSrc || GoTABExtras.files(lesson.extra_files).length;
 
     return `
     <div class="lesson-unit">
@@ -868,6 +872,7 @@ function render(overrideLessons) {
           <div class="sub-meta">${lesson.video ? lesson.video.meta : '—'}</div>
           ${hasVidSrc ? `<button class="btn-dl-sm btn-dl-vid" data-dl-vid="${i}">⬇ Видео жүктеу</button>` : ''}
         </div>
+        ${subject !== 'informatics' ? GoTABExtras.renderCard(lesson,i) : ''}
 
       </div>
 
@@ -919,9 +924,11 @@ function render(overrideLessons) {
     });
   });
 
+  GoTABExtras.bind(grid, lessons, () => userIsPaid, openModal);
+
   // Download ALL (жалпы жүктеу)
   grid.querySelectorAll('[data-dl-all]').forEach(el => {
-    el.addEventListener('click', function(e) {
+    el.addEventListener('click', async function(e) {
       e.preventDefault();
       if (this.classList.contains('done')) return;
       if (!userIsPaid) { openModal(); return; }
@@ -931,6 +938,10 @@ function render(overrideLessons) {
         lesson.qmj  && lesson.qmj.src,
         lesson.video && lesson.video.src,
       ].filter(Boolean);
+      try {
+        const extraLinks=await GoTABExtras.getUrls(lesson.extra_files);
+        files.push(...extraLinks.map(f=>f.url));
+      } catch(error) { alert(error.message); return; }
       if (!files.length) { return; }
       files.forEach((url, n) => setTimeout(() => {
         const a = document.createElement('a'); a.href = url; a.download = ''; a.click();

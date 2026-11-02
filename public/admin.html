@@ -240,8 +240,10 @@ tr:hover td{background:#f8faff}
 .btn-slides-clear:hover{background:rgba(239,68,68,.16)}
 .slides-divider{border:none;border-top:1px solid #f1f5f9;margin:14px 0}
 </style>
+<link rel="stylesheet" href="teacher-theme.css?v=20261102">
+<script src="teacher-ui.js?v=20261102" defer></script>
 </head>
-<body>
+<body class="teacher-app">
 
 <nav class="top-nav">
   <img src="gotab_logo.png" alt="GoTAB">
@@ -349,6 +351,11 @@ tr:hover td{background:#f8faff}
           <input type="file" id="fQmjFile" accept=".doc,.docx,.pdf">
         </label>
       </div>
+      <label class="file-upload-label extras-admin-input">
+        <span>Қосымша құжаттар · Word / PDF</span>
+        <input type="file" id="fExtraFiles" accept=".doc,.docx,.pdf" multiple>
+        <small>Математика, алгебра және геометрия сабақтарына. Әр файл 20 МБ-қа дейін.</small>
+      </label>
       <!-- PDF auto-extract zone -->
       <div style="border:2px dashed #0ea5e9;border-radius:12px;padding:14px 16px;background:rgba(14,165,233,.04);margin-bottom:10px">
         <div style="font-size:12px;font-weight:800;color:#0284c7;margin-bottom:8px">
@@ -468,6 +475,7 @@ tr:hover td{background:#f8faff}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="supabase.js"></script>
 <script src="supabase-client.js"></script>
+<script src="lesson-extras.js?v=20261102"></script>
 <script>
 let allUsers = [];
 const MONTHS = ['қаңтар','ақпан','наурыз','сәуір','мамыр','маусым','шілде','тамыз','қыркүйек','қазан','қараша','желтоқсан'];
@@ -743,6 +751,7 @@ function renderLessons() {
           ? `<a class="btn-video-link" href="${l.video_url}" target="_blank">▶ Бейне</a>
              <button class="btn-video-link" data-replace="${l.id}-video" onclick="replaceFile('${l.id}','video')" style="background:rgba(139,92,246,.06)">↺ Бейне ауыстыру</button>`
           : `<button class="btn-video-link" onclick="replaceFile('${l.id}','video')">+ Бейне қосу</button>`}
+        ${l.subject !== 'informatics' ? `<button class="btn-slides" data-add-extras="${l.id}" onclick="addLessonExtras('${l.id}')">Қосымша қосу</button><span class="extras-count">${GoTABExtras.files(l.extra_files).length} құжат</span>${GoTABExtras.files(l.extra_files).length?`<button class="btn-slides" onclick="downloadAdminExtras('${l.id}')">Қосымшаларды жүктеу</button>`:''}` : ''}
         <button class="btn-slides" onclick="openSlidesModal('${l.id}')">📸 Слайдтар${slidesBadge}</button>
       </div>
     </div>`;
@@ -763,6 +772,8 @@ async function saveLesson() {
   const qmjFile    = document.getElementById('fQmjFile').files[0];
   const pptThumb   = document.getElementById('fPptThumb').files[0];
   const qmjThumb   = document.getElementById('fQmjThumb').files[0];
+  const extraFiles=Array.from(document.getElementById('fExtraFiles').files||[]);
+  if(extraFiles.length){try{GoTABExtras.validate(extraFiles);if(subject==='informatics')throw Error('Қосымша құжаттар математика бөліміне арналған');}catch(e){alert(e.message);return;}}
 
   if (!grade || !subject || !lesson_num || !title) {
     alert('Сынып, пән, сабақ № және тақырып толтырыңыз');
@@ -774,6 +785,7 @@ async function saveLesson() {
   prog.style.display = 'block';
 
   const payload = { grade, subject, lesson_num, title, topic: topic || null };
+  let uploadedExtraFiles=[];
 
   if (pptFile) {
     prog.textContent = 'PPT жүктелуде...';
@@ -838,15 +850,21 @@ async function saveLesson() {
     }
   }
 
+  if(extraFiles.length){
+    prog.textContent='Қосымша құжаттар жүктелуде…';
+    try{const {data:previous}=await sb.from('materials').select('extra_files').eq('grade',grade).eq('subject',subject).eq('lesson_num',lesson_num).maybeSingle();const old=GoTABExtras.files(previous?.extra_files);if(old.length+extraFiles.length>20)throw Error('Бір сабаққа 20 құжатқа дейін қосылады');uploadedExtraFiles=await GoTABExtras.upload(extraFiles,grade,subject,lesson_num);payload.extra_files=[...old,...uploadedExtraFiles];}
+    catch(e){prog.textContent=e.message;return;}
+  }
   prog.textContent = 'Дерекқорға сақталуда...';
   const { error } = await sb.from('materials').upsert(payload, { onConflict: 'grade,subject,lesson_num' });
 
   prog.style.display = 'none';
-  if (error) { alert('Сақтау қатесі: ' + error.message); return; }
+  if (error) { if(uploadedExtraFiles.length)await GoTABExtras.discard(uploadedExtraFiles);alert('Сақтау қатесі: ' + error.message); return; }
 
   ['fGrade','fSubject','fLessonNum','fTitle','fTopic'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fPptFile').value = '';
   document.getElementById('fQmjFile').value = '';
+  document.getElementById('fExtraFiles').value = '';
   document.getElementById('fPptThumb').value = '';
   document.getElementById('fQmjThumb').value = '';
   document.getElementById('fPdfSlides').value = '';
