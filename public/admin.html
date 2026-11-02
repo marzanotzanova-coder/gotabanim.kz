@@ -254,7 +254,15 @@ tr:hover td{background:#f8faff}
 </nav>
 
 <div class="admin-page">
-  <div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="btn-show-form" onclick="document.getElementById('addLessonForm').classList.add('open');document.getElementById('lessonManagement').scrollIntoView({block:'start'});document.getElementById('fGrade').focus({preventScroll:true})">Сабақ қосу</button></div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="btn-show-form" style="margin-right:10px" onclick="openPaymentReport()">Төлем жасағандар</button><button class="btn-show-form" onclick="document.getElementById('addLessonForm').classList.add('open');document.getElementById('lessonManagement').scrollIntoView({block:'start'});document.getElementById('fGrade').focus({preventScroll:true})">Сабақ қосу</button></div>
+
+
+  <section class="admin-section admin-list-card" id="paymentReport" hidden>
+    <div class="section-top-row"><div class="admin-section-title">Төлем жасағандар</div><div><button class="btn-show-form" onclick="exportPaymentReport()">Excel (CSV) жүктеу</button> <button class="btn-logout" onclick="document.getElementById('paymentReport').hidden=true">Жабу</button></div></div>
+    <div class="stats-row" id="paymentSummary"></div>
+    <p class="payment-note">Әр расталған төлем — 4 990 ₸. Бұрынғы төлем күндері жазылымнан немесе сұраныстан шамамен алынған. Екі аккаунттағы бір төлем бір рет есептеледі. Блоктау мен доступты тоқтату қайтарым болып саналмайды. Есеп банктен автоматты тексерілмейді.</p>
+    <div class="users-table-wrap admin-list-scroll" tabindex="0" role="region" aria-label="Төлем есебі"><table><thead><tr><th>Аты-жөні</th><th>Email</th><th>Пән</th><th>Төлем</th><th>Қайтарым</th><th>Таза түсім</th><th>Төлем күні</th><th>Жазылым соңы</th><th>Қалған күн / доступ</th><th>Күйі</th><th>Ескерту</th><th>Әрекет</th></tr></thead><tbody id="paymentReportBody"></tbody></table></div>
+  </section>
 
   <div class="stats-row">
     <div class="stat-card">
@@ -527,6 +535,7 @@ async function loadUsers() {
   allUsers = (data || []).filter(u => u.email !== ADMIN_EMAIL);
   updateStats(allUsers);
   renderTable(allUsers);
+  if(!document.getElementById("paymentReport").hidden && window.loadPaymentReport) await loadPaymentReport();
 }
 
 function updateStats(users) {
@@ -1258,5 +1267,6 @@ function replaceFile(lessonId, type) {
 }
 </script>
 <script src="math-bg.js"></script>
+<script src="payment-report.js?v=20261102"></script>
 </body>
 </html>

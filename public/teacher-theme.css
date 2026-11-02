@@ -34,3 +34,5 @@ body.teacher-app{--bg:#f4f7fb;--surface:#fff;--surface2:#f1f5fb;--border:#e0e8f3
 @media(max-width:600px){.teacher-app .admin-list-card{padding:14px;border-radius:14px}.teacher-app .admin-list-scroll{max-height:300px}.teacher-app .section-top-row{gap:10px;flex-wrap:wrap}}
 
 .teacher-app #lessonManagement{scroll-margin-top:90px}
+
+.teacher-app #paymentReport{scroll-margin-top:90px}.teacher-app #paymentReport[hidden]{display:none}.teacher-app #paymentReport .admin-list-scroll{max-height:460px}.teacher-app #paymentReport table{min-width:1800px}.teacher-app #paymentReport td{white-space:normal;min-width:100px}.teacher-app #paymentReport td:last-of-type{min-width:160px}.teacher-app .payment-note{color:#617590;font-size:12px;line-height:1.7;margin:12px 0}.teacher-app #paymentSummary .stat-value{font-size:26px}@media(max-width:768px){.teacher-app #paymentReport table thead{display:table-header-group}.teacher-app #paymentReport table tr{display:table-row}.teacher-app #paymentReport table td{display:table-cell}.teacher-app #paymentReport table td:before{display:none}}
