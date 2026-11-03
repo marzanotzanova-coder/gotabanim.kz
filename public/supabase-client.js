@@ -45,6 +45,13 @@ async function redirectIfLoggedIn() {
   button.hidden=true;button.onclick=()=>{if(typeof openModal==='function'){const modal=document.getElementById('payModal');if(modal)modal.style.zIndex='10000';openModal();}else location.href='dashboard.html';};
   back.href='dashboard.html';back.textContent='Кабинетке оралу';back.style.cssText='display:block;margin-top:20px;color:#2858a6';
   card.append(title,text,button,back);gate.append(card);document.body.append(gate);
+  if(page==='content.html'){
+    const preview=document.createElement('button');preview.type='button';preview.textContent='ҚМЖ алдын ала қарау';preview.className='btn-preview';preview.style.cssText='display:block;margin:14px auto;padding:12px 18px;border:1px solid #dce5f1;border-radius:10px;background:#fff;color:#2858a6;cursor:pointer;font:inherit';preview.onclick=()=>window.openQmjPreviewPicker?.();card.insertBefore(preview,button);
+  }
+
+  if(['visuals.html','games.html'].includes(page)){
+    const preview=document.createElement('button');preview.type='button';preview.textContent='Алдын ала қарау';preview.className='btn-preview material-preview-button';preview.onclick=()=>window.openMaterialPreviewPicker?.();card.insertBefore(preview,button);
+  }
   function closeAccess(message){deadline=0;clearTimeout(timer);document.body.append(gate);title.textContent='Материалдарға доступ жабық';text.textContent=message;button.hidden=false;document.querySelectorAll('video').forEach(v=>v.pause());}
   async function refresh(){
     if(pending)return;pending=true;

@@ -420,7 +420,7 @@
   .content-header-back{margin-left:0}
 }
 </style>
-<link rel="stylesheet" href="teacher-theme.css?v=20261102">
+<link rel="stylesheet" href="teacher-theme.css?v=20261103-previews">
 <script src="teacher-ui.js?v=20261102" defer></script>
 </head>
 <body class="teacher-app">
@@ -557,7 +557,8 @@
 </div>
 
 <script src="supabase.js"></script>
-<script src="supabase-client.js?v=20261103-access2"></script>
+<script src="qmj-preview.js?v=20261103"></script>
+<script src="supabase-client.js?v=20261103-qmj"></script>
 <script src="lesson-extras.js?v=20261102"></script>
 <script>
 const GRADES_LABEL = {5:'5-сынып',6:'6-сынып',7:'7-сынып',8:'8-сынып',9:'9-сынып',10:'10-сынып',11:'11-сынып'};
@@ -878,6 +879,7 @@ function render(overrideLessons) {
           </div>
           <div class="sub-type-label qmj-label"><span>📄</span> ҚМЖ</div>
           <div class="sub-meta">${lesson.qmj ? lesson.qmj.meta : '—'}</div>
+          ${hasQmjSrc ? `<button class="btn-dl-sm btn-preview" data-qmj-preview="${i}">ҚМЖ алдын ала қарау</button>` : ''}
           ${hasQmjSrc ? `<button class="btn-dl-sm btn-dl-qmj" data-dl-qmj="${i}">⬇ ҚМЖ жүктеу</button>` : ''}
         </div>
 
@@ -910,6 +912,8 @@ function render(overrideLessons) {
     if (btn) { btn.textContent = '✓ ' + label; btn.classList.add('done'); }
   }
 
+  setQmjPreviewDocuments(lessons.filter(l=>l.qmj?.src).map(l=>({title:l.title,url:l.qmj.src})));
+  grid.querySelectorAll('[data-qmj-preview]').forEach(button=>button.addEventListener('click',()=>{const lesson=lessons[Number(button.dataset.qmjPreview)];if(lesson?.qmj?.src)openQmjPreview(lesson.qmj.src,lesson.title);}));
   // PPT download
   grid.querySelectorAll('[data-dl-ppt]').forEach(el => {
     el.addEventListener('click', function(e) {
