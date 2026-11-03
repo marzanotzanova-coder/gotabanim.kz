@@ -17,9 +17,10 @@
 .lcard h3{font-size:17px;font-weight:800;margin-bottom:4px}.lcard p{font-size:13px;color:var(--muted)}
 .tag{display:inline-block;margin-top:10px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(26,86,219,.08);color:var(--primary)}
 .lcard.soon{opacity:.55;pointer-events:none}
+.lcard{position:relative}.lab-lock{display:none;position:absolute;top:32px;right:32px;z-index:2;align-items:center;gap:6px;padding:7px 10px;border-radius:20px;background:#fffffff2;color:#2858a6;font-size:11px;font-weight:700;box-shadow:0 2px 8px #17365d12}.labs-locked .lab-lock{display:flex}.btn-lab-use{display:block;text-align:center;margin-top:18px;padding:12px;border-radius:11px;background:linear-gradient(135deg,#2864df,#0891b2);color:white;font-size:14px;font-weight:700;text-decoration:none;min-height:44px}
 </style>
 </head>
-<body class="teacher-app">
+<body class="teacher-app labs-locked">
 <nav class="top-nav"><img src="gotab_logo.png" alt="GoTAB"><div class="nav-user"><span class="nav-user-name" id="userName"></span></div></nav>
 <div class="sub-nav">
   <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Материалдар</a>
@@ -31,13 +32,13 @@
 <div class="labs">
   <h1>Виртуалды зертхана</h1><div class="s">Оқушылар 3D фигураларды өз қолымен құрастырып, зерттейді. Интерактивті тақтада да жұмыс істейді.</div>
   <div class="lgrid">
-    <a class="lcard" href="lab-pyramid.html"><div class="ic"><canvas id="pyrc" width="520" height="300" style="width:260px;height:150px"></canvas></div>
-      <h3>Пирамида және оның қимасы</h3><p>Пирамиданы құрастыр, жазықтықпен қимасын сал</p><span class="tag">Геометрия · 10–11-сынып</span></a>
+    <div class="lcard"><span class="lab-lock"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Жазылым қажет</span><div class="ic"><canvas id="pyrc" width="520" height="300" style="width:260px;height:150px"></canvas></div>
+      <h3>Пирамида және оның қимасы</h3><p>Пирамиданы құрастыр, жазықтықпен қимасын сал</p><span class="tag">Геометрия · 10–11-сынып</span><a class="btn-lab-use" href="lab-pyramid.html">Қолдану</a></div>
     <div class="lcard soon"><div class="ic">🧊</div><h3>Призма және жазбасы</h3><p>Жақында</p></div>
     <div class="lcard soon"><div class="ic">⚪</div><h3>Айналу денелері</h3><p>Жақында</p></div>
   </div>
 </div>
-<script src="supabase.js"></script><script src="supabase-client.js?v=20261103-access2"></script><script src="lab-paywall.js"></script>
+<script src="supabase.js"></script><script src="supabase-client.js?v=20261103-lab-cards"></script><script src="lab-paywall.js?v=20261103-lab-cards"></script>
 <script>(async()=>{const u=await labGate();if(u)document.getElementById('userName').textContent=u.user_metadata?.name||u.email;})();</script>
 <script>
 // spinning pyramid with its mid-height section on the lab card
