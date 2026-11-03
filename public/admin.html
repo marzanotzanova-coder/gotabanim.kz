@@ -807,7 +807,7 @@ async function saveLesson() {
       const { data: u } = sb.storage.from('lesson-videos').getPublicUrl(path);
       payload.ppt_url = u.publicUrl;
     } else {
-      prog.textContent = '⚠ PPT қате: ' + e.message;
+      prog.textContent = '⚠ PPT жүктелмеді: ' + e.message; return;
     }
   }
 
@@ -820,7 +820,7 @@ async function saveLesson() {
       const { data: u } = sb.storage.from('lesson-videos').getPublicUrl(path);
       payload.qmj_url = u.publicUrl;
     } else {
-      prog.textContent = '⚠ ҚМЖ қате: ' + e.message;
+      prog.textContent = '⚠ ҚМЖ жүктелмеді: ' + e.message; return;
     }
   }
 
@@ -832,17 +832,18 @@ async function saveLesson() {
     : manualFiles.map((f, i) => ({ blob: f, idx: i }));
 
   if (slideSources.length) {
+    const slideBatch = Date.now();
     const slideUrls = [];
     for (let i = 0; i < slideSources.length; i++) {
       prog.textContent = `Слайдтар жүктелуде... ${i + 1}/${slideSources.length}`;
       const blob = slideSources[i].blob;
       const ext  = pendingSlideBlobs.length ? 'jpg' : manualFiles[i].name.split('.').pop().toLowerCase();
-      const path = `grade${grade}/${subject}/lesson${lesson_num}/slides/slide_${String(i + 1).padStart(2, '0')}.${ext}`;
+      const path = `grade${grade}/${subject}/lesson${lesson_num}/slides/${slideBatch}_slide_${String(i + 1).padStart(2, '0')}.${ext}`;
       const { error: e } = await sb.storage.from('lesson-videos').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
       if (!e) {
         const { data: u } = sb.storage.from('lesson-videos').getPublicUrl(path);
         slideUrls.push(u.publicUrl);
-      }
+      } else { prog.textContent = 'Слайд жүктелмеді: ' + e.message; return; }
     }
     if (slideUrls.length) {
       payload.slides_urls = slideUrls;
@@ -858,7 +859,7 @@ async function saveLesson() {
     if (!e) {
       const { data: u } = sb.storage.from('lesson-videos').getPublicUrl(path);
       payload.qmj_thumb_url = u.publicUrl;
-    }
+    } else { prog.textContent = 'ҚМЖ суреті жүктелмеді: ' + e.message; return; }
   }
 
   if(extraFiles.length){
@@ -867,11 +868,12 @@ async function saveLesson() {
     catch(e){prog.textContent=e.message;return;}
   }
   prog.textContent = 'Дерекқорға сақталуда...';
-  const { error } = await sb.from('materials').upsert(payload, { onConflict: 'grade,subject,lesson_num' });
+  const { data: savedLesson, error } = await sb.from('materials').upsert(payload, { onConflict: 'grade,subject,lesson_num' }).select('id,grade,subject,lesson_num').single();
 
   prog.style.display = 'none';
   if (error) { if(uploadedExtraFiles.length)await GoTABExtras.discard(uploadedExtraFiles);alert('Сақтау қатесі: ' + error.message); return; }
 
+  if(!savedLesson || savedLesson.grade!==grade || savedLesson.subject!==subject || savedLesson.lesson_num!==lesson_num){prog.style.display='block';prog.textContent='Сабақтың сақталғанын растау мүмкін болмады. Файлдар таңдаулы күйінде қалды.';return;}
   ['fGrade','fSubject','fLessonNum','fTitle','fTopic'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fPptFile').value = '';
   document.getElementById('fQmjFile').value = '';

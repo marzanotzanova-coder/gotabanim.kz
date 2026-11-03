@@ -1,0 +1,20 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const html=fs.readFileSync('public/content.html','utf8');
+const build=html.slice(html.indexOf('  function buildLesson(num)'),html.indexOf('  const merged = allNums.map(buildLesson)'));
+const context={localLessons:[{title:'Old',ppt:{src:'old.pptx',thumb:'old-cover.jpg'},qmj:{src:'old.docx',thumb:'old-qmj.jpg'},slides:['old-slide.jpg']}],sbByNum:{1:{lesson_num:1,title:'New',ppt_url:'new.pptx',qmj_url:'new.docx',ppt_thumb_url:'new-cover.jpg',qmj_thumb_url:'new-qmj.jpg',slides_urls:['new-slide.jpg']}},GoTABExtras:{files:x=>x||[]}};
+vm.createContext(context);vm.runInContext(build,context);
+let merged=context.buildLesson(1);
+assert.equal(merged.lesson_num,1);assert.equal(merged.ppt.thumb,'new-cover.jpg');assert.equal(merged.qmj.thumb,'new-qmj.jpg');assert.equal(merged.slides[0],'new-slide.jpg');assert.equal(merged.ppt.src,'new.pptx');
+context.sbByNum[1]={lesson_num:1,title:'Different',ppt_url:'different.pptx'};
+merged=context.buildLesson(1);assert.equal(merged.qmj.src,null);assert.equal(merged.slides.length,0);
+context.sbByNum[7]={lesson_num:7,title:'Seventh',ppt_url:'seventh.pptx'};assert.equal(context.buildLesson(7).lesson_num,7);
+let markup='';const grid={set innerHTML(x){markup=x},get innerHTML(){return markup},querySelectorAll(){return []}};
+Object.assign(context,{document:{getElementById(){return grid}},subject:'math',wasDownloadedToday(){return false},setQmjPreviewDocuments(){},openModal(){}});
+Object.assign(context.GoTABExtras,{renderCard(){return ''},bind(){}});
+vm.runInContext(html.slice(html.indexOf('function render(overrideLessons)'),html.indexOf('// ── Payment modal')),context);
+context.render([1,2,3,4,5,7].map(n=>({lesson_num:n,title:'Lesson '+n,ppt:{src:`lesson${n}.pptx`},qmj:{},video:{}})));
+assert.match(markup,/data-lesson-num="7"/);assert.match(markup,/Сабақ 7/);assert.match(markup,/7-сабақ жалпы жүктеу/);assert.doesNotMatch(markup,/Сабақ 6/);
+const admin=fs.readFileSync('public/admin.html','utf8');const save=admin.slice(admin.indexOf('async function saveLesson()'),admin.indexOf('async function deleteLesson('));
+async function checkSave(fail){let writes=0,paths=[];const fields={};for(const id of ['fGrade','fSubject','fLessonNum','fTitle','fTopic','fPptFile','fQmjFile','fPptThumb','fQmjThumb','fExtraFiles','saveProgress','fPdfSlides','fPdfStatus','fSlidesPreview','fSlidesGrid','addLessonForm'])fields[id]={value:'',files:[],style:{},classList:{remove(){}}};Object.assign(fields.fGrade,{value:'6'});Object.assign(fields.fSubject,{value:'math'});Object.assign(fields.fLessonNum,{value:'7'});Object.assign(fields.fTitle,{value:'Seventh'});fields.fPptFile.files=[{name:'seventh.pptx'}];fields.fQmjFile.files=[{name:'seventh.docx'}];
+ const ctx={document:{getElementById:id=>fields[id]},pendingSlideBlobs:[{},{}],GoTABExtras:{validate(){},files:x=>x||[]},alert(){},loadLessons:async()=>{},sb:{storage:{from(){return {upload:async path=>{paths.push(path);return {error:fail?{message:'Upload failed'}:null}},getPublicUrl:path=>({data:{publicUrl:path}})}}},from(){return {upsert(payload){writes++;assert.equal(payload.grade,6);assert.equal(payload.lesson_num,7);return {select(){return {single:async()=>({data:{id:'seven',grade:6,subject:'math',lesson_num:7},error:null})}}}}}}}};vm.createContext(ctx);vm.runInContext(save,ctx);await ctx.saveLesson();assert.equal(writes,fail?0:1);assert(paths.every(p=>p.includes('/lesson7/')));if(!fail)assert(paths.some(p=>/slides\/\d+_slide_01.jpg$/.test(p)));}
+(async()=>{await checkSave(false);await checkSave(true);console.log('PASS: sparse lesson numbers, matching file previews, lesson 7 upload routing, and failed-upload protection');})().catch(e=>{console.error(e);process.exitCode=1});

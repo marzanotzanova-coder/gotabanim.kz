@@ -670,17 +670,19 @@ let currentUser = null;
 
   function buildLesson(num) {
     const sbRow = sbByNum[num] || {};
-    const local = localLessons[num - 1] || {};
-    const pptThumb = (local.ppt && local.ppt.thumb) || sbRow.ppt_thumb_url || null;
-    const qmjThumb = (local.qmj && local.qmj.thumb) || sbRow.qmj_thumb_url || null;
+    const candidate = localLessons[num - 1] || {};
+    const local = !sbRow.title || sbRow.title === candidate.title ? candidate : {};
+    const pptThumb = sbRow.ppt_thumb_url || (Array.isArray(sbRow.slides_urls) && sbRow.slides_urls[0]) || (local.ppt && local.ppt.thumb) || null;
+    const qmjThumb = sbRow.qmj_thumb_url || (local.qmj && local.qmj.thumb) || null;
     const localSlides = local.slides && local.slides.length > 0 ? local.slides : null;
-    const sbSlides = !localSlides && Array.isArray(sbRow.slides_urls) && sbRow.slides_urls.length
+    const sbSlides = Array.isArray(sbRow.slides_urls) && sbRow.slides_urls.length
       ? sbRow.slides_urls : null;
-    const slides = localSlides || sbSlides || (pptThumb ? [pptThumb] : []);
+    const slides = sbSlides || localSlides || (pptThumb ? [pptThumb] : []);
     return {
+      lesson_num: num,
       title:  sbRow.title  || local.title  || '',
       topic:  sbRow.topic  || '',
-      ppt:    { meta: (local.ppt  && local.ppt.meta)  || 'PPT',
+      ppt:    { meta: sbSlides ? `${sbSlides.length} слайд` : (local.ppt && local.ppt.meta) || 'PPT',
                 src:  sbRow.ppt_url  || (local.ppt  && local.ppt.src)  || null,
                 thumb: pptThumb },
       slides,
@@ -788,7 +790,7 @@ const CONTENT = {
 
 // ── Daily download tracking (per lesson) ──
 const TODAY = new Date().toISOString().slice(0, 10);
-function dlKey(idx) { return `gotab_dl_${grade}_${subject}_${idx}`; }
+function dlKey(idx) { return `gotab_dl_${grade}_${subject}_lesson_${idx}`; }
 function wasDownloadedToday(idx) { return localStorage.getItem(dlKey(idx)) === TODAY; }
 function markDone(idx) { localStorage.setItem(dlKey(idx), TODAY); }
 
@@ -803,7 +805,8 @@ function render(overrideLessons) {
   }
 
   grid.innerHTML = lessons.map((lesson, i) => {
-    const done = wasDownloadedToday(i);
+    const lessonNum = Number(lesson.lesson_num) || i + 1;
+    const done = wasDownloadedToday(lessonNum);
 
     const videoPrev = lesson.video && lesson.video.src
       ? `<video src="${lesson.video.src}" autoplay muted loop playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block"></video>`
@@ -831,9 +834,9 @@ function render(overrideLessons) {
     const previewInner = hasThumb
       ? `<img class="slide-thumb" src="${lesson.ppt.thumb}" alt="${lesson.title}" loading="lazy">
          <div class="slide-thumb-overlay"></div>
-         <span class="lesson-badge" style="z-index:3">Сабақ ${i + 1}</span>
+         <span class="lesson-badge" style="z-index:3">Сабақ ${lessonNum}</span>
          <span class="slide-dl-hint">${hasPpt ? '⬇ PPT жүктеу' : hasSlides ? '👁 Алдын ала қарау' : ''}</span>`
-      : `<span class="lesson-badge">Сабақ ${i + 1}</span>
+      : `<span class="lesson-badge">Сабақ ${lessonNum}</span>
          ${!hasPpt ? '<span class="soon-badge">Жақында</span>' : ''}
          <div class="ppt-slide-mock">
            <span class="slide-icon">📊</span>
@@ -850,7 +853,7 @@ function render(overrideLessons) {
     const hasAnySrc  = hasPptSrc || hasQmjSrc || hasVidSrc || GoTABExtras.files(lesson.extra_files).length;
 
     return `
-    <div class="lesson-unit">
+    <div class="lesson-unit" data-lesson-num="${lessonNum}">
 
       <!-- PRESENTATION -->
       <div class="ppt-section">
@@ -897,7 +900,7 @@ function render(overrideLessons) {
       <div class="lesson-dl-footer">
         ${lesson.slides && lesson.slides.length > 0 ? `<button class="btn-preview" data-preview="${i}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Алдын ала</button>` : ''}
         ${hasAnySrc
-          ? `<button class="btn-dl-all" data-dl-all="${i}">⬇ ${i + 1}-сабақ жалпы жүктеу</button>`
+          ? `<button class="btn-dl-all" data-dl-all="${i}">⬇ ${lessonNum}-сабақ жалпы жүктеу</button>`
           : `<button class="btn-dl-all" data-dl-all="${i}">⬇ Барлығын жүктеу</button>`
         }
       </div>
@@ -968,7 +971,7 @@ function render(overrideLessons) {
       }, n * 400));
       this.textContent = '✓ Барлығы жүктелді';
       this.classList.add('done');
-      markDone(parseInt(this.dataset.dlAll));
+      markDone(lesson.lesson_num || Number(this.dataset.dlAll) + 1);
     });
   });
 
@@ -976,7 +979,7 @@ function render(overrideLessons) {
   grid.querySelectorAll('[data-preview]').forEach(el => {
     el.addEventListener('click', function() {
       const idx = parseInt(this.dataset.preview);
-      openPreview(lessons[idx], idx);
+      openPreview(lessons[idx], lessons[idx].lesson_num || idx + 1);
     });
   });
 }
@@ -1068,7 +1071,7 @@ async function openPreview(lesson, lessonNum) {
   carouselSlides = filenames;
   carouselIdx = 0;
 
-  document.getElementById('previewBadge').textContent = `Сабақ ${lessonNum + 1}`;
+  document.getElementById('previewBadge').textContent = `Сабақ ${lessonNum}`;
   document.getElementById('previewTitle').textContent = lesson.title;
 
   const wmLabel = currentUser?.email || 'GoTAB.kz';
