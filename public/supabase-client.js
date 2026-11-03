@@ -52,7 +52,8 @@ async function redirectIfLoggedIn() {
       const {data,error}=await sb.rpc('get_my_access');if(error||!data)throw Error('Қолжетімділікті тексеру мүмкін болмады. Интернетті тексеріп, бетті жаңартыңыз.');
       const active=info?data.informatics_active:data.math_active;
       const until=info?data.informatics_until:data.math_until;
-      const remaining=new Date(until)-new Date(data.server_now);
+      const serverRemaining=info?data.informatics_remaining_ms:data.math_remaining_ms;
+      const remaining=serverRemaining!=null?Number(serverRemaining):new Date(until)-new Date(data.server_now);
       if(!active||!(remaining>0)){closeAccess(data.is_banned?'Аккаунт блокталған. Әкімшіге хабарласыңыз.':'Жазылым белсенді емес немесе мерзімі аяқталған. Келесі айға төлем расталғаннан кейін материалдар қайта ашылады.');return;}
       deadline=performance.now()+remaining;gate.remove();clearTimeout(timer);timer=setTimeout(()=>{if(remaining>2147483647)refresh();else closeAccess('Жазылым мерзімі аяқталды. Келесі айға төлем расталғаннан кейін материалдар қайта ашылады.');},Math.min(remaining,2147483647));
     }catch(e){closeAccess(e.message);}finally{pending=false;}
