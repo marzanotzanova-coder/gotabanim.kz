@@ -49,13 +49,18 @@ async function redirectIfLoggedIn() {
   async function refresh(){
     if(pending)return;pending=true;
     try{
-      const {data,error}=await sb.rpc('get_my_access');if(error||!data)throw Error('Қолжетімділікті тексеру мүмкін болмады. Интернетті тексеріп, бетті жаңартыңыз.');
-      const active=info?data.informatics_active:data.math_active;
-      const until=info?data.informatics_until:data.math_until;
-      const serverRemaining=info?data.informatics_remaining_ms:data.math_remaining_ms;
-      const remaining=serverRemaining!=null?Number(serverRemaining):new Date(until)-new Date(data.server_now);
-      if(!active||!(remaining>0)){closeAccess(data.is_banned?'Аккаунт блокталған. Әкімшіге хабарласыңыз.':'Жазылым белсенді емес немесе мерзімі аяқталған. Келесі айға төлем расталғаннан кейін материалдар қайта ашылады.');return;}
-      deadline=performance.now()+remaining;gate.remove();clearTimeout(timer);timer=setTimeout(()=>{if(remaining>2147483647)refresh();else closeAccess('Жазылым мерзімі аяқталды. Келесі айға төлем расталғаннан кейін материалдар қайта ашылады.');},Math.min(remaining,2147483647));
+      const {data:paid,error:paidError}=await sb.rpc(info?'check_paid_informatics':'check_paid_user',{check_id:session.user.id});
+      if(paidError)throw Error('Қолжетімділікті тексеру уақытша істемеді. Автоматты қайта тексеріледі.');
+      const active=paid===true;
+      let data=null;
+      try{const result=await sb.rpc('get_my_access');if(!result.error){data=Array.isArray(result.data)?result.data[0]:result.data;if(typeof data==='string')data=JSON.parse(data);}}catch(_){}
+      const until=info?data?.informatics_until:data?.math_until;
+      const serverRemaining=info?data?.informatics_remaining_ms:data?.math_remaining_ms;
+      const parsed=serverRemaining!=null?Number(serverRemaining):new Date(until)-new Date(data?.server_now);
+      const validDeadline=Number.isFinite(parsed)&&parsed>0;
+      const remaining=active?(validDeadline?parsed:15000):0;
+      if(!active||!(remaining>0)){closeAccess(data?.is_banned?'Аккаунт блокталған. Әкімшіге хабарласыңыз.':'Жазылым белсенді емес немесе мерзімі аяқталған. Келесі айға төлем расталғаннан кейін материалдар қайта ашылады.');return;}
+      deadline=performance.now()+remaining;gate.remove();clearTimeout(timer);timer=setTimeout(()=>{if(remaining>2147483647||!validDeadline)refresh();else closeAccess('Жазылым мерзімі аяқталды. Келесі айға төлем расталғаннан кейін материалдар қайта ашылады.');},Math.min(remaining,2147483647));
     }catch(e){closeAccess(e.message);}finally{pending=false;}
   }
   document.addEventListener('click',e=>{
