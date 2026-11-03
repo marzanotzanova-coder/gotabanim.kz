@@ -47,7 +47,7 @@ async function redirectIfLoggedIn() {
   back.href='dashboard.html';back.textContent='Кабинетке оралу';back.style.cssText='display:block;margin-top:20px;color:#2858a6';
   card.append(title,text,button,back);gate.append(card);if(!catalogPage)document.body.append(gate);
 
-  if(['visuals.html','games.html'].includes(page)){
+  if(page==='visuals.html'){
     const preview=document.createElement('button');preview.type='button';preview.textContent='Алдын ала қарау';preview.className='btn-preview material-preview-button';preview.onclick=()=>window.openMaterialPreviewPicker?.();card.insertBefore(preview,button);
   }
   function closeAccess(message){deadline=0;clearTimeout(timer);if(catalogPage){gate.remove();const payBar=document.getElementById('payBar');if(payBar)payBar.style.display='flex';return;}document.body.append(gate);title.textContent='Материалдарға доступ жабық';text.textContent=message;button.hidden=false;document.querySelectorAll('video').forEach(v=>v.pause());}
