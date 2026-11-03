@@ -34,6 +34,7 @@ async function redirectIfLoggedIn() {
   if(!['content.html','visuals.html','games.html','quiz-maker.html','quiz-play.html','labs.html','lab-pyramid.html'].includes(page))return;
   const {data:{session}}=await sb.auth.getSession();
   if(!session || session.user.email===ADMIN_EMAIL)return;
+  const catalogPage=page==='content.html';
   let deadline=0,timer,pending=false;
   const info=new URLSearchParams(location.search).get('subject')==='informatics';
   const gate=document.createElement('div');gate.id='subscriptionGate';
@@ -44,15 +45,12 @@ async function redirectIfLoggedIn() {
   button.textContent='Жазылымды жаңарту';button.className='btn-primary';button.style.cssText='padding:12px 20px;border-radius:10px;border:0;background:#2864df;color:#fff;cursor:pointer;font:inherit';
   button.hidden=true;button.onclick=()=>{if(typeof openModal==='function'){const modal=document.getElementById('payModal');if(modal)modal.style.zIndex='10000';openModal();}else location.href='dashboard.html';};
   back.href='dashboard.html';back.textContent='Кабинетке оралу';back.style.cssText='display:block;margin-top:20px;color:#2858a6';
-  card.append(title,text,button,back);gate.append(card);document.body.append(gate);
-  if(page==='content.html'){
-    const preview=document.createElement('button');preview.type='button';preview.textContent='ҚМЖ алдын ала қарау';preview.className='btn-preview';preview.style.cssText='display:block;margin:14px auto;padding:12px 18px;border:1px solid #dce5f1;border-radius:10px;background:#fff;color:#2858a6;cursor:pointer;font:inherit';preview.onclick=()=>window.openQmjPreviewPicker?.();card.insertBefore(preview,button);
-  }
+  card.append(title,text,button,back);gate.append(card);if(!catalogPage)document.body.append(gate);
 
   if(['visuals.html','games.html'].includes(page)){
     const preview=document.createElement('button');preview.type='button';preview.textContent='Алдын ала қарау';preview.className='btn-preview material-preview-button';preview.onclick=()=>window.openMaterialPreviewPicker?.();card.insertBefore(preview,button);
   }
-  function closeAccess(message){deadline=0;clearTimeout(timer);document.body.append(gate);title.textContent='Материалдарға доступ жабық';text.textContent=message;button.hidden=false;document.querySelectorAll('video').forEach(v=>v.pause());}
+  function closeAccess(message){deadline=0;clearTimeout(timer);if(catalogPage){gate.remove();const payBar=document.getElementById('payBar');if(payBar)payBar.style.display='flex';return;}document.body.append(gate);title.textContent='Материалдарға доступ жабық';text.textContent=message;button.hidden=false;document.querySelectorAll('video').forEach(v=>v.pause());}
   async function refresh(){
     if(pending)return;pending=true;
     try{
@@ -73,7 +71,7 @@ async function redirectIfLoggedIn() {
   document.addEventListener('click',e=>{
     if(e.target.closest('#subscriptionGate,.top-nav,.pay-modal-overlay,.modal-overlay'))return;
     if(e.target.closest('[data-dl-ppt],[data-dl-qmj],[data-dl-vid],[data-dl-all],[data-extra-file],.sticker-item,.btn-dl-set') && (!deadline||performance.now()>=deadline)){
-      e.preventDefault();e.stopImmediatePropagation();closeAccess('Жазылым мерзімі аяқталған. Төлем расталғаннан кейін қайта ашылады.');
+      e.preventDefault();e.stopImmediatePropagation();closeAccess('Жазылым мерзімі аяқталған. Төлем расталғаннан кейін қайта ашылады.');if(catalogPage&&typeof openModal==='function')openModal();
     }
   },true);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
