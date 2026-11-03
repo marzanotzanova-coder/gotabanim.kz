@@ -30,6 +30,7 @@ body{overflow:hidden}
 #tip{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(15,23,42,.88);color:#fff;border-radius:12px;padding:10px 18px;font-size:15px;font-weight:700;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
 .lbl{font:800 18px Inter,sans-serif;color:#0f172a;text-shadow:0 0 4px #fff,0 0 4px #fff;pointer-events:none}.lbl.k{color:#e11d48}
 @media(max-width:820px){.lab{flex-direction:column;height:auto}#view{height:62vh}.side{width:auto;border-left:none}body{overflow:auto}#tip{font-size:13px}}
+@media(pointer:coarse){.btn{min-height:48px}input[type=range]{min-height:44px}#view canvas{-webkit-user-select:none;user-select:none;touch-action:none}}
 </style>
 </head>
 <body class="teacher-app">
@@ -131,16 +132,24 @@ const ray = new THREE.Raycaster(), floor = new THREE.Plane(V(0, 1, 0), 0);
 function floorAt(e) { const rc = renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX - rc.left) / rc.width * 2 - 1, -(e.clientY - rc.top) / rc.height * 2 + 1), camera);
   const p = new THREE.Vector3(); if (!ray.ray.intersectPlane(floor, p)) return null; const sn = v => Math.max(-3.5, Math.min(3.5, Math.round(v * 2) / 2)); return V(sn(p.x), 0, sn(p.z)); }
 function scr(v) { const rc = renderer.domElement.getBoundingClientRect(), p = v.clone().project(camera); return [(p.x + 1) / 2 * rc.width + rc.left, (1 - p.y) / 2 * rc.height + rc.top]; }
-const near = (v, e, r = 30) => { const s = scr(v); return Math.hypot(s[0] - e.clientX, s[1] - e.clientY) < r; };
-let down = null; renderer.domElement.addEventListener('pointerdown', e => down = [e.clientX, e.clientY]);
+const near = (v, e, r = (e.pointerType === 'touch' ? 42 : 30)) => { const s = scr(v); return Math.hypot(s[0] - e.clientX, s[1] - e.clientY) < r; };
+// Keep OrbitControls mouse/trackpad behavior; distinguish a finger tap from a gesture.
+const activePointers = new Set();
+let down = null, multiTouch = false;
+renderer.domElement.addEventListener('pointerdown', e => {
+  activePointers.add(e.pointerId);
+  if (activePointers.size > 1) { multiTouch = true; down = null; }
+  else { multiTouch = false; down = {id:e.pointerId,x:e.clientX,y:e.clientY,touch:e.pointerType==='touch'}; }
+}, {capture:true});
+renderer.domElement.addEventListener('pointercancel', e => {activePointers.delete(e.pointerId);down=null;if(!activePointers.size)multiTouch=false;});
 renderer.domElement.addEventListener('pointermove', e => { if (e.buttons || (S.mode !== 'base' && S.mode !== 'apex')) return; const j = S.mode === 'base' ? S.base.findIndex(q => near(q, e)) : -1, p = j >= 0 ? S.base[j].clone() : floorAt(e); if (!p || (S.hover && S.hover.equals(p))) return; S.hover = p; draw(); });
-renderer.domElement.addEventListener('pointerup', e => { if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return;
+renderer.domElement.addEventListener('pointerup', e => { const start=down;down=null;activePointers.delete(e.pointerId);if(multiTouch){if(!activePointers.size)multiTouch=false;return;}if(!start||start.id!==e.pointerId||Math.hypot(e.clientX-start.x,e.clientY-start.y)>(start.touch?14:6))return;
   if (S.mode === 'base') { const j = S.base.findIndex(q => near(q, e)); if (j >= 0) { if (S.base.length - j >= 3) { if (j > 0) S.base.splice(0, j); return closeBase(); } $('tip').textContent = '⚠ Бұл нүкте бұрыннан бар — жаңа нүктені басқа жерге қой'; return; } if (S.base.length >= 6) return; const p = floorAt(e); if (!p || S.base.some(q => q.equals(p))) return; S.base.push(p); draw(); }
   else if (S.mode === 'apex') { const p = floorAt(e); if (!p) return; if (!inside(p)) { $('tip').textContent = '⚠ H нүктесі табанның ішінде болуы керек'; return; } S.H = p; flyTo(V(5, 3.6, 6.2)); draw(); }
   else if (S.mode === 'edges') { const i = S.base.findIndex((p, j) => !S.lat.includes(j) && near(p, e)); if (i < 0) return; S.lat.push(i); if (S.lat.length === S.base.length) { S.mode = 'section'; flyTo(V(4.2, 3.4, 5.6)); } draw(); }
   else if (S.mode === 'section' && S.pts.length < 3) { let best = null;
     edges().forEach(([p, q, nm]) => { const A = scr(p), B = scr(q), dx = B[0] - A[0], dy = B[1] - A[1], t = Math.max(0, Math.min(1, ((e.clientX - A[0]) * dx + (e.clientY - A[1]) * dy) / (dx * dx + dy * dy))), dist = Math.hypot(A[0] + t * dx - e.clientX, A[1] + t * dy - e.clientY);
-      if (dist < 30 && (!best || dist < best.dist)) best = { dist, t: Math.abs(t - .5) < .1 ? .5 : t, p, q, nm }; });
+      if (dist < (e.pointerType==='touch'?42:30) && (!best || dist < best.dist)) best = { dist, t: Math.abs(t - .5) < .1 ? .5 : t, p, q, nm }; });
     if (best) { S.pts.push({ v: best.p.clone().lerp(best.q, best.t), t: best.t, e: best.nm }); draw(); } } });
 // smooth camera move to a new viewpoint
 let fly = null; function flyTo(to) { fly = { from: camera.position.clone(), to, t: 0 }; }
