@@ -52,7 +52,7 @@ svg.i{width:20px;height:20px;flex-shrink:0}
       <div class="tasks" id="tasks"></div>
       <div id="tq"></div>
       <button class="btn p" id="guideBtn"><i data-ic="steps"></i>Қадам-қадаммен көрсет</button><div id="guide"></div></div></div>
-    <div class="st" id="st1"><div class="n">2</div><div><b>Кубтың қырларына 3 нүкте қой</b><p>Қырдың ортасын (ақ нүкте), ширегін (кішкентай көк нүкте) немесе төбесін бас — K, L, M нүктелері қойылады. Үшінші нүктеден кейін қима шығып, жауап бірден тексеріледі. Қайта салу үшін қырды тағы бас. Қиын болса, жоғарыдағы «Қадам-қадаммен көрсет» батырмасын бас.</p>
+    <div class="st" id="st1"><div class="n">2</div><div><b>Кубтың қырларына 3 нүкте қой</b><p>Қырдың ортасын немесе төбесін бас — K, L, M нүктелері қойылады. Үшінші нүктеден кейін қима шығып, жауап бірден тексеріледі. Қайта салу үшін қырды тағы бас. Қиын болса, жоғарыдағы «Қадам-қадаммен көрсет» батырмасын бас.</p>
       <div id="info"></div><div id="msg"></div>
       <div class="bar"><button class="btn g" id="undo"><i data-ic="undo"></i>Артқа</button><button class="btn g" id="clear"><i data-ic="eraser"></i>Өшіру</button></div>
       <div class="bar"><button class="btn g" id="show"><i data-ic="eye"></i>Бірден шешімін көрсет</button></div>
@@ -95,7 +95,7 @@ const ic = k => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentC
 document.querySelectorAll('[data-ic]').forEach(el => el.outerHTML = ic(el.dataset.ic));
 
 const M = { edge: new THREE.MeshStandardMaterial({ color: 0x1a56db, roughness: .4 }), dot: new THREE.MeshStandardMaterial({ color: 0x0f172a }),
-  red: new THREE.MeshStandardMaterial({ color: 0xe11d48 }), hl: new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xf59e0b, emissiveIntensity: .35 }), sec: new THREE.MeshBasicMaterial({ color: 0xea580c }), mid: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: .25 }), qtr: new THREE.MeshStandardMaterial({ color: 0x93c5fd }), ghost: new THREE.MeshBasicMaterial({ color: 0xe11d48, transparent: true, opacity: .4 }) };
+  red: new THREE.MeshStandardMaterial({ color: 0xe11d48 }), hl: new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xf59e0b, emissiveIntensity: .35 }), sec: new THREE.MeshBasicMaterial({ color: 0xea580c }), ghost: new THREE.MeshBasicMaterial({ color: 0xe11d48, transparent: true, opacity: .4 }) };
 function rod(p, q, mat, r = .028) { const d = new THREE.Vector3().subVectors(q, p), L = d.length(); const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, Math.max(L, 1e-4), 12), mat); m.position.copy(p).addScaledVector(d, .5); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.clone().normalize()); return m; }
 function ball(p, mat, r = .07) { const s = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 16), mat); s.position.copy(p); return s; }
 function label(text, pos, cls = '') { const el = document.createElement('div'); el.className = 'lbl ' + cls; el.textContent = text; const o = new CSS2DObject(el); o.position.copy(pos); return o; }
@@ -106,8 +106,6 @@ const target = () => S.guide && S.pts.length < 3 ? pt(...TASKS[S.task].sol[S.pts
 function draw() { grp.traverse(o => { if (o.isCSS2DObject) o.element.remove(); }); scene.remove(grp); grp = new THREE.Group(); scene.add(grp);
   const tg = target(); E.forEach(e => { const h = tg && tg.e === e.nm; grp.add(rod(e.p, e.q, h ? M.hl : M.edge, h ? .055 : .028)); });
   P.forEach((p, i) => { grp.add(ball(p, M.dot)); grp.add(label(NM[i], out(p))); });
-  // where a point can go: white bead = middle of the edge, small beads = quarters
-  E.forEach(e => [.25, .5, .75].forEach(t => grp.add(ball(e.p.clone().lerp(e.q, t), t === .5 ? M.mid : M.qtr, t === .5 ? .075 : .045))));
   const box = new THREE.Mesh(new THREE.BoxGeometry(2 * a, 2 * a, 2 * a), new THREE.MeshStandardMaterial({ color: 0x5aa9ff, transparent: true, opacity: .14, side: THREE.DoubleSide, depthWrite: false })); box.position.copy(CEN); grp.add(box);
   tball = tg ? ball(tg.v, M.hl, .14) : null; if (tball) grp.add(tball);
   if (S.hover && S.pts.length < 3) grp.add(ball(S.hover, M.ghost, .1));
@@ -162,7 +160,7 @@ function ui(sec) { lastSec = sec; const n = S.pts.length;
   $('guide').classList.toggle('on', S.guide); $('guideBtn').style.display = S.guide ? 'none' : '';
   $('guide').innerHTML = S.guide ? st.map((t, i) => `<div class="gs ${i < n ? 'ok' : i === n ? 'cur' : ''}"><span class="d">${i < n ? ic('check') : i + 1}</span><span>${KLM[i]} нүктесі: ${t}</span></div>`).join('')
     + (n === 3 && good ? `<div class="why"><b style="display:inline">Неге ${sec.name}?</b> ${TASKS[S.task].why}</div>` : '') : '';
-  $('tip').innerHTML = S.guide && n < 3 ? `${ic('pointer')}${n + 1}-қадам: ${st[n]} (сары нүкте)` : n < 3 ? `${ic('pointer')}${KLM[n]} нүктесін қой: қырдың ортасын (ақ нүкте) немесе төбесін бас` : sec?.bad ? `${ic('warn')}Нүктелер бір түзудің бойында — «Артқа» басып түзет`
+  $('tip').innerHTML = S.guide && n < 3 ? `${ic('pointer')}${n + 1}-қадам: ${st[n]} (сары нүкте)` : n < 3 ? `${ic('pointer')}${KLM[n]} нүктесін қой: қырдың ортасын немесе төбесін бас` : sec?.bad ? `${ic('warn')}Нүктелер бір түзудің бойында — «Артқа» басып түзет`
     : good ? `${ic('check')}Дұрыс! Қима — ${sec.name}` : `${ic('pointer')}Қима — ${sec.name}. Қайта салу үшін қырды бас`;
   $('info').innerHTML = n < 3 ? `Қима: — <span style="color:var(--muted)">(тағы ${3 - n} нүкте қой)</span>` : sec?.bad ? ic('warn') + 'K, L, M бір түзудің бойында жатыр — олар арқылы бір ғана жазықтық өтпейді.'
     : `Қима: <b>${sec.name}</b> · ${sec.n} қабырға${sec.face ? ' <span style="color:var(--muted)">(бұл — кубтың жағы)</span>' : ''}`;
