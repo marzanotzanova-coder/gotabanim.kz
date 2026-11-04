@@ -423,7 +423,7 @@
   .content-header-back{margin-left:0}
 }
 </style>
-<link rel="stylesheet" href="teacher-theme.css?v=20261104-fast">
+<link rel="stylesheet" href="teacher-theme.css?v=20261104-cards">
 <script src="teacher-ui.js?v=20261102" defer></script>
 </head>
 <body class="teacher-app">
@@ -914,7 +914,7 @@ function render(overrideLessons) {
             ${qmjPrev}
           </div>
           <div class="sub-type-label qmj-label"><span>📄</span> ҚМЖ</div>
-          <div class="sub-meta">${lesson.qmj ? lesson.qmj.meta : '—'}</div>
+          <div class="sub-meta">${hasQmjSrc ? lesson.qmj.meta : 'ҚМЖ әлі қосылмаған'}</div>
           ${hasQmjSrc ? `<button class="btn-dl-sm btn-preview" data-qmj-preview="${i}">ҚМЖ алдын ала қарау</button>` : ''}
           ${hasQmjSrc ? `<button class="btn-dl-sm btn-dl-qmj" data-dl-qmj="${i}">⬇ ҚМЖ жүктеу</button>` : ''}
         </div>
