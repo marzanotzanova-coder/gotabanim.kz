@@ -27,6 +27,11 @@ body{overflow:hidden}
 .task{padding:10px 8px;min-height:48px;border-radius:12px;border:1.5px solid var(--border);background:#fff;font-weight:700;font-size:13px;line-height:1.25;font-family:inherit;color:var(--text);cursor:pointer}
 .task.on{border-color:var(--primary);background:rgba(26,86,219,.08);color:var(--primary)}.task .i{display:none;width:16px;height:16px;vertical-align:-3px;margin-right:4px;color:var(--success)}.task.ok .i{display:inline-block}
 svg.i{width:20px;height:20px;flex-shrink:0}
+#guide{display:none;margin-top:10px}#guide.on{display:block}
+.gs{display:flex;gap:10px;align-items:center;padding:9px 10px;border-radius:10px;font-size:14px;line-height:1.4;color:var(--muted);margin-top:4px}
+.gs .d{width:26px;height:26px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}.gs .d svg.i{width:15px;height:15px}
+.gs.cur{background:rgba(245,158,11,.15);color:#92400e;font-weight:800}.gs.cur .d{background:#f59e0b;color:#fff}.gs.ok{color:var(--text)}.gs.ok .d{background:var(--success);color:#fff}
+.why{margin-top:8px;padding:10px 12px;border-radius:10px;background:rgba(16,185,129,.1);color:#065f46;font-size:14px;line-height:1.5}
 #tq{margin-top:12px;font-size:14px;line-height:1.5}#tq b{display:inline}#tq b+b{color:var(--primary)}
 #msg{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:700;display:none;gap:8px;align-items:flex-start;line-height:1.45}#msg svg.i{width:18px;height:18px;margin-top:1px}
 #msg.ok{display:flex;background:rgba(16,185,129,.12);color:#047857}#msg.no{display:flex;background:rgba(239,68,68,.1);color:#b91c1c}#msg.hint{display:flex;background:rgba(245,158,11,.12);color:#92400e}
@@ -45,11 +50,12 @@ svg.i{width:20px;height:20px;flex-shrink:0}
     <h2>Куб және оның қимасы</h2><div class="sub">Геометриялық зертханалық жұмыс · 10–11-сынып</div>
     <div class="st"><div class="n">1</div><div><b>Тапсырманы таңда</b><p>Қандай қима салатыныңды таңда.</p>
       <div class="tasks" id="tasks"></div>
-      <div id="tq"></div></div></div>
-    <div class="st" id="st1"><div class="n">2</div><div><b>Кубтың қырларына 3 нүкте қой</b><p>Кубтың көк қырын бас — K, L, M нүктелері қойылады. Үшінші нүктеден кейін қима шығып, жауап бірден тексеріледі. Қайта салу үшін қырды тағы бас.</p>
+      <div id="tq"></div>
+      <button class="btn p" id="guideBtn"><i data-ic="steps"></i>Қадам-қадаммен көрсет</button><div id="guide"></div></div></div>
+    <div class="st" id="st1"><div class="n">2</div><div><b>Кубтың қырларына 3 нүкте қой</b><p>Кубтың көк қырын бас — K, L, M нүктелері қойылады. Үшінші нүктеден кейін қима шығып, жауап бірден тексеріледі. Қайта салу үшін қырды тағы бас. Қиын болса, жоғарыдағы «Қадам-қадаммен көрсет» батырмасын бас.</p>
       <div id="info"></div><div id="msg"></div>
       <div class="bar"><button class="btn g" id="undo"><i data-ic="undo"></i>Артқа</button><button class="btn g" id="clear"><i data-ic="eraser"></i>Өшіру</button></div>
-      <div class="bar"><button class="btn g" id="hint"><i data-ic="bulb"></i>Кеңес</button><button class="btn g" id="show"><i data-ic="eye"></i>Шешімі</button></div>
+      <div class="bar"><button class="btn g" id="show"><i data-ic="eye"></i>Бірден шешімін көрсет</button></div>
       <div class="fact">Кубтың 6 жағы бар, сондықтан оның қимасы ең көп дегенде алтыбұрыш болады.</div></div></div>
     <div class="bar" style="margin-top:14px"><button class="btn g" id="reset"><i data-ic="restart"></i>Басынан бастау</button><button class="btn g" id="cam"><i data-ic="focus"></i>Көріністі қайтару</button></div>
   </div>
@@ -78,28 +84,30 @@ addEventListener('resize', resize); resize();
 const a = 1.5, NM = ['A', 'B', 'C', 'D', 'A₁', 'B₁', 'C₁', 'D₁'], CEN = V(0, a, 0);
 const P = [V(-a, 0, a), V(a, 0, a), V(a, 0, -a), V(-a, 0, -a), V(-a, 2 * a, a), V(a, 2 * a, a), V(a, 2 * a, -a), V(-a, 2 * a, -a)];
 const E = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]].map(([i, j]) => ({ p: P[i], q: P[j], nm: NM[i] + NM[j] }));
-const KLM = ['K', 'L', 'M'], S = { pts: [], hover: null, task: 0, solved: new Set(), hl: [] };
+const KLM = ['K', 'L', 'M'], S = { pts: [], hover: null, task: 0, solved: new Set(), guide: false };
 // line icons (same style as the site menu)
 const IC = { undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>', eraser: '<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>',
   bulb: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>', eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
   restart: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>', focus: '<circle cx="12" cy="12" r="3"/><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>',
-  check: '<path d="M20 6 9 17l-5-5"/>', x: '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>', warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>', steps: '<path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/>', x: '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>', warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
   pointer: '<path d="M22 14a8 8 0 0 1-8 8"/><path d="M18 11v-1a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1"/><path d="M10 9.5V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v10"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>' };
 const ic = k => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</svg>`;
 document.querySelectorAll('[data-ic]').forEach(el => el.outerHTML = ic(el.dataset.ic));
 
 const M = { edge: new THREE.MeshStandardMaterial({ color: 0x1a56db, roughness: .4 }), dot: new THREE.MeshStandardMaterial({ color: 0x0f172a }),
-  red: new THREE.MeshStandardMaterial({ color: 0xe11d48 }), hl: new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xf59e0b, emissiveIntensity: .35 }), ghost: new THREE.MeshBasicMaterial({ color: 0xe11d48, transparent: true, opacity: .4 }) };
+  red: new THREE.MeshStandardMaterial({ color: 0xe11d48 }), hl: new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xf59e0b, emissiveIntensity: .35 }), sec: new THREE.MeshBasicMaterial({ color: 0xea580c }), ghost: new THREE.MeshBasicMaterial({ color: 0xe11d48, transparent: true, opacity: .4 }) };
 function rod(p, q, mat, r = .028) { const d = new THREE.Vector3().subVectors(q, p), L = d.length(); const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, Math.max(L, 1e-4), 12), mat); m.position.copy(p).addScaledVector(d, .5); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.clone().normalize()); return m; }
 function ball(p, mat, r = .07) { const s = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 16), mat); s.position.copy(p); return s; }
 function label(text, pos, cls = '') { const el = document.createElement('div'); el.className = 'lbl ' + cls; el.textContent = text; const o = new CSS2DObject(el); o.position.copy(pos); return o; }
 const out = (p, k = .32) => p.clone().add(p.clone().sub(CEN).setLength(k));
-let grp = new THREE.Group(); scene.add(grp);
+let grp = new THREE.Group(), tball = null; scene.add(grp);
+const target = () => S.guide && S.pts.length < 3 ? pt(...TASKS[S.task].sol[S.pts.length]) : null;
 
 function draw() { grp.traverse(o => { if (o.isCSS2DObject) o.element.remove(); }); scene.remove(grp); grp = new THREE.Group(); scene.add(grp);
-  E.forEach(e => { const h = S.hl.includes(e.nm); grp.add(rod(e.p, e.q, h ? M.hl : M.edge, h ? .055 : .028)); });
+  const tg = target(); E.forEach(e => { const h = tg && tg.e === e.nm; grp.add(rod(e.p, e.q, h ? M.hl : M.edge, h ? .055 : .028)); });
   P.forEach((p, i) => { grp.add(ball(p, M.dot)); grp.add(label(NM[i], out(p))); });
   const box = new THREE.Mesh(new THREE.BoxGeometry(2 * a, 2 * a, 2 * a), new THREE.MeshStandardMaterial({ color: 0x5aa9ff, transparent: true, opacity: .14, side: THREE.DoubleSide, depthWrite: false })); box.position.copy(CEN); grp.add(box);
+  tball = tg ? ball(tg.v, M.hl, .14) : null; if (tball) grp.add(tball);
   if (S.hover && S.pts.length < 3) grp.add(ball(S.hover, M.ghost, .1));
   S.pts.forEach((p, i) => { grp.add(ball(p.v, M.red, .09)); grp.add(label(KLM[i], out(p.v, p.t % 1 ? .45 : .5).add(V(0, p.t % 1 ? 0 : .32, 0)), 'k')); });
   const sec = S.pts.length === 3 ? section() : null; ui(sec); }
@@ -113,7 +121,7 @@ function section() { const [k, l, m] = S.pts.map(p => p.v), nrm = new THREE.Vect
   u.sort((p, q) => ang(p) - ang(q)); const pos = []; for (let i = 0; i < u.length; i++) pos.push(...cen.toArray(), ...u[i].toArray(), ...u[(i + 1) % u.length].toArray());
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   grp.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: .55, side: THREE.DoubleSide, depthWrite: false })));
-  for (let i = 0; i < u.length; i++) grp.add(rod(u[i], u[(i + 1) % u.length], new THREE.MeshBasicMaterial({ color: 0xea580c }), .025));
+  for (let i = 0; i < u.length; i++) { grp.add(rod(u[i], u[(i + 1) % u.length], M.sec, .025)); grp.add(ball(u[i], M.sec, .09)); }
   const pl = new THREE.Mesh(new THREE.PlaneGeometry(7, 7), new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: .1, side: THREE.DoubleSide, depthWrite: false })); pl.position.copy(cen); pl.lookAt(cen.clone().add(nrm)); grp.add(pl);
   return { u, ...kind(u) }; }
 
@@ -131,19 +139,28 @@ function kind(u) { const n = u.length, L = u.map((p, i) => p.distanceTo(u[(i + 1
 
 // lesson tasks: [button, question, check, hint, solution points as edge name + position]
 const TASKS = [
-  { b: 'Тең қабырғалы үшбұрыш', q: 'Қимасы <b>тең қабырғалы үшбұрыш</b> болатындай жазықтық жүргіз.', ok: k => k.name === 'тең қабырғалы үшбұрыш', hint: 'Бір төбеден шығатын үш қырдың ұштарын ал: мысалы, A₁, B, D төбелері.', hl: ['AA₁', 'AB', 'DA'], sol: [['AA₁', 1], ['AB', 1], ['DA', 0]] },
-  { b: 'Тіктөртбұрыш', q: 'Қимасы <b>тіктөртбұрыш</b> (шаршы емес) болатындай жазықтық жүргіз.', ok: k => k.name === 'тіктөртбұрыш', hint: 'Диагональдық қима: жазықтық AA₁ және CC₁ қырлары арқылы өтсін.', hl: ['AA₁', 'CC₁'], sol: [['AB', 0], ['AA₁', 1], ['BC', 1]] },
-  { b: 'Трапеция', q: 'Қимасы <b>трапеция</b> болатындай жазықтық жүргіз.', ok: k => k.name.includes('трапеция'), hint: 'A₁B₁ және B₁C₁ қырларының ортасын, сосын A төбесін ал.', hl: ['A₁B₁', 'B₁C₁'], sol: [['A₁B₁', .5], ['B₁C₁', .5], ['AB', 0]] },
-  { b: 'Бесбұрыш', q: 'Қимасы <b>бесбұрыш</b> болатындай жазықтық жүргіз.', ok: k => k.n === 5, hint: 'AB және BC қырларының ортасын, сосын D₁ төбесін ал.', hl: ['AB', 'BC'], sol: [['AB', .5], ['BC', .5], ['C₁D₁', 1]] },
-  { b: 'Дұрыс алтыбұрыш', q: 'Қимасы <b>дұрыс алтыбұрыш</b> болатындай жазықтық жүргіз.', ok: k => k.name === 'дұрыс алтыбұрыш', hint: 'AB, CC₁ және D₁A₁ қырларының ортасын ал.', hl: ['AB', 'CC₁', 'D₁A₁'], sol: [['AB', .5], ['CC₁', .5], ['D₁A₁', .5]] }];
+  { b: 'Тең қабырғалы үшбұрыш', q: 'Қимасы <b>тең қабырғалы үшбұрыш</b> болатындай жазықтық жүргіз.', ok: k => k.name === 'тең қабырғалы үшбұрыш', sol: [['AA₁', 1], ['AB', 1], ['DA', 0]],
+    steps: ['A₁ төбесін бас', 'B төбесін бас', 'D төбесін бас'], why: 'Қиманың қабырғалары A₁B, BD, DA₁ — кубтың үш жағының диагональдары. Жақтың диагональдары тең, сондықтан үшбұрыштың барлық қабырғалары тең.' },
+  { b: 'Тіктөртбұрыш', q: 'Қимасы <b>тіктөртбұрыш</b> (шаршы емес) болатындай жазықтық жүргіз.', ok: k => k.name === 'тіктөртбұрыш', sol: [['AB', 0], ['AA₁', 1], ['BC', 1]],
+    steps: ['A төбесін бас', 'A₁ төбесін бас', 'C төбесін бас'], why: 'Жазықтық AA₁ және CC₁ қырлары арқылы өтеді — бұл диагональдық қима AA₁C₁C. Оның бір қабырғасы — кубтың қыры, екіншісі — табанның диагоналы AC. Олар тең емес, ал бұрыштары тік, сондықтан тіктөртбұрыш.' },
+  { b: 'Трапеция', q: 'Қимасы <b>трапеция</b> болатындай жазықтық жүргіз.', ok: k => k.name.includes('трапеция'), sol: [['A₁B₁', .5], ['B₁C₁', .5], ['AB', 0]],
+    steps: ['A₁B₁ қырының ортасын бас', 'B₁C₁ қырының ортасын бас', 'A төбесін бас'], why: 'KL кесіндісі A₁C₁-ге, демек AC-ға параллель. Сондықтан жазықтық C төбесі арқылы да өтеді. Қима ACLK-ның екі қабырғасы параллель (KL ∥ AC), ал қалған екеуі параллель емес — бұл трапеция.' },
+  { b: 'Бесбұрыш', q: 'Қимасы <b>бесбұрыш</b> болатындай жазықтық жүргіз.', ok: k => k.n === 5, sol: [['AB', .5], ['BC', .5], ['C₁D₁', 1]],
+    steps: ['AB қырының ортасын бас', 'BC қырының ортасын бас', 'D₁ төбесін бас'], why: 'Жазықтық төменгі жақты KL бойымен қияды. Ол D₁-ге көтерілгенде AA₁ және CC₁ қырларын да қияды (төменнен үштен бір биіктікте). Қиманың төбелері: K, L, CC₁-дегі нүкте, D₁, AA₁-дегі нүкте — барлығы 5, сондықтан бесбұрыш. Қызғылт сары нүктелерді санап көр.' },
+  { b: 'Дұрыс алтыбұрыш', q: 'Қимасы <b>дұрыс алтыбұрыш</b> болатындай жазықтық жүргіз.', ok: k => k.name === 'дұрыс алтыбұрыш', sol: [['AB', .5], ['CC₁', .5], ['D₁A₁', .5]],
+    steps: ['AB қырының ортасын бас', 'CC₁ қырының ортасын бас', 'D₁A₁ қырының ортасын бас'], why: 'Жазықтық кубтың 6 жағын да қияды және 6 қырдың дәл ортасынан өтеді. Алтыбұрыштың әр қабырғасы бір жақтағы екі ортаны қосады, сондықтан бәрі тең — дұрыс алтыбұрыш.' }];
 const pt = (nm, t) => { const e = E.find(x => x.nm === nm); return { v: e.p.clone().lerp(e.q, t), t, e: nm }; };
 $('tasks').innerHTML = TASKS.map((t, i) => `<button class="task" data-i="${i}">${ic('check')}${t.b}</button>`).join('');
-$('tasks').onclick = e => { const b = e.target.closest('.task'); if (!b) return; S.task = +b.dataset.i; S.pts = []; S.hl = []; S.hover = null; $('msg').className = ''; draw(); };
+$('tasks').onclick = e => { const b = e.target.closest('.task'); if (!b) return; S.task = +b.dataset.i; S.pts = []; S.guide = false; S.hover = null; $('msg').className = ''; draw(); };
 
 let lastSec = null;
 function ui(sec) { lastSec = sec; const n = S.pts.length;
   const good = n === 3 && !sec?.bad && TASKS[S.task].ok(sec);
-  $('tip').innerHTML = n < 3 ? `${ic('pointer')}${TASKS[S.task].b}: кубтың қырын басып ${KLM[n]} нүктесін қой` : sec?.bad ? `${ic('warn')}Нүктелер бір түзудің бойында — «Артқа» басып түзет`
+  const st = TASKS[S.task].steps;
+  $('guide').classList.toggle('on', S.guide); $('guideBtn').style.display = S.guide ? 'none' : '';
+  $('guide').innerHTML = S.guide ? st.map((t, i) => `<div class="gs ${i < n ? 'ok' : i === n ? 'cur' : ''}"><span class="d">${i < n ? ic('check') : i + 1}</span><span>${KLM[i]} нүктесі: ${t}</span></div>`).join('')
+    + (n === 3 && good ? `<div class="why"><b style="display:inline">Неге ${sec.name}?</b> ${TASKS[S.task].why}</div>` : '') : '';
+  $('tip').innerHTML = S.guide && n < 3 ? `${ic('pointer')}${n + 1}-қадам: ${st[n]} (сары нүкте)` : n < 3 ? `${ic('pointer')}${TASKS[S.task].b}: кубтың қырын басып ${KLM[n]} нүктесін қой` : sec?.bad ? `${ic('warn')}Нүктелер бір түзудің бойында — «Артқа» басып түзет`
     : good ? `${ic('check')}Дұрыс! Қима — ${sec.name}` : `${ic('pointer')}Қима — ${sec.name}. Қайта салу үшін қырды бас`;
   $('info').innerHTML = n < 3 ? `Қима: — <span style="color:var(--muted)">(тағы ${3 - n} нүкте қой)</span>` : sec?.bad ? ic('warn') + 'K, L, M бір түзудің бойында жатыр — олар арқылы бір ғана жазықтық өтпейді.'
     : `Қима: <b>${sec.name}</b> · ${sec.n} қабырға${sec.face ? ' <span style="color:var(--muted)">(бұл — кубтың жағы)</span>' : ''}`;
@@ -167,23 +184,24 @@ renderer.domElement.addEventListener('pointermove', e => { if (e.buttons || e.po
 renderer.domElement.addEventListener('pointerup', e => { const start = down; down = null; activePointers.delete(e.pointerId); if (multiTouch) { if (!activePointers.size) multiTouch = false; return; }
   if (!start || start.id !== e.pointerId || Math.hypot(e.clientX - start.x, e.clientY - start.y) > (start.touch ? 14 : 6)) return;
   const p = pick(e); if (!p) return; if (S.pts.length < 3 && S.pts.some(q => q.v.distanceTo(p.v) < 1e-3)) { $('tip').innerHTML = ic('warn') + 'Бұл нүкте бұрыннан бар — басқа жерге қой'; return; }
-  if (S.pts.length >= 3) S.pts = []; S.pts.push(p); S.hover = null; $('msg').className = ''; draw(); if (S.pts.length === 3) check(); });
+  const tg = target(); if (tg && tg.v.distanceTo(p.v) > 1e-3) { $('tip').innerHTML = ic('warn') + 'Бұл емес — жыпылықтап тұрған сары нүктені бас'; return; }
+  if (S.pts.length >= 3) { S.pts = []; S.guide = false; } S.pts.push(p); S.hover = null; $('msg').className = ''; draw(); if (S.pts.length === 3) check(); });
 
 // smooth camera move to a new viewpoint
 let fly = null; function flyTo(to) { fly = { from: camera.position.clone(), to, t: 0 }; }
 $('undo').onclick = () => { S.pts.pop(); $('msg').className = ''; draw(); };
-$('clear').onclick = () => { S.pts = []; S.hl = []; $('msg').className = ''; draw(); };
-$('reset').onclick = () => { S.pts = []; S.hl = []; S.solved.clear(); S.task = 0; $('msg').className = ''; controls.target.set(0, 1.5, 0); flyTo(HOME.clone()); draw(); };
+$('clear').onclick = () => { S.pts = []; $('msg').className = ''; draw(); };
+$('reset').onclick = () => { S.pts = []; S.guide = false; S.solved.clear(); S.task = 0; $('msg').className = ''; controls.target.set(0, 1.5, 0); flyTo(HOME.clone()); draw(); };
 $('cam').onclick = () => { controls.target.set(0, 1.5, 0); flyTo(HOME.clone()); };
-$('hint').onclick = () => { S.hl = TASKS[S.task].hl; draw(); msg(TASKS[S.task].hint + ' Керекті қырлар сарымен белгіленді.', 'hint'); };
-$('show').onclick = () => { S.pts = TASKS[S.task].sol.map(s => pt(...s)); S.hl = []; draw(); check(); };
+$('guideBtn').onclick = () => { S.guide = true; S.pts = []; S.hover = null; $('msg').className = ''; draw(); $('guide').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
+$('show').onclick = () => { S.guide = true; S.pts = TASKS[S.task].sol.map(s => pt(...s)); draw(); check(); };
 function check() { const t = TASKS[S.task];
   if (!lastSec) return; if (lastSec.bad) return msg('Нүктелер бір түзудің бойында. Біреуін басқа қырға ауыстыр.', 'no');
   if (t.ok(lastSec)) { S.solved.add(S.task); ui(lastSec); msg(`Дұрыс! Қима — ${lastSec.name}.${S.solved.size === TASKS.length ? ' Барлық тапсырма орындалды!' : ' Келесі тапсырманы таңда.'}`, 'ok'); }
-  else msg(`Әзірге қима — ${lastSec.name}. Қайта салу үшін кубтың қырын тағы бас немесе «Кеңес» батырмасын бас.`, 'no'); }
+  else msg(`Әзірге қима — ${lastSec.name}. Қайта салу үшін кубтың қырын тағы бас немесе «Қадам-қадаммен көрсет» батырмасын бас.`, 'no'); }
 draw();
 (function loop() { requestAnimationFrame(loop); if (fly) { fly.t = Math.min(1, fly.t + 1 / 60); const k = fly.t < .5 ? 2 * fly.t * fly.t : 1 - Math.pow(-2 * fly.t + 2, 2) / 2; camera.position.lerpVectors(fly.from, fly.to, k); if (fly.t >= 1) fly = null; }
-  controls.update(); renderer.render(scene, camera); labels.render(scene, camera); })();
+  if (tball) tball.scale.setScalar(1 + .3 * Math.sin(performance.now() / 160)); controls.update(); renderer.render(scene, camera); labels.render(scene, camera); })();
 </script>
 <script src="supabase.js"></script><script src="supabase-client.js?v=20261104-lab-cube"></script><script src="lab-paywall.js?v=20261103-lab-cards"></script>
 <script>labGate();</script>
