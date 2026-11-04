@@ -54,6 +54,9 @@
   gap:20px;
 }
 
+.catalog-status{max-width:1200px;margin:0 auto 20px;padding:20px;border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--muted);display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;text-align:center}
+.catalog-status[hidden],.catalog-status button[hidden]{display:none}
+.catalog-status button{padding:9px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--primary);font:inherit;cursor:pointer}
 /* ── LESSON UNIT (one lesson = ppt + qmj + video) ── */
 .lesson-unit{
   background:var(--surface);
@@ -420,7 +423,7 @@
   .content-header-back{margin-left:0}
 }
 </style>
-<link rel="stylesheet" href="teacher-theme.css?v=20261104-watermark">
+<link rel="stylesheet" href="teacher-theme.css?v=20261104-fast">
 <script src="teacher-ui.js?v=20261102" defer></script>
 </head>
 <body class="teacher-app">
@@ -476,7 +479,21 @@
     <a href="dashboard.html" class="content-header-back">← Артқа</a>
   </div>
 
-  <div class="lessons-grid" id="lessonsGrid"></div>
+  <div class="catalog-status" id="catalogStatus" role="status" aria-live="polite">
+    <span id="catalogStatusText">Сабақтар жүктелуде…</span>
+    <button type="button" id="catalogRetry" onclick="location.reload()">Қайта жүктеу</button>
+  </div>
+  <div class="lessons-grid" id="lessonsGrid" aria-busy="true"></div>
+  <script>
+    // This runs before dependencies, so even a stalled script cannot leave a blank page.
+    window.catalogBootTimer=setTimeout(()=>{
+      const state=document.getElementById('catalogStatus');
+      if(document.getElementById('lessonsGrid').getAttribute('aria-busy')==='true'){
+        state.hidden=false;
+        document.getElementById('catalogStatusText').textContent='Жүктеу ұзаққа созылды. Қайта жүктеп көріңіз.';
+      }
+    },12000);
+  </script>
 </div>
 
 <!-- PAYMENT MODAL -->
@@ -556,9 +573,10 @@
   </div>
 </div>
 
+<script src="content-load.js?v=20261104-fast"></script>
 <script src="supabase.js"></script>
 <script src="qmj-preview.js?v=20261104-watermark"></script>
-<script src="supabase-client.js?v=20261103-catalog"></script>
+<script src="supabase-client.js?v=20261104-fast"></script>
 <script src="lesson-extras.js?v=20261102"></script>
 <script>
 const GRADES_LABEL = {5:'5-сынып',6:'6-сынып',7:'7-сынып',8:'8-сынып',9:'9-сынып',10:'10-сынып',11:'11-сынып'};
@@ -598,8 +616,42 @@ initSwitcher();
 let userIsPaid = false;
 let currentUser = null;
 
+let catalogLoader;
+function catalogStatus(state) {
+  clearTimeout(window.catalogBootTimer);
+  const box = document.getElementById('catalogStatus');
+  const messages = {
+    loading: 'Сабақтар жүктелуде…', refreshing: 'Сабақтар жаңартылуда…',
+    retrying: 'Байланыс баяу. Қайта жүктелуде…',
+    error: 'Сабақтарды жүктеу мүмкін болмады. Қайта көріңіз.',
+    stale: 'Сақталған сабақтар көрсетілді. Жаңарту үшін қайта көріңіз.'
+  };
+  box.hidden = state === 'ready';
+  document.getElementById('catalogStatusText').textContent = messages[state] || '';
+  document.getElementById('catalogRetry').hidden = !['error', 'stale'].includes(state);
+  document.getElementById('lessonsGrid').setAttribute('aria-busy', String(['loading','retrying','refreshing'].includes(state)));
+}
+async function checkContentAccess(user) {
+  const isInfoSubject = subject === 'informatics';
+  if (user.email === ADMIN_EMAIL) { userIsPaid = true; return; }
+  try {
+    const result = await GoTABLoad.deadline(() => sb.rpc(isInfoSubject ? 'check_paid_informatics' : 'check_paid_user', {check_id:user.id}), 8000);
+    if (result.error) throw result.error;
+    userIsPaid = result.data === true;
+  } catch (_) {
+    userIsPaid = false;
+    if (!isInfoSubject) {
+      try {
+        const {data,error} = await GoTABLoad.deadline(() => sb.rpc('check_my_subscription'), 5000);
+        const row = Array.isArray(data) ? data[0] : data;
+        userIsPaid = !error && row?.is_paid === true && new Date(row.paid_until) > new Date();
+      } catch (_) {}
+    }
+  }
+  document.getElementById('payBar').style.display = userIsPaid ? 'none' : 'flex';
+}
 (async () => {
-  const user = await requireAuth();
+  const user = await GoTABLoad.deadline(() => requireAuth());
   if (!user) return;
   currentUser = user;
   document.getElementById('userName').textContent = user.user_metadata?.name || user.email;
@@ -611,47 +663,28 @@ let currentUser = null;
     document.getElementById('modalSubText').textContent = 'Информатика пәні — барлық сыныптар';
   }
 
-  if (user.email === ADMIN_EMAIL) { userIsPaid = true; }
-  else {
-    try {
-      const rpcName = isInfoSubject ? 'check_paid_informatics' : 'check_paid_user';
-      const rpcArg  = isInfoSubject ? { check_id: user.id } : { check_id: user.id };
-      const { data: paid, error: rpcErr } = await sb.rpc(rpcName, rpcArg);
-      if (!rpcErr) {
-        userIsPaid = paid === true;
-      } else if (!isInfoSubject) {
-        const { data: sub } = await sb.rpc('check_my_subscription');
-        const row = Array.isArray(sub) ? sub[0] : sub;
-        userIsPaid = row?.is_paid === true &&
-          (row?.paid_until && new Date(row.paid_until) > new Date());
-      }
-    } catch (e) {
-      if (!isInfoSubject) {
-        try {
-          const { data: sub } = await sb.rpc('check_my_subscription');
-          const row = Array.isArray(sub) ? sub[0] : sub;
-          userIsPaid = row?.is_paid === true &&
-            (row?.paid_until && new Date(row.paid_until) > new Date());
-        } catch(_) { userIsPaid = false; }
-      }
-    }
-  }
+  // Billing and lesson metadata load independently; a slow billing check must not hide the catalog.
+  void checkContentAccess(user);
+  let storage;
+  try { storage = sessionStorage; } catch (_) {}
+  catalogLoader = GoTABLoad.catalog({
+    key: `gotab_catalog_v1_${user.id}_${grade}_${subject}`,
+    storage,
+    fetchRows: signal => sb.from('materials').select('lesson_num,title,topic,ppt_url,ppt_thumb_url,qmj_url,qmj_thumb_url,video_url,slides_urls,extra_files')
+      .eq('grade',grade).eq('subject',subject).order('lesson_num').abortSignal(signal),
+    renderRows: mergeCatalog,
+    status: catalogStatus
+  });
+  document.getElementById('catalogRetry').onclick = () => { catalogLoader.load(); void checkContentAccess(user); };
+  await catalogLoader.load();
+})().catch(error => {
+  console.warn('Catalog initialization failed', error);
+  catalogStatus('error');
+});
 
-  if (!userIsPaid) { document.getElementById('payBar').style.display = 'flex'; }
-
-  // Supabase — негізгі тұрақты дереккөз; жергілікті CONTENT тек thumbnail/слайдтарды толықтырады
-  let sbByNum = {};
-  try {
-    const { data: sbMaterials } = await sb.from('materials')
-      .select('*')
-      .eq('grade', grade)
-      .eq('subject', subject)
-      .order('lesson_num');
-    if (sbMaterials) {
-      sbMaterials.forEach(l => { sbByNum[l.lesson_num] = l; });
-    }
-  } catch(_) {}
-
+function mergeCatalog(sbMaterials) {
+  const sbByNum = {};
+  sbMaterials.forEach(row => { sbByNum[row.lesson_num] = row; });
   const subjectData = (CONTENT[grade] || {})[subject] || null;
   const localLessons = (subjectData && subjectData.lessons) || [];
 
@@ -697,7 +730,7 @@ let currentUser = null;
 
   const merged = allNums.map(buildLesson);
   render(merged);
-})();
+}
 
 async function logout() {
   localStorage.removeItem('gotab_last_page');
@@ -791,8 +824,8 @@ const CONTENT = {
 // ── Daily download tracking (per lesson) ──
 const TODAY = new Date().toISOString().slice(0, 10);
 function dlKey(idx) { return `gotab_dl_${grade}_${subject}_lesson_${idx}`; }
-function wasDownloadedToday(idx) { return localStorage.getItem(dlKey(idx)) === TODAY; }
-function markDone(idx) { localStorage.setItem(dlKey(idx), TODAY); }
+function wasDownloadedToday(idx) { try { return localStorage.getItem(dlKey(idx)) === TODAY; } catch (_) { return false; } }
+function markDone(idx) { try { localStorage.setItem(dlKey(idx), TODAY); } catch (_) {} }
 
 // ── Render ──
 function render(overrideLessons) {
@@ -809,7 +842,7 @@ function render(overrideLessons) {
     const done = wasDownloadedToday(lessonNum);
 
     const videoPrev = lesson.video && lesson.video.src
-      ? `<video src="${lesson.video.src}" autoplay muted loop playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block"></video>`
+      ? `<video data-src="${lesson.video.src}" muted loop playsinline preload="none" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block"></video>`
       : `<div class="video-coming">
            <div class="video-ring">
              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -818,7 +851,7 @@ function render(overrideLessons) {
          </div>`;
 
     const qmjPrev = lesson.qmj && lesson.qmj.thumb
-      ? `<img src="${lesson.qmj.thumb}" alt="ҚМЖ алдын ала" style="width:100%;height:100%;object-fit:cover;object-position:top;border-radius:6px;display:block">`
+      ? `<img src="${lesson.qmj.thumb}" alt="ҚМЖ алдын ала" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;object-position:top;border-radius:6px;display:block">`
       : `<div class="qmj-doc">
            <div class="qmj-doc-line long"></div>
            <div class="qmj-doc-line short"></div>
@@ -832,7 +865,7 @@ function render(overrideLessons) {
 
     const hasSlides = lesson.slides && lesson.slides.length > 0;
     const previewInner = hasThumb
-      ? `<img class="slide-thumb" src="${lesson.ppt.thumb}" alt="${lesson.title}" loading="lazy">
+      ? `<img class="slide-thumb" src="${lesson.ppt.thumb}" alt="${lesson.title}" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async" fetchpriority="${i === 0 ? 'high' : 'auto'}">
          <div class="slide-thumb-overlay"></div>
          <span class="lesson-badge" style="z-index:3">Сабақ ${lessonNum}</span>
          <span class="slide-dl-hint">${hasPpt ? '⬇ PPT жүктеу' : hasSlides ? '👁 Алдын ала қарау' : ''}</span>`
@@ -907,6 +940,8 @@ function render(overrideLessons) {
 
     </div>`;
   }).join('');
+
+  GoTABLoad.visibleVideos(grid);
 
   function dlFile(url, btn, label) {
     if (!userIsPaid) { openModal(); return; }

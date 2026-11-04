@@ -14,7 +14,7 @@ async function requireAuth() {
   const here = location.pathname.split('/').pop() + location.search;
   const excluded = ['login.html', 'index.html', 'register.html', 'admin.html', 'games.html'];
   if (here && !excluded.includes(here.split('?')[0])) {
-    localStorage.setItem('gotab_last_page', here);
+    try { localStorage.setItem('gotab_last_page', here); } catch (_) {}
   }
   return session.user;
 }

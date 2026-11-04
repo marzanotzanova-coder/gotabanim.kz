@@ -9,7 +9,7 @@ context.sbByNum[1]={lesson_num:1,title:'Different',ppt_url:'different.pptx'};
 merged=context.buildLesson(1);assert.equal(merged.qmj.src,null);assert.equal(merged.slides.length,0);
 context.sbByNum[7]={lesson_num:7,title:'Seventh',ppt_url:'seventh.pptx'};assert.equal(context.buildLesson(7).lesson_num,7);
 let markup='';const grid={set innerHTML(x){markup=x},get innerHTML(){return markup},querySelectorAll(){return []}};
-Object.assign(context,{document:{getElementById(){return grid}},subject:'math',wasDownloadedToday(){return false},setQmjPreviewDocuments(){},openModal(){}});
+Object.assign(context,{document:{getElementById(){return grid}},subject:'math',wasDownloadedToday(){return false},setQmjPreviewDocuments(){},GoTABLoad:{visibleVideos(){}},openModal(){}});
 Object.assign(context.GoTABExtras,{renderCard(){return ''},bind(){}});
 vm.runInContext(html.slice(html.indexOf('function render(overrideLessons)'),html.indexOf('// ── Payment modal')),context);
 context.render([1,2,3,4,5,7].map(n=>({lesson_num:n,title:'Lesson '+n,ppt:{src:`lesson${n}.pptx`},qmj:{},video:{}})));
