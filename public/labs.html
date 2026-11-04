@@ -34,11 +34,13 @@
   <div class="lgrid">
     <div class="lcard"><span class="lab-lock"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Жазылым қажет</span><div class="ic"><canvas id="pyrc" width="520" height="300" style="width:260px;height:150px"></canvas></div>
       <h3>Пирамида және оның қимасы</h3><p>Пирамиданы құрастыр, жазықтықпен қимасын сал</p><span class="tag">Геометрия · 10–11-сынып</span><a class="btn-lab-use" href="lab-pyramid.html">Қолдану</a></div>
+    <div class="lcard"><span class="lab-lock"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Жазылым қажет</span><div class="ic"><canvas id="cubc" width="520" height="300" style="width:260px;height:150px"></canvas></div>
+      <h3>Куб және оның қимасы</h3><p>Қырларға 3 нүкте қойып, кубтың қимасын сал</p><span class="tag">Геометрия · 10–11-сынып</span><a class="btn-lab-use" href="lab-cube.html">Қолдану</a></div>
     <div class="lcard soon"><div class="ic">🧊</div><h3>Призма және жазбасы</h3><p>Жақында</p></div>
     <div class="lcard soon"><div class="ic">⚪</div><h3>Айналу денелері</h3><p>Жақында</p></div>
   </div>
 </div>
-<script src="supabase.js"></script><script src="supabase-client.js?v=20261103-lab-cards"></script><script src="lab-paywall.js?v=20261103-lab-cards"></script>
+<script src="supabase.js"></script><script src="supabase-client.js?v=20261104-lab-cube"></script><script src="lab-paywall.js?v=20261103-lab-cards"></script>
 <script>(async()=>{const u=await labGate();if(u)document.getElementById('userName').textContent=u.user_metadata?.name||u.email;})();</script>
 <script>
 // spinning pyramid with its mid-height section on the lab card
@@ -51,6 +53,16 @@ poly(b,'rgba(90,169,255,.18)');const faces=[0,1,2,3].map(i=>[b[i],b[(i+1)%4],s])
 faces.forEach(f=>poly(f,'rgba(90,169,255,.16)'));poly(m,'rgba(249,115,22,.55)','#ea580c',4);
 g.setLineDash([]);[0,1,2,3].forEach(i=>{poly([b[i],b[(i+1)%4]],null,'#1a56db',5);poly([b[i],s],null,'#1a56db',5);});
 g.fillStyle='#7c3aed';g.beginPath();g.arc(s[0],s[1],7,0,7);g.fill();requestAnimationFrame(frame);}requestAnimationFrame(frame);})();
+</script>
+<script>
+// spinning cube with its regular-hexagon section on the lab card
+(function(){const c=document.getElementById('cubc');if(!c)return;const g=c.getContext('2d'),W=c.width,H=c.height;
+const B=[[-1,0,1],[1,0,1],[1,0,-1],[-1,0,-1]],T=B.map(v=>[v[0],2,v[2]]),X=[[0,0,1],[1,0,0],[1,1,-1],[0,2,-1],[-1,2,0],[-1,1,1]];
+function P(v,a){const x=v[0]*Math.cos(a)-v[2]*Math.sin(a),z=v[0]*Math.sin(a)+v[2]*Math.cos(a),y=v[1],tx=.32,yy=y*Math.cos(tx)-z*Math.sin(tx),zz=y*Math.sin(tx)+z*Math.cos(tx),k=7/(7+zz);return[W/2+x*k*78,H*.8-yy*k*78,zz];}
+function poly(pts,fill,stroke,lw){g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();if(fill){g.fillStyle=fill;g.fill();}if(stroke){g.strokeStyle=stroke;g.lineWidth=lw;g.lineJoin='round';g.stroke();}}
+function frame(t){const a=t/1700;g.clearRect(0,0,W,H);const b=B.map(v=>P(v,a)),u=T.map(v=>P(v,a)),h=X.map(v=>P(v,a));
+poly(b,'rgba(90,169,255,.16)');[0,1,2,3].forEach(i=>poly([b[i],b[(i+1)%4],u[(i+1)%4],u[i]],'rgba(90,169,255,.1)'));poly(h,'rgba(249,115,22,.55)','#ea580c',4);
+[0,1,2,3].forEach(i=>{poly([b[i],b[(i+1)%4]],null,'#1a56db',5);poly([u[i],u[(i+1)%4]],null,'#1a56db',5);poly([b[i],u[i]],null,'#1a56db',5);});requestAnimationFrame(frame);}requestAnimationFrame(frame);})();
 </script>
 <script src="math-bg.js"></script>
 </body>
