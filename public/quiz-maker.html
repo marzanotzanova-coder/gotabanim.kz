@@ -128,7 +128,13 @@
   justify-content:center;font-size:18px;flex-shrink:0}
 .qcard-title{font-size:14px;font-weight:700;color:var(--text)}
 .qcard-meta{font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6}
-.qcard-btns{display:flex;gap:8px}
+.qcard-btns{display:flex;gap:8px;flex-wrap:wrap}
+.edit-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  background:rgba(255,123,28,.08);border:1.5px solid rgba(255,123,28,.35);border-radius:12px;
+  padding:12px 16px;margin:0 auto 24px;max-width:720px;font-size:13px;color:var(--text);line-height:1.5}
+.edit-banner button{padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;background:#fff;
+  color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+.edit-banner button:hover{border-color:#ef4444;color:#ef4444}
 .qcard-btn{padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;
   background:transparent;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;
   font-family:'Inter',sans-serif;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center}
@@ -166,6 +172,12 @@
   <div class="qm-head">
     <h1>✏️ Викторина жасаушы</h1>
     <p>Wordwall сияқты — өз ойындарыңызды жасаңыз және оқушылармен бөлісіңіз</p>
+  </div>
+
+  <!-- Edit mode banner -->
+  <div class="edit-banner" id="editBanner" style="display:none">
+    <div>✏️ «<b id="editBannerTitle"></b>» викторинасын өзгертіп жатырсыз.<br>Сақтағанда оқушыларға берген сілтеме өзгермейді.</div>
+    <button type="button" onclick="cancelEdit()">Болдырмау</button>
   </div>
 
   <!-- Steps indicator -->
@@ -247,7 +259,7 @@
   <div class="qm-step" id="step5">
     <div class="save-box">
       <div class="save-icon">🎉</div>
-      <div class="save-title">Викторина дайын!</div>
+      <div class="save-title" id="saveTitle">Викторина дайын!</div>
       <div class="save-sub">Осы сілтемені оқушылармен бөлісіңіз.<br>Тіркелмей-ақ ойнай алады.</div>
       <div class="link-box">
         <input type="text" id="shareLink" readonly>
@@ -300,7 +312,8 @@ const GTYPE_HINTS = {
 };
 
 const _urlType = new URLSearchParams(location.search).get('type');
-let state = { step:1, theme:'underwater', gtype: _urlType || 'quiz', title:'', grade:'', subject:'', questions:[] };
+const _urlEdit = new URLSearchParams(location.search).get('edit');
+let state = { step:1, theme:'underwater', gtype: _urlType || 'quiz', title:'', grade:'', subject:'', questions:[], editId:null };
 let currentUser = null;
 
 // ── Init ──
@@ -313,6 +326,7 @@ let currentUser = null;
   renderGtypes();
   addQuestion();
   loadMyQuizzes();
+  if (_urlEdit) editQuiz(_urlEdit);
 })();
 
 function renderThemes() {
@@ -692,28 +706,39 @@ async function saveQuiz() {
   btn.disabled = true;
   btn.textContent = 'Сақталуда...';
 
+  const fields = {
+    title,
+    theme: state.theme,
+    game_type: state.gtype,
+    grade: document.getElementById('quizGrade').value || null,
+    subject: document.getElementById('quizSubject').value.trim() || null,
+    questions: qs
+  };
+  const editing = !!state.editId;
+
   try {
-    const { data, error } = await sb.from('quizzes').insert({
-      title,
-      theme: state.theme,
-      game_type: state.gtype,
-      grade: document.getElementById('quizGrade').value || null,
-      subject: document.getElementById('quizSubject').value.trim() || null,
-      questions: qs,
-      created_by: currentUser.email,
-      creator_name: currentUser.user_metadata?.name || currentUser.email
-    }).select().single();
+    const { data, error } = editing
+      ? await sb.from('quizzes').update(fields)
+          .eq('id', state.editId).eq('created_by', currentUser.email)
+          .select().single()
+      : await sb.from('quizzes').insert({
+          ...fields,
+          created_by: currentUser.email,
+          creator_name: currentUser.user_metadata?.name || currentUser.email
+        }).select().single();
 
     if (error) throw error;
     const link = `${location.origin}/quiz-play.html?id=${data.id}`;
     document.getElementById('shareLink').value = link;
+    document.getElementById('saveTitle').textContent = editing ? 'Өзгерістер сақталды!' : 'Викторина дайын!';
+    setEditMode(null);
     goStep(5);
     loadMyQuizzes();
   } catch(e) {
     alert('Қате: ' + e.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = '💾 Сақтау →';
+    btn.textContent = state.editId ? '💾 Өзгерісті сақтау →' : '💾 Сақтау →';
   }
 }
 
@@ -727,8 +752,12 @@ function copyLink() {
 }
 
 function resetWizard() {
-  state = { step:1, theme:'underwater', gtype:'quiz', title:'', grade:'', subject:'', questions:[] };
+  state = { step:1, theme:'underwater', gtype:'quiz', title:'', grade:'', subject:'', questions:[], editId:null };
+  setEditMode(null);
   qId = 0;
+  document.getElementById('quizTitle').value = '';
+  document.getElementById('quizGrade').value = '';
+  document.getElementById('quizSubject').value = '';
   document.getElementById('questionList').innerHTML = '';
   document.querySelectorAll('.qm-step').forEach(s => s.classList.remove('visible'));
   [1,2,3,4].forEach(i => {
@@ -779,12 +808,64 @@ async function loadMyQuizzes() {
         </div>
         <div class="qcard-btns">
           <a href="quiz-play.html?id=${q.id}" class="qcard-btn play" target="_blank">▶ Ойнату</a>
+          <button class="qcard-btn" onclick="editQuiz('${q.id}')">✏️ Өзгерту</button>
           <button class="qcard-btn" onclick="copyQuizLink('${q.id}')">🔗 Сілтеме</button>
           <button class="qcard-btn" onclick="deleteQuiz('${q.id}',this)" style="color:#ef4444;border-color:rgba(239,68,68,.3)">🗑</button>
         </div>
       </div>
     `).join('');
   } catch(_) {}
+}
+
+// ── Edit a saved quiz ──
+function setEditMode(quiz) {
+  state.editId = quiz ? quiz.id : null;
+  document.getElementById('editBanner').style.display = quiz ? 'flex' : 'none';
+  document.getElementById('editBannerTitle').textContent = quiz ? quiz.title : '';
+  document.getElementById('btnSave').textContent = quiz ? '💾 Өзгерісті сақтау →' : '💾 Сақтау →';
+  if (!quiz && new URLSearchParams(location.search).has('edit')) {
+    history.replaceState(null, '', location.pathname);
+  }
+}
+
+async function editQuiz(id) {
+  const { data: quiz, error } = await sb.from('quizzes')
+    .select('id,title,theme,game_type,grade,subject,questions')
+    .eq('id', id).eq('created_by', currentUser.email).maybeSingle();
+  if (error || !quiz) return alert('Викторина табылмады немесе оны өзгертуге рұқсат жоқ.');
+
+  resetWizard();
+  state.theme = quiz.theme || 'underwater';
+  state.gtype = quiz.game_type || 'quiz';
+  renderThemes();
+  renderGtypes();
+  document.getElementById('qSubTitle').textContent = GTYPE_HINTS[state.gtype] || '';
+  document.getElementById('quizTitle').value = quiz.title || '';
+  document.getElementById('quizGrade').value = quiz.grade || '';
+  document.getElementById('quizSubject').value = quiz.subject || '';
+
+  document.getElementById('questionList').innerHTML = '';
+  qId = 0;
+  (quiz.questions || []).forEach(item => {
+    addQuestion();
+    const row = document.getElementById('q' + qId);
+    row.querySelector('.q-txt').value = item.q || '';
+    if (row.querySelector('.q-ans')) row.querySelector('.q-ans').value = item.a || '';
+    (item.wrong || []).slice(0, 3).forEach((w, i) => {
+      const inp = row.querySelector('.q-w' + (i + 1));
+      if (inp) inp.value = w;
+    });
+  });
+  if (!qId) addQuestion();
+
+  setEditMode(quiz);
+  goStep(4);
+  [1, 2, 3].forEach(i => document.getElementById('sd' + i).classList.add('done'));
+}
+
+function cancelEdit() {
+  if (!confirm('Өзгерістерді сақтамай шығасыз ба?')) return;
+  resetWizard();
 }
 
 async function copyQuizLink(id) {
