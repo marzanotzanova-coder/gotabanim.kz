@@ -239,6 +239,16 @@ tr:hover td{background:#f8faff}
 .btn-slides-clear{padding:8px 14px;border-radius:9px;font-size:12px;font-weight:700;background:rgba(239,68,68,.08);color:#dc2626;border:1px solid rgba(239,68,68,.2);cursor:pointer;font-family:'Inter',sans-serif}
 .btn-slides-clear:hover{background:rgba(239,68,68,.16)}
 .slides-divider{border:none;border-top:1px solid #f1f5f9;margin:14px 0}
+/* plan chooser for opening access */
+.grant-overlay{position:fixed;inset:0;z-index:300;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:20px}
+.grant-overlay.open{display:flex}
+.grant-box{background:#fff;border-radius:20px;padding:26px 24px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(15,23,42,.25)}
+.grant-box h3{font-size:19px;font-weight:900;margin-bottom:4px}.grant-sub{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.45}
+.grant-opt{display:flex;justify-content:space-between;align-items:center;width:100%;padding:14px 16px;margin-bottom:8px;border-radius:14px;border:1.5px solid var(--border);background:#fff;font:inherit;font-weight:800;font-size:15px;cursor:pointer;color:var(--text)}
+.grant-opt:hover{border-color:var(--primary);background:rgba(26,86,219,.05)}.grant-opt span{color:var(--primary)}
+.grant-opt.picked{border-color:#10b981;background:rgba(16,185,129,.08)}.grant-opt small{display:block;font-size:11px;color:#059669;font-weight:700;text-align:left}
+.grant-cancel{width:100%;padding:11px;border:none;background:none;color:var(--muted);font:inherit;font-weight:700;cursor:pointer}
+.pay-req-plan{font-size:12px;font-weight:700;color:var(--primary);margin-top:2px}
 </style>
 <link rel="stylesheet" href="teacher-theme.css?v=20261102">
 <script src="teacher-ui.js?v=20261102" defer></script>
@@ -261,7 +271,7 @@ tr:hover td{background:#f8faff}
   <section class="admin-section admin-list-card" id="paymentReport" hidden>
     <div class="section-top-row"><div class="admin-section-title">Төлем жасағандар</div><div><button class="btn-show-form" onclick="exportPaymentReport()">Excel (CSV) жүктеу</button> <button class="btn-logout" onclick="document.getElementById('paymentReport').hidden=true">Жабу</button></div></div>
     <div class="stats-row" id="paymentSummary"></div>
-    <p class="payment-note">Әр расталған төлем — 4 990 ₸. Бұрынғы төлем күндері жазылымнан немесе сұраныстан шамамен алынған. Екі аккаунттағы бір төлем бір рет есептеледі. Блоктау мен доступты тоқтату қайтарым болып саналмайды. Есеп банктен автоматты тексерілмейді.</p>
+    <p class="payment-note">Төлем сомасы тарифке байланысты: 1 ай — 4 990 ₸, 6 ай — 25 000 ₸, 1 жыл — 45 000 ₸. Бұрынғы төлем күндері жазылымнан немесе сұраныстан шамамен алынған. Екі аккаунттағы бір төлем бір рет есептеледі. Блоктау мен доступты тоқтату қайтарым болып саналмайды. Есеп банктен автоматты тексерілмейді.</p>
     <div class="users-table-wrap admin-list-scroll" tabindex="0" role="region" aria-label="Төлем есебі"><table><thead><tr><th>Аты-жөні</th><th>Email</th><th>Пән</th><th>Төлем</th><th>Қайтарым</th><th>Таза түсім</th><th>Төлем күні</th><th>Жазылым соңы</th><th>Қалған күн / доступ</th><th>Күйі</th><th>Ескерту</th><th>Әрекет</th></tr></thead><tbody id="paymentReportBody"></tbody></table></div>
   </section>
 
@@ -482,6 +492,9 @@ tr:hover td{background:#f8faff}
 
 </div>
 
+<div class="grant-overlay" id="grantModal" onclick="if(event.target===this)closeGrant()"><div class="grant-box" role="dialog" aria-modal="true" aria-labelledby="grantTitle">
+  <h3 id="grantTitle">Доступ ашу</h3><div class="grant-sub" id="grantSub"></div><div id="grantOpts"></div>
+  <button class="grant-cancel" onclick="closeGrant()">Бас тарту</button></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="supabase.js"></script>
 <script src="supabase-client.js"></script>
@@ -595,10 +608,10 @@ function renderTable(users) {
       : `<div style="display:flex;flex-direction:column;gap:4px">
            ${isActive
              ? `<button class="btn-toggle-paid make-unpaid" onclick="togglePaid('${u.id}',false)">📐 Болдырмау</button>`
-             : `<button class="btn-toggle-paid make-paid" onclick="togglePaid('${u.id}',true)">📐 1 ай белсендіру</button>`}
+             : `<button class="btn-toggle-paid make-paid" onclick="openGrant('${u.id}','math')">📐 Белсендіру</button>`}
            ${isActiveInfo
              ? `<button class="btn-toggle-paid make-unpaid" style="background:rgba(99,102,241,.1);color:#818cf8" onclick="togglePaidInfo('${u.id}',false)">💻 Болдырмау</button>`
-             : `<button class="btn-toggle-paid make-paid" style="background:rgba(99,102,241,.15);color:#818cf8" onclick="togglePaidInfo('${u.id}',true)">💻 1 ай белсендіру</button>`}
+             : `<button class="btn-toggle-paid make-paid" style="background:rgba(99,102,241,.15);color:#818cf8" onclick="openGrant('${u.id}','informatics')">💻 Белсендіру</button>`}
            <button class="btn-ban" onclick="banUser('${u.id}','${u.name||u.email}')">🚫 Блоктау</button>
          </div>`;
 
@@ -670,12 +683,13 @@ async function loadPaymentRequests() {
       ? `<span style="padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.25)">💻 Информатика</span>`
       : `<span style="padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;background:rgba(26,86,219,.10);color:#60a5fa;border:1px solid rgba(26,86,219,.2)">📐 Математика</span>`;
     const btn = r.status === 'pending'
-      ? `<button class="btn-approve" onclick="approveRequest('${r.id}','${r.user_id}','${r.subject||'math'}')">✓ 1 айға белсендіру</button>`
+      ? `<button class="btn-approve" onclick="openGrant('${r.user_id}','${r.subject||'math'}','${r.id}',${r.plan_months||1})">✓ Белсендіру</button>`
       : '';
     return `<div class="pay-req-card ${r.status}">
       <div class="pay-req-info">
         <div class="pay-req-name">${r.user_name || '—'} ${subjBadge}</div>
         <div class="pay-req-email">${r.user_email || '—'}</div>
+        <div class="pay-req-plan">Таңдаған тарифі: ${planName(r.plan_months || 1)}</div>
         <div class="pay-req-date">${dt} · ${badge}</div>
       </div>
       ${btn}
@@ -683,12 +697,27 @@ async function loadPaymentRequests() {
   }).join('');
 }
 
-async function approveRequest(reqId, userId, subj) {
-  const fn = subj === 'informatics' ? 'approve_informatics_payment' : 'approve_payment_request';
-  const { error } = await sb.rpc(fn, { req_id: reqId, uid: userId });
-  if (error) { alert('Қате: ' + error.message); return; }
-  await Promise.all([loadPaymentRequests(), loadUsers()]);
+// open access for 1 month / 6 months / 1 year, matching the amount the teacher paid
+const PLANS = [[1, '1 ай', 4990], [6, '6 ай', 25000], [12, '1 жыл', 45000]];
+const fmt = n => n.toLocaleString('ru-RU').replace(/\u00a0|,/g, ' ') + ' ₸';
+const planName = m => { const p = PLANS.find(x => x[0] === m) || PLANS[0]; return p[1] + ' — ' + fmt(p[2]); };
+let grantCtx = null;
+function openGrant(uid, subj, reqId = null, picked = 0) {
+  grantCtx = { uid, subj, reqId };
+  const u = allUsers.find(x => x.id === uid), who = u?.name || u?.email || 'Мұғалім';
+  document.getElementById('grantSub').textContent = `${who} · ${subj === 'informatics' ? 'Информатика' : 'Математика'}. Төленген сомаға сәйкес мерзімді таңдаңыз.`;
+  document.getElementById('grantOpts').innerHTML = PLANS.map(([m, l, a]) => `<button class="grant-opt ${m === picked ? 'picked' : ''}" onclick="doGrant(${m})"><div>${l}${m === picked ? '<small>Мұғалім таңдаған</small>' : ''}</div><span>${fmt(a)}</span></button>`).join('');
+  document.getElementById('grantModal').classList.add('open');
 }
+function closeGrant() { document.getElementById('grantModal').classList.remove('open'); grantCtx = null; }
+async function doGrant(months) {
+  if (!grantCtx || !confirm(`${planName(months)}: доступ ${PLANS.find(p => p[0] === months)[1]}ға ашылады. Растайсыз ба?`)) return;
+  const { uid, subj, reqId } = grantCtx;
+  const { error } = reqId ? await sb.rpc('approve_payment_plan', { req_id: reqId, uid, months }) : await sb.rpc('grant_subscription', { uid, subj, months });
+  if (error) { alert('Қате: ' + error.message); return; }
+  closeGrant(); await Promise.all([loadPaymentRequests(), loadUsers()]);
+}
+
 
 function filterUsers() {
   const q = document.getElementById('searchInput').value.toLowerCase();

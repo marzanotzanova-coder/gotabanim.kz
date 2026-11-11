@@ -352,7 +352,7 @@
 </div><!-- /games-page -->
 
 <!-- PAYMENT WALL -->
-<div class="pay-wall" id="payWall" role="dialog" aria-modal="true" aria-labelledby="payWallTitle" style="display:none">
+<div class="pay-wall" id="payWall" role="dialog" aria-modal="true" aria-label="Төлем жасау" style="display:none">
   <div class="pay-wall-box">
     <button type="button" class="pay-wall-close" onclick="closeModal()" aria-label="Төлем терезесін жабу">×</button>
     <div class="pay-wall-lock">
@@ -360,7 +360,6 @@
         <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
       </svg>
     </div>
-    <div class="pay-wall-title" id="payWallTitle">GoTAB Premium</div>
     <div class="pay-wall-sub">Интерактивті ойындарға қол жеткізу үшін<br>жазылымды белсендіріңіз</div>
     <div class="pay-wall-price">
       <div class="pay-wall-amount">4 990 ₸</div>
@@ -713,10 +712,11 @@ async function sendReceipt(){
   if(btn){ btn.disabled = true; btn.style.opacity = '0.6'; }
   if(currentUser){
     const{data:existing}=await sb.from('payment_requests').select('id').eq('user_id',currentUser.id).eq('status','pending').maybeSingle();
-    if(!existing)await sb.from('payment_requests').insert({user_id:currentUser.id,user_email:currentUser.email,user_name:currentUser.user_metadata?.name||currentUser.email}).catch(()=>{});
+    if(!existing)await sb.from('payment_requests').insert({user_id:currentUser.id,user_email:currentUser.email,user_name:currentUser.user_metadata?.name||currentUser.email,plan_months:window.payPlan?.().months || 1}).catch(()=>{});
   }
-  window.open('https://wa.me/77055894347?text='+encodeURIComponent('Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. Чекті жіберемін.'),'_blank');
+  window.open('https://wa.me/77055894347?text='+encodeURIComponent(`Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. ${window.payPlanText?.()||''}. Чекті жіберемін.`),'_blank');
 }
 </script>
+<script src="pay-plans.js?v=20261111"></script>
 </body>
 </html>

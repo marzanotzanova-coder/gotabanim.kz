@@ -428,7 +428,6 @@
 <div class="modal-overlay" id="payModal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal()">✕</button>
-    <div class="modal-title">GoTAB Premium</div>
     <div class="modal-sub">Барлық материалдарға толық қол жеткізу</div>
     <div class="price-tag">
       <div class="price-amount">4 990 ₸</div>
@@ -570,14 +569,16 @@ async function sendReceipt() {
       await sb.from('payment_requests').insert({
         user_id: currentUser.id,
         user_email: currentUser.email,
-        user_name: currentUser.user_metadata?.name || currentUser.email
+        user_name: currentUser.user_metadata?.name || currentUser.email,
+        plan_months: window.payPlan?.().months || 1
       });
     }
   }
-  const msg = encodeURIComponent('Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. Чекті жіберемін.');
+  const msg = encodeURIComponent(`Сәлем! GoTAB платформасына жазылым үшін төлем жасадым. ${window.payPlanText?.() || ''}. Чекті жіберемін.`);
   window.open(`https://wa.me/77055894347?text=${msg}`, '_blank');
 }
 </script>
 <script src="math-bg.js"></script>
+<script src="pay-plans.js?v=20261111"></script>
 </body>
 </html>
