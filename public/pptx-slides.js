@@ -55,7 +55,7 @@
           if (!width || !height) throw Error('Слайд өлшемі анықталмады.');
           const scale = Math.min(1600 / width, 1200 / height, 2);
           const canvas = await image.toCanvas(handle.element, {
-            width, height, pixelRatio: scale, backgroundColor: '#ffffff',
+            width, height, pixelRatio: scale,
             fontEmbedCSS: '', skipAutoScale: false,
             filter: node => !['AUDIO', 'VIDEO'].includes(node.tagName)
           });
