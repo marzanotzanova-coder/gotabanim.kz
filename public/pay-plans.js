@@ -1,9 +1,9 @@
 // Subscription plans on every payment card: 1 month / 6 months / 1 year, plus a no-refund warning
 (function () {
   const PLANS = [
-    { months: 1, price: 4990, label: '1 ай', period: '1 айға жазылу' },
-    { months: 6, price: 25000, label: '6 ай', period: '6 айға жазылу' },
-    { months: 12, price: 45000, label: '1 жыл', period: '1 жылға жазылу', best: true }];
+    { months: 1, price: 4990, label: '1 ай' },
+    { months: 6, price: 25000, label: '6 ай' },
+    { months: 12, price: 45000, label: '1 жыл', best: true }];
   const money = n => n.toLocaleString('ru-RU').replace(/ |,/g, ' ') + ' ₸';
   let chosen = PLANS[0];
   window.PAY_PLANS = PLANS;
@@ -24,17 +24,16 @@
     document.querySelectorAll('[data-pp="tag"], [data-pp="wall"]').forEach(box => {
       box.previousElementSibling.querySelectorAll('.pp-tab').forEach(t => t.classList.toggle('on', +t.dataset.m === chosen.months));
       box.querySelector('.pp-amount').textContent = money(chosen.price);
-      box.querySelector('.pp-period').textContent = chosen.period + (box.dataset.pp === 'wall' ? ' · барлық мүмкіндіктер' : '');
     });
   }
   // turn each price box (.price-tag on materials pages, .pay-wall-price on games/labs) into a plan picker
   window.mountPayPlans = function () {
     if (!document.getElementById('ppCss')) document.head.insertAdjacentHTML('beforeend', `<style id="ppCss">${CSS}</style>`);
     document.querySelectorAll('.price-tag:not([data-pp]), .pay-wall-price:not([data-pp])').forEach(box => {
-      const wall = box.classList.contains('pay-wall-price'), amt = wall ? 'pay-wall-amount' : 'price-amount', per = wall ? 'pay-wall-period' : 'price-period';
+      const wall = box.classList.contains('pay-wall-price'), amt = wall ? 'pay-wall-amount' : 'price-amount';
       box.dataset.pp = wall ? 'wall' : 'tag';
       box.insertAdjacentHTML('beforebegin', '<div class="pp-tabs">' + PLANS.map(p => `<button type="button" class="pp-tab" data-m="${p.months}">${p.best ? '<i>Тиімді</i>' : ''}<b>${p.label}</b><span>${money(p.price)}</span></button>`).join('') + '</div>');
-      box.innerHTML = `<div class="${amt} pp-amount"></div><div class="${per} pp-period"></div>`;
+      box.innerHTML = `<div class="${amt} pp-amount"></div>`;
       box.previousElementSibling.addEventListener('click', e => { const t = e.target.closest('.pp-tab'); if (!t) return; chosen = PLANS.find(p => p.months === +t.dataset.m); paint(); });
       const card = box.closest('.modal-box, .pay-wall-box');
       if (card && !card.querySelector('.pp-warn')) { const close = card.querySelector('.modal-close, .lab-payment-close, .pay-wall-close');
