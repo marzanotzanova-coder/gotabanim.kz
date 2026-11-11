@@ -364,11 +364,11 @@ tr:hover td{background:#f8faff}
       <div class="form-row">
         <label class="file-upload-label">
           <span>📊 PPT файл</span>
-          <input type="file" id="fPptFile" accept=".ppt,.pptx">
+          <input type="file" id="fPptFile" accept=".ppt,.pptx" onchange="preparePptxSlides(this.files[0])">
         </label>
         <label class="file-upload-label">
           <span>📄 ҚМЖ файл</span>
-          <input type="file" id="fQmjFile" accept=".doc,.docx,.pdf">
+          <input type="file" id="fQmjFile" accept=".doc,.docx,.pdf" onchange="prepareQmjThumbnail(this.files[0])">
         </label>
       </div>
       <label class="file-upload-label extras-admin-input">
@@ -379,13 +379,13 @@ tr:hover td{background:#f8faff}
       <!-- PDF auto-extract zone -->
       <div style="border:2px dashed #0ea5e9;border-radius:12px;padding:14px 16px;background:rgba(14,165,233,.04);margin-bottom:10px">
         <div style="font-size:12px;font-weight:800;color:#0284c7;margin-bottom:8px">
-          🪄 Презентация PDF → автоматты слайдтар
+          Презентация → автоматты слайдтар
         </div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:10px">
-          PowerPoint → <b>File → Export as PDF</b> (немесе Google Slides → Download as PDF), содан кейін осы жерге PDF тастаңыз
+          <b>PPTX таңдасаңыз, барлық слайд автоматты дайындалады.</b> Төмендегі суреттерді тексеріп, «Сақтау» басыңыз. Қажет болса, PDF немесе дайын суреттерді де қолдануға болады.
         </div>
         <label class="file-upload-label" style="margin-bottom:0">
-          <span>📄 Презентация PDF файлы</span>
+          <span>Презентация PDF файлы (міндетті емес)</span>
           <input type="file" id="fPdfSlides" accept=".pdf" onchange="extractPdfSlides(this.files[0])">
         </label>
         <div id="fPdfStatus" style="display:none;font-size:12px;font-weight:600;color:#0284c7;margin-top:8px"></div>
@@ -396,10 +396,11 @@ tr:hover td{background:#f8faff}
           <input type="file" id="fPptThumb" accept=".jpg,.jpeg,.png" multiple onchange="previewFormSlides(this.files)">
         </label>
         <label class="file-upload-label" style="flex:1">
-          <span>🖼 ҚМЖ preview суреті (JPEG)</span>
-          <input type="file" id="fQmjThumb" accept=".jpg,.jpeg,.png">
+          <span>ҚМЖ суреті (DOCX / PDF-тен автоматты)</span>
+          <input type="file" id="fQmjThumb" accept=".jpg,.jpeg,.png" onchange="cancelQmjThumbnail()">
         </label>
       </div>
+      <div id="qmjAutoStatus" role="status" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div><img id="qmjAutoImage" alt="ҚМЖ бірінші беті" style="display:none;max-width:210px;max-height:280px;object-fit:contain;border:1px solid #dce6f4;border-radius:8px;margin-bottom:12px">
       <div id="fSlidesPreview" style="display:none;margin-bottom:10px">
         <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:6px" id="fSlidesCount"></div>
         <div class="slides-preview-grid" id="fSlidesGrid"></div>
@@ -499,6 +500,9 @@ tr:hover td{background:#f8faff}
 <script src="supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script src="lesson-extras.js?v=20261102"></script>
+<script src="pptx-slides.js?v=20261111"></script>
+<script src="qmj-thumbnail.js?v=20261111"></script>
+<script src="admin-pptx.js?v=20261111"></script>
 <script>
 let allUsers = [];
 const MONTHS = ['қаңтар','ақпан','наурыз','сәуір','мамыр','маусым','шілде','тамыз','қыркүйек','қазан','қараша','желтоқсан'];
@@ -792,6 +796,8 @@ function renderLessons() {
              <button class="btn-video-link" data-replace="${l.id}-video" onclick="replaceFile('${l.id}','video')" style="background:rgba(139,92,246,.06)">↺ Бейне ауыстыру</button>`
           : `<button class="btn-video-link" onclick="replaceFile('${l.id}','video')">+ Бейне қосу</button>`}
         ${l.subject !== 'informatics' ? `<button class="btn-slides" data-add-extras="${l.id}" onclick="addLessonExtras('${l.id}')">Қосымша қосу</button><span class="extras-count">${GoTABExtras.files(l.extra_files).length} құжат</span>${GoTABExtras.files(l.extra_files).length?`<button class="btn-slides" onclick="downloadAdminExtras('${l.id}')">Қосымшаларды жүктеу</button>`:''}` : ''}
+        ${l.qmj_url ? `<button class="btn-slides" data-generate-qmj="${l.id}" onclick="generateQmjThumbnail('${l.id}')">ҚМЖ суретін жасау</button>` : ''}
+        ${l.ppt_url ? `<button class="btn-slides" data-generate-slides="${l.id}" onclick="generateLessonSlides('${l.id}')">PPTX-тен слайд жасау</button>` : ''}
         <button class="btn-slides" onclick="openSlidesModal('${l.id}')">📸 Слайдтар${slidesBadge}</button>
       </div>
     </div>`;
@@ -802,7 +808,20 @@ function toggleAddForm() {
   document.getElementById('addLessonForm').classList.toggle('open');
 }
 
+let lessonSaveBusy = false;
 async function saveLesson() {
+  if (lessonSaveBusy) return;
+  lessonSaveBusy = true;
+  const controls = Array.from(document.querySelectorAll('#addLessonForm input, #addLessonForm select, #addLessonForm button'));
+  const disabledStates = controls.map(control => control.disabled);
+  controls.forEach(control => { control.disabled = true; });
+  try {
+    await Promise.all([pptxPreparation, qmjPreparation]);
+    if (pptxPreparationError || qmjPreparationError) { alert(pptxPreparationError || qmjPreparationError); return; }
+    await saveLessonReady();
+  } finally { lessonSaveBusy = false; controls.forEach((control, i) => { control.disabled = disabledStates[i]; }); }
+}
+async function saveLessonReady() {
   const grade      = parseInt(document.getElementById('fGrade').value);
   const subject    = document.getElementById('fSubject').value;
   const lesson_num = parseInt(document.getElementById('fLessonNum').value);
@@ -811,7 +830,7 @@ async function saveLesson() {
   const pptFile    = document.getElementById('fPptFile').files[0];
   const qmjFile    = document.getElementById('fQmjFile').files[0];
   const pptThumb   = document.getElementById('fPptThumb').files[0];
-  const qmjThumb   = document.getElementById('fQmjThumb').files[0];
+  const qmjThumb   = document.getElementById('fQmjThumb').files[0] || pendingQmjThumbnail;
   const extraFiles=Array.from(document.getElementById('fExtraFiles').files||[]);
   if(extraFiles.length){try{GoTABExtras.validate(extraFiles);if(subject==='informatics')throw Error('Қосымша құжаттар математика бөліміне арналған');}catch(e){alert(e.message);return;}}
 
@@ -882,7 +901,7 @@ async function saveLesson() {
 
   if (qmjThumb) {
     prog.textContent = 'ҚМЖ суреті жүктелуде...';
-    const ext  = qmjThumb.name.split('.').pop();
+    const ext  = qmjThumb.name ? qmjThumb.name.split('.').pop() : 'jpg';
     const path = `grade${grade}/${subject}/lesson${lesson_num}/qmj_thumb_${Date.now()}.${ext}`;
     const { error: e } = await sb.storage.from('lesson-videos').upload(path, qmjThumb, { upsert: true });
     if (!e) {
@@ -914,6 +933,9 @@ async function saveLesson() {
   document.getElementById('fSlidesPreview').style.display = 'none';
   document.getElementById('fSlidesGrid').innerHTML = '';
   pendingSlideBlobs = [];
+  cancelPptxPreparation();
+  clearPptxPreviewUrls();
+  cancelQmjThumbnail();
   document.getElementById('addLessonForm').classList.remove('open');
   await loadLessons();
 }
@@ -928,8 +950,15 @@ async function deleteLesson(id) {
 // ── PDF → слайд суреттері (PDF.js) ──
 let pendingSlideBlobs = []; // PDF-тен алынған blob-тар
 
-async function extractPdfSlides(file) {
+function extractPdfSlides(file) {
+  cancelPptxPreparation();
+  pptxPreparation = extractPdfSlidesReady(file, slidePreparationVersion);
+  return pptxPreparation;
+}
+async function extractPdfSlidesReady(file, version) {
   if (!file) return;
+  pendingSlideBlobs = [];
+  clearPptxPreviewUrls();
   const status = document.getElementById('fPdfStatus');
   status.style.display = 'block';
   status.textContent = 'PDF оқылуда...';
@@ -947,6 +976,7 @@ async function extractPdfSlides(file) {
     const blobs = [];
 
     for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+      if (version !== slidePreparationVersion) { await pdf.destroy(); return; }
       status.textContent = `Слайд ${pageNum}/${totalPages} өңделуде...`;
       const page = await pdf.getPage(pageNum);
       const scale = 1.5;
@@ -963,6 +993,7 @@ async function extractPdfSlides(file) {
       blobs.push(blob);
     }
 
+    if (version !== slidePreparationVersion) { await pdf.destroy(); return; }
     pendingSlideBlobs = blobs;
     status.textContent = `✓ ${blobs.length} слайд дайын — сақтау кезінде жүктеледі`;
     status.style.color = '#16a34a';
@@ -983,6 +1014,8 @@ async function extractPdfSlides(file) {
     // Қолмен input-ті тазала
     document.getElementById('fPptThumb').value = '';
   } catch (e) {
+    if (version !== slidePreparationVersion) return;
+    pptxPreparationError = 'PDF оқу қатесі: ' + e.message;
     status.textContent = '⚠ PDF оқу қатесі: ' + e.message;
     status.style.color = '#dc2626';
   }
@@ -990,6 +1023,8 @@ async function extractPdfSlides(file) {
 
 // ── Жаңа сабақ формасындағы слайд preview (қолмен) ──
 function previewFormSlides(files) {
+  cancelPptxPreparation();
+  clearPptxPreviewUrls();
   const wrap  = document.getElementById('fSlidesPreview');
   const grid  = document.getElementById('fSlidesGrid');
   const count = document.getElementById('fSlidesCount');
@@ -1271,6 +1306,20 @@ function replaceFile(lessonId, type) {
     const btnEl = document.querySelector(`[data-replace="${lessonId}-${type}"]`);
     if (btnEl) { btnEl.textContent = 'Жүктелуде...'; btnEl.disabled = true; }
 
+    let pptxUploaded, qmjUploaded;
+    if (type === 'ppt') {
+      try {
+        const blobs = await GoTABPptx.convert(file, text => { if (btnEl) btnEl.textContent = text; });
+        pptxUploaded = await GoTABPptx.upload(sb, lesson, blobs, text => { if (btnEl) btnEl.textContent = text; });
+      } catch (e) {
+        if (btnEl) { btnEl.textContent = 'PPT ауыстыру'; btnEl.disabled = false; }
+        alert(e.message); return;
+      }
+    }
+    if (type === 'qmj' && /\.(docx|pdf)$/i.test(file.name)) {
+      try { qmjUploaded = await uploadQmjThumbnail(lesson, await GoTABQmjThumbnail.convert(file)); }
+      catch (e) { if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'ҚМЖ ауыстыру'; } alert(e.message); return; }
+    }
     const ext  = file.name.split('.').pop();
     const path = `grade${lesson.grade}/${lesson.subject}/lesson${lesson.lesson_num}/${type}_${Date.now()}.${ext}`;
 
@@ -1278,6 +1327,8 @@ function replaceFile(lessonId, type) {
       .upload(path, file, { upsert: true, contentType: file.type });
 
     if (upErr) {
+      if (pptxUploaded) await pptxUploaded.discard();
+      if (qmjUploaded) await qmjUploaded.discard();
       if (btnEl) { btnEl.textContent = type === 'ppt' ? 'PPT ауыстыру' : type === 'qmj' ? 'ҚМЖ ауыстыру' : 'Бейне ауыстыру'; btnEl.disabled = false; }
       alert('Жүктеу қатесі: ' + upErr.message);
       return;
@@ -1285,12 +1336,12 @@ function replaceFile(lessonId, type) {
 
     const { data: urlData } = sb.storage.from('lesson-videos').getPublicUrl(path);
     const update = {};
-    if (type === 'ppt')      update.ppt_url   = urlData.publicUrl;
-    else if (type === 'qmj') update.qmj_url   = urlData.publicUrl;
+    if (type === 'ppt') { update.ppt_url = urlData.publicUrl; update.slides_urls = pptxUploaded.urls; update.ppt_thumb_url = pptxUploaded.urls[0]; }
+    else if (type === 'qmj') { update.qmj_url = urlData.publicUrl; update.qmj_thumb_url = qmjUploaded?.url || null; }
     else                     update.video_url  = urlData.publicUrl;
 
     const { error: dbErr } = await sb.from('materials').update(update).eq('id', lessonId);
-    if (dbErr) { alert('Сақтау қатесі: ' + dbErr.message); return; }
+    if (dbErr) { if (pptxUploaded) await pptxUploaded.discard(); if (qmjUploaded) await qmjUploaded.discard(); if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Қайталау'; } alert('Сақтау қатесі: ' + dbErr.message); return; }
 
     await loadLessons();
   };
