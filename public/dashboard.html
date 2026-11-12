@@ -8,12 +8,30 @@
 <style>
 .home{max-width:1120px;margin:0 auto;padding:28px 20px 60px}
 /* hero: greeting on a bright gradient with slowly floating math symbols */
-.hero{position:relative;overflow:hidden;border-radius:26px;padding:34px 36px;color:#fff;background:linear-gradient(120deg,#0b1f5c 0%,#1a56db 55%,#0891b2 100%);box-shadow:0 18px 44px rgba(26,86,219,.28)}
-.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 85% 20%,rgba(255,255,255,.22),transparent 40%),radial-gradient(circle at 10% 110%,rgba(34,211,238,.35),transparent 45%)}
+.hero{position:relative;overflow:hidden;border-radius:28px;padding:34px 36px;color:#fff;background:linear-gradient(120deg,#0b1f5c,#1a56db,#6d28d9,#0891b2,#0b1f5c);background-size:300% 300%;animation:hero-shift 18s ease-in-out infinite;box-shadow:0 22px 50px rgba(26,86,219,.32),0 0 0 1px rgba(255,255,255,.08) inset}
+@keyframes hero-shift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+/* soft glowing orbs and a light sweep that crosses the banner now and then */
+.hero-orb{position:absolute;border-radius:50%;filter:blur(40px);opacity:.55;pointer-events:none;animation:hero-orb 16s ease-in-out infinite}
+.hero-orb.o1{width:260px;height:260px;background:#22d3ee;right:-60px;top:-80px}
+.hero-orb.o2{width:220px;height:220px;background:#a78bfa;left:30%;bottom:-120px;animation-delay:-6s}
+.hero-orb.o3{width:160px;height:160px;background:#f472b6;right:28%;top:-60px;opacity:.35;animation-delay:-10s}
+@keyframes hero-orb{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,20px) scale(1.15)}}
+.hero-shine{position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.18) 50%,transparent 60%);background-size:250% 100%;animation:hero-shine 7s ease-in-out infinite}
+@keyframes hero-shine{0%,60%{background-position:150% 0}100%{background-position:-60% 0}}
+.hero-top{display:flex;align-items:center;gap:16px}
+.hero-ava{position:relative;width:68px;height:68px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#1a56db;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.25),0 0 28px rgba(34,211,238,.7)}
+.hero-ava::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid transparent;border-top-color:#67e8f9;border-right-color:#c4b5fd;animation:hero-ring 4s linear infinite}
+@keyframes hero-ring{to{transform:rotate(360deg)}}
+.hero-hi{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800;padding:5px 12px;border-radius:99px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28)}
+.hero-hi svg{width:15px;height:15px;color:#fde68a}
+.hero-quote{margin-top:14px;display:flex;gap:10px;align-items:flex-start;max-width:620px;padding:12px 16px;border-radius:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);font-size:14px;line-height:1.5;font-style:italic}
+.hero-quote b{font-style:normal;font-size:24px;line-height:1;color:#fde68a}
+@media(prefers-reduced-motion:reduce){.hero,.hero-orb,.hero-shine,.hero-ava::after{animation:none}}
+
 .hero-sym{position:absolute;font-weight:900;color:rgba(255,255,255,.13);pointer-events:none;animation:hm-float 9s ease-in-out infinite}
 @keyframes hm-float{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-14px) rotate(6deg)}}
 @media(prefers-reduced-motion:reduce){.hero-sym{animation:none}}
-.hero-in{position:relative;z-index:1;max-width:640px}
+.hero-in{position:relative;z-index:1;max-width:700px}
 .hero-date{font-size:13px;font-weight:700;letter-spacing:.4px;opacity:.85;text-transform:uppercase}
 .hero h1{font-size:clamp(24px,3.4vw,34px);font-weight:900;line-height:1.2;margin:8px 0 8px;letter-spacing:-.5px}
 .hero p{font-size:15px;opacity:.9;line-height:1.5}
@@ -72,7 +90,7 @@
 .cab-line a{flex:1;color:var(--text);text-decoration:none;font-size:14px;font-weight:600}.cab-line a:hover{color:var(--primary)}
 .cab-del{border:none;background:none;color:#94a3b8;cursor:pointer;padding:6px;border-radius:8px;display:flex}.cab-del:hover{color:#dc2626;background:rgba(220,38,38,.08)}
 .cab-del svg{width:17px;height:17px}
-@media(max-width:760px){.hero{padding:26px 22px}.cab-grid{grid-template-columns:1fr}.pk-row{flex-direction:column;align-items:flex-start;gap:10px}.pk-name{width:auto}}
+@media(max-width:760px){.hero{padding:26px 22px}.hero-ava{width:54px;height:54px;font-size:19px}.hero-top{gap:12px}.cab-grid{grid-template-columns:1fr}.pk-row{flex-direction:column;align-items:flex-start;gap:10px}.pk-name{width:auto}}
 </style>
 <link rel="stylesheet" href="teacher-theme.css?v=20261102">
 <script src="teacher-ui.js?v=20261102" defer></script>
@@ -111,10 +129,15 @@
     <span class="hero-sym" style="right:24%;bottom:-6%;font-size:70px;animation-delay:-3s">√x</span>
     <span class="hero-sym" style="right:2%;bottom:18%;font-size:54px;animation-delay:-5s">∑</span>
     <span class="hero-sym" style="right:38%;top:-4%;font-size:48px;animation-delay:-2s">△</span>
+    <span class="hero-orb o1"></span><span class="hero-orb o2"></span><span class="hero-orb o3"></span><span class="hero-shine"></span>
     <div class="hero-in">
-      <div class="hero-date" id="heroDate"></div>
-      <h1 id="greeting">Сәлеметсіз бе!</h1>
+      <div class="hero-top">
+        <div class="hero-ava" id="heroAva" aria-hidden="true">G</div>
+        <div><span class="hero-hi" id="heroHi"></span><div class="hero-date" id="heroDate" style="margin-top:6px"></div></div>
+      </div>
+      <h1 id="greeting" style="margin-top:16px">Сәлеметсіз бе!</h1>
       <p>Бүгінгі сабаққа керектінің бәрі осында: презентация, ҚМЖ, анимация, ойын және зертхана.</p>
+      <div class="hero-quote"><b>“</b><span id="heroQuote"></span></div>
       <div class="hero-row" id="heroRow">
       </div>
     </div>
@@ -166,6 +189,11 @@ const MONTHS = ['қаңтар', 'ақпан', 'наурыз', 'сәуір', 'м�
 const DAYS = ['жексенбі', 'дүйсенбі', 'сейсенбі', 'сәрсенбі', 'бейсенбі', 'жұма', 'сенбі'];
 const now = new Date();
 document.getElementById('heroDate').textContent = `${now.getDate()} ${MONTHS[now.getMonth()]}, ${DAYS[now.getDay()]}`;
+// greeting by time of day and a Kazakh proverb that changes every day
+const h = now.getHours(), SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+document.getElementById('heroHi').innerHTML = SUN + (h < 12 ? 'Қайырлы таң' : h < 18 ? 'Қайырлы күн' : 'Қайырлы кеш');
+const PROVERBS = ['Білекті бірді жығар, білімді мыңды жығар.', 'Оқу — инемен құдық қазғандай.', 'Ұстазы жақсының ұстамы жақсы.', 'Талапты ерге нұр жауар.', 'Білім — таусылмас қазына.', 'Оқыған озар, оқымаған тозар.', 'Еңбек етсең ерінбей, тояды қарның тіленбей.'];
+document.getElementById('heroQuote').textContent = PROVERBS[Math.floor(now / 864e5) % PROVERBS.length];
 
 (async () => {
   const user = await requireAuth();
@@ -174,6 +202,7 @@ document.getElementById('heroDate').textContent = `${now.getDate()} ${MONTHS[now
   document.getElementById('userName').textContent = name;
   const teacherName = user.user_metadata?.name?.trim();
   document.querySelector('#greeting').textContent = 'Сәлеметсіз бе' + (teacherName ? ', ' + teacherName : '') + '!';
+  document.getElementById('heroAva').textContent = (teacherName || name).split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || 'G';
   void TeacherCabinet.dashboard(user);
   void showNewLessons();
   if (user.email === ADMIN_EMAIL) {
