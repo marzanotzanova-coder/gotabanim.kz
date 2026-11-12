@@ -458,6 +458,8 @@ body.lesson-open .lesson-dl-footer{padding:16px 20px}
 </style>
 <link rel="stylesheet" href="teacher-theme.css?v=20261104-cards">
 <script src="teacher-ui.js?v=20261102" defer></script>
+<link rel="stylesheet" href="teacher-cabinet.css">
+<script src="teacher-cabinet.js"></script>
 </head>
 <body class="teacher-app">
 
@@ -694,6 +696,7 @@ async function checkContentAccess(user) {
   const user = await GoTABLoad.deadline(() => requireAuth());
   if (!user) return;
   currentUser = user;
+  window.TeacherCabinet?.catalog(user,grade,subject);
   document.getElementById('userName').textContent = user.user_metadata?.name || user.email;
 
   const isInfoSubject = subject === 'informatics';
@@ -930,7 +933,7 @@ function render(overrideLessons) {
     const hasAnySrc  = hasPptSrc || hasQmjSrc || hasVidSrc || GoTABExtras.files(lesson.extra_files).length;
 
     return `
-    <div class="lesson-unit" data-lesson-num="${lessonNum}">
+    <div class="lesson-unit" id="lesson-${lessonNum}" data-lesson-num="${lessonNum}">
 
       <!-- PRESENTATION -->
       <div class="ppt-section">
@@ -939,6 +942,7 @@ function render(overrideLessons) {
         </div>
         <div class="ppt-body">
           <div class="ppt-title">${lesson.title}</div>
+          <button class="cab-save" data-save-lesson>Сақтау</button>
           <div class="ppt-meta">
             <span class="badge-ppt">PPT</span>
             ${lesson.ppt ? lesson.ppt.meta : ''}
@@ -985,6 +989,10 @@ function render(overrideLessons) {
     </div>`;
   }).join('');
 
+  if (/^#lesson-\d+$/.test(location.hash) && !grid.dataset.jumped) {
+    const target = document.getElementById(location.hash.slice(1));
+    if (target) { target.scrollIntoView(); grid.dataset.jumped = '1'; }
+  }
   GoTABLoad.visibleVideos(grid);
 
   async function dlFile(url, btn, label, videoTitle) {
@@ -1298,5 +1306,6 @@ document.addEventListener('keydown', e => {
 </script>
 <script src="math-bg.js"></script>
 <script src="pay-plans.js?v=20261111"></script>
+<dialog id="saveDialog"><form><h2>Сабақты сақтау</h2><label for="folderName">Папка таңдаңыз немесе жаңа атау жазыңыз</label><input id="folderName" list="folderNames" maxlength="80" placeholder="Дүйсенбі, 6-сынып"><datalist id="folderNames"></datalist><output aria-live="polite"></output><button type="submit" disabled>Сақтау</button><button type="button" onclick="this.closest('dialog').close()">Жабу</button></form></dialog>
 </body>
 </html>

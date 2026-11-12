@@ -1,0 +1,14 @@
+#cabinet{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}
+#cabinet section,#saveDialog{background:white;color:#172e50;border:1px solid #dbe6f3;border-radius:16px;padding:20px}
+#cabinet section:last-child{grid-column:1/-1}
+#cabinet h2,#saveDialog h2{font-size:18px;margin:0 0 10px}
+#cabinet p{color:#596d86;font-size:14px;margin:0}
+#cabinet a,#cabinet button,#saveDialog button,.cab-save{display:inline-block;padding:8px 12px;margin:3px;border:1px solid #cddcf1;border-radius:9px;color:#244f91;background:#f5f9ff;text-decoration:none;font:inherit;font-size:14px;cursor:pointer}
+#cabinet summary{cursor:pointer;padding:8px 0;font-weight:600}
+#saveDialog{margin:auto;width:min(360px,90vw);box-sizing:border-box}
+#saveDialog::backdrop{background:#10244575}
+#saveDialog label,#saveDialog output{display:block;margin:10px 0}
+#saveDialog input{padding:10px;width:100%;box-sizing:border-box;border:1px solid #bdcfe5;border-radius:8px;font:inherit}
+.cab-save{align-self:flex-start}
+.lesson-unit[id]{scroll-margin-top:145px}
+@media(max-width:600px){#cabinet{grid-template-columns:1fr}}

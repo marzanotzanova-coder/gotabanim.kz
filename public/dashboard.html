@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GoTAB — Сынып таңдаңыз</title>
+<title>GoTAB — Мұғалім кабинеті</title>
 <link rel="stylesheet" href="gotab.css">
 <style>
 .main-subject-grid{display:flex;gap:14px;flex-wrap:wrap}
@@ -32,6 +32,8 @@
 </style>
 <link rel="stylesheet" href="teacher-theme.css?v=20261102">
 <script src="teacher-ui.js?v=20261102" defer></script>
+<link rel="stylesheet" href="teacher-cabinet.css">
+<script src="teacher-cabinet.js"></script>
 </head>
 <body class="teacher-app">
 <nav class="top-nav">
@@ -61,10 +63,11 @@
 
 <div class="dash-page">
   <div class="dash-header">
-    <h1>GoTAB мұғалімдерге</h1>
-    <p>Сынып пен пәнді таңдап, материалдарға кіріңіз</p>
+    <h1 id="greeting">Мұғалім кабинеті</h1>
+
   </div>
 
+  <div id="cabinet"></div>
   <div class="dash-section">
     <div class="dash-section-title">Пән таңдаңыз</div>
     <div class="main-subject-grid">
@@ -136,6 +139,9 @@ function selectMainSubject(main) {
   if (!user) return;
   const name = user.user_metadata?.name || user.email;
   document.getElementById('userName').textContent = name;
+  const teacherName = user.user_metadata?.name?.trim();
+  document.querySelector('#greeting').textContent = 'Сәлеметсіз бе' + (teacherName ? ', ' + teacherName : '') + '! 💙';
+  void TeacherCabinet.dashboard(user);
   if (user.email === ADMIN_EMAIL) {
     const adminBtn = document.createElement('a');
     adminBtn.href = 'admin.html';
