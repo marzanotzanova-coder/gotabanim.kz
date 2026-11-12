@@ -57,6 +57,39 @@
 .catalog-status{max-width:1200px;margin:0 auto 20px;padding:20px;border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--muted);display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;text-align:center}
 .catalog-status[hidden],.catalog-status button[hidden]{display:none}
 .catalog-status button{padding:9px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--primary);font:inherit;cursor:pointer}
+/* ── TOPIC CARDS: the list shows one compact card per lesson; a click opens that lesson alone ── */
+.topic-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.topic-card{display:flex;flex-direction:column;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;cursor:pointer;font:inherit;color:var(--text);padding:0;transition:border-color .2s,transform .2s,box-shadow .2s}
+.topic-card:hover,.topic-card:focus-visible{border-color:var(--primary);transform:translateY(-3px);box-shadow:0 14px 34px rgba(26,86,219,.14)}
+.topic-thumb{position:relative;height:160px;background:linear-gradient(135deg,#0f1e3e,#1a3a7a);overflow:hidden}
+.topic-thumb img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+.topic-thumb .topic-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:900;color:rgba(255,255,255,.25)}
+.topic-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.topic-title{font-size:16px;font-weight:800;line-height:1.3}
+.topic-has{display:flex;flex-wrap:wrap;gap:6px}
+.topic-has span{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(26,86,219,.07);color:var(--primary)}
+.topic-has svg{width:13px;height:13px}
+.topic-open{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff;font-weight:800;font-size:14px}
+.topic-done{font-size:11px;font-weight:700;color:#059669}
+.lesson-bar{display:none;max-width:1100px;margin:0 auto 16px;align-items:center;gap:10px;flex-wrap:wrap}
+.lesson-bar h2{flex:1;min-width:200px;font-size:20px;font-weight:900;line-height:1.3}
+.lesson-bar button{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;min-height:44px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.lesson-bar button:hover{border-color:var(--primary);color:var(--primary)}.lesson-bar button:disabled{opacity:.35;cursor:default}
+.lesson-bar .lb-back{color:var(--primary)}
+body:not(.lesson-open) #lessonsGrid{display:none}
+body.lesson-open #topicGrid{display:none}
+body.lesson-open .lesson-bar{display:flex}
+body.lesson-open .lessons-grid{display:block;max-width:1100px}
+body.lesson-open .lesson-unit:not(.is-open){display:none}
+body.lesson-open .lesson-unit:hover{transform:none}
+body.lesson-open .lesson-unit .ppt-preview{height:min(50vw,420px)}
+body.lesson-open .lesson-unit .ppt-body{padding:16px 20px}
+body.lesson-open .lesson-unit .ppt-title{font-size:18px}
+body.lesson-open .lesson-unit .sub-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+body.lesson-open .lesson-unit .sub-card{border-left:1px solid var(--border);padding:18px}
+body.lesson-open .lesson-unit .sub-preview{height:200px}
+body.lesson-open .lesson-dl-footer{padding:16px 20px}
+@media(max-width:640px){.lesson-bar h2{order:-1;flex-basis:100%;font-size:18px}.lesson-bar button{flex:1;justify-content:center;padding:10px 8px;font-size:13px}}
 /* ── LESSON UNIT (one lesson = ppt + qmj + video) ── */
 .lesson-unit{
   background:var(--surface);
@@ -483,6 +516,13 @@
     <span id="catalogStatusText">Сабақтар жүктелуде…</span>
     <button type="button" id="catalogRetry" onclick="location.reload()">Қайта жүктеу</button>
   </div>
+  <div class="topic-grid" id="topicGrid"></div>
+  <div class="lesson-bar" id="lessonBar">
+    <button type="button" class="lb-back" id="lbBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Барлық сабақтар</button>
+    <h2 id="lbTitle"></h2>
+    <button type="button" id="lbPrev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Алдыңғы</button>
+    <button type="button" id="lbNext">Келесі<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+  </div>
   <div class="lessons-grid" id="lessonsGrid" aria-busy="true"></div>
   <script>
     // This runs before dependencies, so even a stalled script cannot leave a blank page.
@@ -829,13 +869,17 @@ function markDone(idx) { try { localStorage.setItem(dlKey(idx), TODAY); } catch 
 
 // ── Render ──
 function render(overrideLessons) {
-  const lessons = overrideLessons || [];
+  // only lessons that have something to open or download; empty lessons are not shown
+  const lessons = (overrideLessons || []).filter(l => (l.ppt && l.ppt.src) || (l.qmj && l.qmj.src) || (l.video && l.video.src) || GoTABExtras.files(l.extra_files).length);
   const grid = document.getElementById('lessonsGrid');
 
   if (!lessons.length) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:60px;font-size:15px">Материалдар жақын арада қосылады</div>`;
+    grid.innerHTML = '';
+    document.getElementById('topicGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:60px;font-size:15px">Материалдар жақын арада қосылады</div>`;
+    showLessonFromHash([]);
     return;
   }
+  renderTopicCards(lessons);
 
   grid.innerHTML = lessons.map((lesson, i) => {
     const lessonNum = Number(lesson.lesson_num) || i + 1;
@@ -1024,7 +1068,51 @@ function render(overrideLessons) {
       openPreview(lessons[idx], lessons[idx].lesson_num || idx + 1);
     });
   });
+  showLessonFromHash(lessons);
 }
+
+// ── Topic cards: one card per lesson; the lesson opens alone with all its materials (#sabak-N) ──
+const TOPIC_ICONS = {
+  ppt: '<path d="M2 3h20v14H2z"/><path d="M8 21h8M12 17v4"/>',
+  qmj: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/>',
+  video: '<path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+  extra: '<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>' };
+const topicIcon = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${TOPIC_ICONS[k]}</svg>`;
+const escHtml = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let openLessons = [];
+function renderTopicCards(lessons) {
+  document.getElementById('topicGrid').innerHTML = lessons.map((lesson, i) => {
+    const num = Number(lesson.lesson_num) || i + 1, thumb = lesson.ppt && lesson.ppt.thumb;
+    const has = [[lesson.ppt && lesson.ppt.src, 'ppt', 'Презентация'], [lesson.qmj && lesson.qmj.src, 'qmj', 'ҚМЖ'],
+      [lesson.video && lesson.video.src, 'video', 'Анимация'], [subject !== 'informatics' && GoTABExtras.files(lesson.extra_files).length, 'extra', 'Қосымша']].filter(x => x[0]);
+    return `<button type="button" class="topic-card" data-open="${num}">
+      <div class="topic-thumb">${thumb ? `<img src="${escHtml(thumb)}" alt="" loading="${i < 3 ? 'eager' : 'lazy'}" decoding="async">` : `<div class="topic-num">${num}</div>`}<span class="lesson-badge">Сабақ ${num}</span></div>
+      <div class="topic-body"><div class="topic-title">${escHtml(lesson.title)}</div>
+        <div class="topic-has">${has.map(([, k, l]) => `<span>${topicIcon(k)}${l}</span>`).join('')}</div>
+        ${wasDownloadedToday(num) ? '<div class="topic-done">✓ Бүгін жүктелді</div>' : ''}
+        <div class="topic-open">Сабақты ашу</div></div></button>`;
+  }).join('');
+}
+function showLessonFromHash(lessons) {
+  if (lessons) openLessons = lessons;
+  const m = location.hash.match(/^#sabak-(\d+)$/), num = m ? Number(m[1]) : 0;
+  const idx = openLessons.findIndex((l, i) => (Number(l.lesson_num) || i + 1) === num);
+  document.body.classList.toggle('lesson-open', idx >= 0);
+  document.querySelectorAll('#lessonsGrid .lesson-unit').forEach(u => u.classList.toggle('is-open', Number(u.dataset.lessonNum) === num));
+  if (idx < 0) return;
+  const lesson = openLessons[idx];
+  document.getElementById('lbTitle').textContent = `${num}-сабақ. ${lesson.title || ''}`;
+  document.getElementById('lbPrev').disabled = idx === 0;
+  document.getElementById('lbNext').disabled = idx === openLessons.length - 1;
+}
+const lessonNumAt = i => Number(openLessons[i]?.lesson_num) || i + 1;
+function currentLessonIdx() { const m = location.hash.match(/^#sabak-(\d+)$/); return m ? openLessons.findIndex((l, i) => lessonNumAt(i) === Number(m[1])) : -1; }
+document.getElementById('topicGrid').addEventListener('click', e => { const c = e.target.closest('[data-open]'); if (!c) return; location.hash = 'sabak-' + c.dataset.open; window.scrollTo({ top: 0 }); });
+document.getElementById('lbBack').onclick = () => { history.pushState(null, '', location.pathname + location.search); showLessonFromHash(); };
+document.getElementById('lbPrev').onclick = () => { const i = currentLessonIdx(); if (i > 0) { location.hash = 'sabak-' + lessonNumAt(i - 1); window.scrollTo({ top: 0 }); } };
+document.getElementById('lbNext').onclick = () => { const i = currentLessonIdx(); if (i >= 0 && i < openLessons.length - 1) { location.hash = 'sabak-' + lessonNumAt(i + 1); window.scrollTo({ top: 0 }); } };
+addEventListener('hashchange', () => showLessonFromHash());
+addEventListener('popstate', () => showLessonFromHash());
 
 // ── Payment modal ──
 function openModal()  { document.getElementById('payModal').classList.add('open'); }
