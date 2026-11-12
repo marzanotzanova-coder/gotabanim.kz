@@ -18,7 +18,7 @@
 @keyframes hero-orb{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,20px) scale(1.15)}}
 .hero-shine{position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.18) 50%,transparent 60%);background-size:250% 100%;animation:hero-shine 7s ease-in-out infinite}
 @keyframes hero-shine{0%,60%{background-position:150% 0}100%{background-position:-60% 0}}
-.hero-fluid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen}
+.hero-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen}
 .hero-top{display:flex;align-items:center;gap:16px}
 .hero-ava{position:relative;width:68px;height:68px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#1a56db;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.25),0 0 28px rgba(34,211,238,.7)}
 .hero-ava::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid transparent;border-top-color:#67e8f9;border-right-color:#c4b5fd;animation:hero-ring 4s linear infinite}
@@ -243,6 +243,6 @@ async function logout() {
 }
 </script>
 <script src="math-bg.js"></script>
-<script src="hero-fluid.js?v=20261112"></script>
+<script src="hero-glitter.js?v=20261112"></script>
 </body>
 </html>
