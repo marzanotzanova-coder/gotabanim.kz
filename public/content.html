@@ -458,8 +458,8 @@ body.lesson-open .lesson-dl-footer{padding:16px 20px}
 </style>
 <link rel="stylesheet" href="teacher-theme.css?v=20261104-cards">
 <script src="teacher-ui.js?v=20261102" defer></script>
-<link rel="stylesheet" href="teacher-cabinet.css">
-<script src="teacher-cabinet.js"></script>
+<link rel="stylesheet" href="teacher-cabinet.css?v=20261112-home">
+<script src="teacher-cabinet.js?v=20261112-home"></script>
 </head>
 <body class="teacher-app">
 
@@ -1110,6 +1110,7 @@ function showLessonFromHash(lessons) {
   if (idx < 0) return;
   const lesson = openLessons[idx];
   document.getElementById('lbTitle').textContent = `${num}-сабақ. ${lesson.title || ''}`;
+  window.TeacherCabinet?.opened?.(num, lesson.title || '');
   document.getElementById('lbPrev').disabled = idx === 0;
   document.getElementById('lbNext').disabled = idx === openLessons.length - 1;
 }

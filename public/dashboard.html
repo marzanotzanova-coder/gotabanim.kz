@@ -6,34 +6,63 @@
 <title>GoTAB — Мұғалім кабинеті</title>
 <link rel="stylesheet" href="gotab.css">
 <style>
-.main-subject-grid{display:flex;gap:14px;flex-wrap:wrap}
-.main-subject-btn{
-  flex:1;min-width:200px;
-  padding:20px 28px;
-  background:var(--surface);
-  border:2px solid var(--border);
-  border-radius:16px;
-  color:var(--text);font-size:16px;font-weight:700;
-  font-family:'Inter',sans-serif;cursor:pointer;
-  transition:all .2s;
-  box-shadow:0 2px 8px rgba(0,0,0,.04);
-  display:flex;align-items:center;gap:10px;
-}
-.main-subject-btn:hover{border-color:var(--primary);color:var(--primary)}
-.main-subject-btn.active{
-  background:linear-gradient(135deg,var(--primary),var(--cyan));
-  border-color:transparent;color:#fff;
-  box-shadow:0 6px 20px rgba(26,86,219,.25);
-}
-.main-subject-btn .subj-icon{width:26px;height:26px;flex-shrink:0}
-@media(max-width:600px){
-  .main-subject-btn{min-width:140px;padding:16px 18px;font-size:14px}
-}
+.home{max-width:1120px;margin:0 auto;padding:28px 20px 60px}
+/* hero: greeting on a bright gradient with slowly floating math symbols */
+.hero{position:relative;overflow:hidden;border-radius:26px;padding:34px 36px;color:#fff;background:linear-gradient(120deg,#0b1f5c 0%,#1a56db 55%,#0891b2 100%);box-shadow:0 18px 44px rgba(26,86,219,.28)}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 85% 20%,rgba(255,255,255,.22),transparent 40%),radial-gradient(circle at 10% 110%,rgba(34,211,238,.35),transparent 45%)}
+.hero-sym{position:absolute;font-weight:900;color:rgba(255,255,255,.13);pointer-events:none;animation:hm-float 9s ease-in-out infinite}
+@keyframes hm-float{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-14px) rotate(6deg)}}
+@media(prefers-reduced-motion:reduce){.hero-sym{animation:none}}
+.hero-in{position:relative;z-index:1;max-width:640px}
+.hero-date{font-size:13px;font-weight:700;letter-spacing:.4px;opacity:.85;text-transform:uppercase}
+.hero h1{font-size:clamp(24px,3.4vw,34px);font-weight:900;line-height:1.2;margin:8px 0 8px;letter-spacing:-.5px}
+.hero p{font-size:15px;opacity:.9;line-height:1.5}
+.hero-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;align-items:center}
+.hero-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 18px;min-height:46px;border-radius:13px;background:#fff;color:#1a56db;font-weight:800;font-size:14px;text-decoration:none;box-shadow:0 6px 18px rgba(11,31,92,.25)}
+.hero-btn.ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35);box-shadow:none}
+.hero-btn svg,.hm-ic{width:18px;height:18px;flex-shrink:0}
+.hero-sub{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:99px;background:rgba(16,185,129,.25);border:1px solid rgba(110,231,183,.5);font-size:12px;font-weight:800}
+/* quick start: one row per subject, a small chip per grade opens the lessons straight away */
+.hm-block{margin-top:26px}
+.hm-title{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:900;color:var(--text);margin-bottom:12px}
+.hm-title svg{width:20px;height:20px;color:var(--primary)}
+.picker{background:#fff;border:1px solid var(--border);border-radius:20px;padding:8px 18px;box-shadow:0 4px 18px rgba(26,86,219,.06)}
+.pk-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)}
+.pk-row:last-child{border-bottom:none}
+.pk-name{display:flex;align-items:center;gap:10px;width:170px;flex-shrink:0;font-weight:800;font-size:15px;color:var(--text)}
+.pk-name i{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-style:normal;color:#fff;flex-shrink:0}
+.pk-name i svg{width:18px;height:18px}
+.pk-chips{display:flex;flex-wrap:wrap;gap:8px}
+.pk-chip{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;min-height:40px;border-radius:11px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-weight:700;font-size:14px;text-decoration:none;transition:all .15s}
+.pk-chip:hover{border-color:var(--primary);color:var(--primary);background:#fff;transform:translateY(-1px)}
+.pk-chip.mine{border-color:rgba(26,86,219,.45);background:rgba(26,86,219,.08);color:var(--primary)}
+.pk-chip.mine::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--primary)}
+/* cabinet cards */
+.cab-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-top:26px}
+.cab-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:20px 22px;box-shadow:0 4px 18px rgba(26,86,219,.06)}
+.cab-card.wide{grid-column:1/-1}
+.cab-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.cab-head i{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-style:normal;flex-shrink:0}
+.cab-head i svg{width:20px;height:20px}
+.cab-head h2{font-size:16px;font-weight:900;color:var(--text)}
+.cab-empty{font-size:14px;color:var(--muted);line-height:1.5}
+.cab-recent{display:flex;align-items:center;gap:14px;padding:14px;border-radius:14px;background:var(--surface2);text-decoration:none;color:var(--text)}
+.cab-recent b{display:block;font-size:15px}.cab-recent span{font-size:13px;color:var(--muted)}
+.cab-recent .go{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff;font-weight:800;font-size:13px;white-space:nowrap}
+.cab-chips{display:flex;flex-wrap:wrap;gap:8px}
+.cab-folder{border:1px solid var(--border);border-radius:14px;margin-top:8px;overflow:hidden}
+.cab-folder summary{cursor:pointer;padding:12px 14px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px;background:var(--surface2)}
+.cab-folder summary svg{width:17px;height:17px;color:#f59e0b}
+.cab-line{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--border)}
+.cab-line a{flex:1;color:var(--text);text-decoration:none;font-size:14px;font-weight:600}.cab-line a:hover{color:var(--primary)}
+.cab-del{border:none;background:none;color:#94a3b8;cursor:pointer;padding:6px;border-radius:8px;display:flex}.cab-del:hover{color:#dc2626;background:rgba(220,38,38,.08)}
+.cab-del svg{width:17px;height:17px}
+@media(max-width:760px){.hero{padding:26px 22px}.cab-grid{grid-template-columns:1fr}.pk-row{flex-direction:column;align-items:flex-start;gap:10px}.pk-name{width:auto}}
 </style>
 <link rel="stylesheet" href="teacher-theme.css?v=20261102">
 <script src="teacher-ui.js?v=20261102" defer></script>
-<link rel="stylesheet" href="teacher-cabinet.css">
-<script src="teacher-cabinet.js"></script>
+<link rel="stylesheet" href="teacher-cabinet.css?v=20261112-home">
+<script src="teacher-cabinet.js?v=20261112-home"></script>
 </head>
 <body class="teacher-app">
 <nav class="top-nav">
@@ -61,78 +90,57 @@
   <a href="animations.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4zM9 8l7 4-7 4z"/></svg>Анимациялар</a>
 </div>
 
-<div class="dash-page">
-  <div class="dash-header">
-    <h1 id="greeting">Мұғалім кабинеті</h1>
-
-  </div>
-
-  <div id="cabinet"></div>
-  <div class="dash-section">
-    <div class="dash-section-title">Пән таңдаңыз</div>
-    <div class="main-subject-grid">
-      <button class="main-subject-btn" onclick="selectMainSubject('math')">
-        <svg class="subj-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
-        </svg>
-        Математика пәні
-      </button>
-      <button class="main-subject-btn" onclick="selectMainSubject('informatics')">
-        <svg class="subj-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
-        </svg>
-        Информатика пәні
-      </button>
-    </div>
-  </div>
-
-  <div id="gradeSectionWrapper" style="display:none">
-    <div class="dash-section">
-      <div class="dash-section-title">Сынып таңдаңыз</div>
-      <div class="grade-grid">
-        <button class="grade-btn" onclick="selectGrade(5)">5-сынып</button>
-        <button class="grade-btn" onclick="selectGrade(6)">6-сынып</button>
-        <button class="grade-btn" onclick="selectGrade(7)">7-сынып</button>
-        <button class="grade-btn" onclick="selectGrade(8)">8-сынып</button>
-        <button class="grade-btn" onclick="selectGrade(9)">9-сынып</button>
-        <button class="grade-btn" onclick="selectGrade(10)">10-сынып</button>
-        <button class="grade-btn" onclick="selectGrade(11)">11-сынып</button>
+<div class="home">
+  <section class="hero">
+    <span class="hero-sym" style="right:6%;top:10%;font-size:90px">π</span>
+    <span class="hero-sym" style="right:24%;bottom:-6%;font-size:70px;animation-delay:-3s">√x</span>
+    <span class="hero-sym" style="right:2%;bottom:18%;font-size:54px;animation-delay:-5s">∑</span>
+    <span class="hero-sym" style="right:38%;top:-4%;font-size:48px;animation-delay:-2s">△</span>
+    <div class="hero-in">
+      <div class="hero-date" id="heroDate"></div>
+      <h1 id="greeting">Сәлеметсіз бе!</h1>
+      <p>Бүгінгі сабаққа керектінің бәрі осында: презентация, ҚМЖ, анимация, ойын және зертхана.</p>
+      <div class="hero-row" id="heroRow">
+        <a class="hero-btn ghost" href="labs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4 20a1 1 0 0 0 .9 1.5h14.2A1 1 0 0 0 20 20l-6-11V3"/></svg>Зертхана</a>
+        <a class="hero-btn ghost" href="games.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/></svg>Ойындар</a>
       </div>
     </div>
+  </section>
 
-    <div class="dash-section subject-section" id="subjectSection">
-      <div class="dash-section-title">Бөлім таңдаңыз</div>
-      <div class="subject-grid" id="subjectsMath56" style="display:none">
-        <button class="subject-btn" onclick="selectSubject('math')">Математика</button>
-      </div>
-      <div class="subject-grid" id="subjectsAlgGeo" style="display:none">
-        <button class="subject-btn" onclick="selectSubject('algebra')">Алгебра</button>
-        <button class="subject-btn" onclick="selectSubject('geometry')">Геометрия</button>
-      </div>
-    </div>
-  </div>
+  <section class="hm-block">
+    <div class="hm-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Сабаққа өту</div>
+    <div class="picker" id="picker"></div>
+  </section>
 
-  <div class="dash-continue">
-    <button id="continueBtn" onclick="goToContent()" disabled>Жалғастыру →</button>
+  <div class="cab-grid" id="cabinet">
+    <section class="cab-card" id="cabRecent"></section>
+    <section class="cab-card" id="cabClasses"></section>
+    <section class="cab-card wide" id="cabSaved"></section>
   </div>
 </div>
 
 <script src="supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script>
-let selectedMainSubject = null, selectedGrade = null, selectedSubject = null;
-
-function selectMainSubject(main) {
-  selectedMainSubject = main;
-  selectedGrade = null;
-  selectedSubject = main === 'informatics' ? 'informatics' : null;
-  document.querySelectorAll('.main-subject-btn').forEach(b => b.classList.remove('active'));
-  event.target.closest('.main-subject-btn').classList.add('active');
-  document.getElementById('gradeSectionWrapper').style.display = 'block';
-  document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('subjectSection').classList.remove('visible');
-  document.getElementById('continueBtn').disabled = true;
+// subject rows with grade chips; each chip opens the lessons of that grade directly
+const PICK = [
+  ['math', 'Математика', '#1a56db', '<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>', [5, 6]],
+  ['algebra', 'Алгебра', '#7c3aed', '<path d="M4 7V4h16v3M9 20h6M12 4v16"/>', [7, 8, 9, 10, 11]],
+  ['geometry', 'Геометрия', '#0891b2', '<path d="M12 3 3 20h18z"/>', [7, 8, 9, 10, 11]],
+  ['informatics', 'Информатика', '#059669', '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>', [5, 6, 7, 8, 9, 10, 11]]];
+function renderPicker(mine = []) {
+  const has = (g, s) => mine.some(r => r.grade === g && r.subject === s);
+  document.getElementById('picker').innerHTML = PICK.map(([s, name, color, icon, grades]) => `<div class="pk-row">
+    <div class="pk-name"><i style="background:${color}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg></i>${name}</div>
+    <div class="pk-chips">${grades.map(g => `<a class="pk-chip${has(g, s) ? ' mine' : ''}" href="content.html?grade=${g}&subject=${s}">${g}-сынып</a>`).join('')}</div></div>`).join('');
 }
+renderPicker();
+window.onCabinetClasses = renderPicker; // teacher-cabinet.js marks the teacher's own classes
+
+const MONTHS = ['қаңтар', 'ақпан', 'наурыз', 'сәуір', 'мамыр', 'маусым', 'шілде', 'тамыз', 'қыркүйек', 'қазан', 'қараша', 'желтоқсан'];
+const DAYS = ['жексенбі', 'дүйсенбі', 'сейсенбі', 'сәрсенбі', 'бейсенбі', 'жұма', 'сенбі'];
+const now = new Date();
+document.getElementById('heroDate').textContent = `${now.getDate()} ${MONTHS[now.getMonth()]}, ${DAYS[now.getDay()]}`;
 
 (async () => {
   const user = await requireAuth();
@@ -140,7 +148,7 @@ function selectMainSubject(main) {
   const name = user.user_metadata?.name || user.email;
   document.getElementById('userName').textContent = name;
   const teacherName = user.user_metadata?.name?.trim();
-  document.querySelector('#greeting').textContent = 'Сәлеметсіз бе' + (teacherName ? ', ' + teacherName : '') + '! 💙';
+  document.querySelector('#greeting').textContent = 'Сәлеметсіз бе' + (teacherName ? ', ' + teacherName : '') + '!';
   void TeacherCabinet.dashboard(user);
   if (user.email === ADMIN_EMAIL) {
     const adminBtn = document.createElement('a');
@@ -148,46 +156,22 @@ function selectMainSubject(main) {
     adminBtn.textContent = 'Админ';
     adminBtn.style.cssText = 'padding:7px 16px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);border-radius:8px;color:#c4b5fd;font-size:13px;font-weight:700;text-decoration:none';
     document.querySelector('.nav-user').prepend(adminBtn);
+    return;
   }
+  // subscription end date in the greeting
+  try {
+    const { data } = await sb.rpc('check_my_subscription'); const r = Array.isArray(data) ? data[0] : data;
+    if (r?.is_paid && r.paid_until && new Date(r.paid_until) > now) {
+      const d = new Date(r.paid_until);
+      document.getElementById('heroRow').insertAdjacentHTML('beforeend', `<span class="hero-sub"><svg class="hm-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Жазылым ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()} дейін</span>`);
+    }
+  } catch (_) {}
 })();
 
 async function logout() {
   localStorage.removeItem('gotab_last_page');
   await sb.auth.signOut();
   window.location.href = 'index.html';
-}
-
-function selectGrade(grade) {
-  selectedGrade = grade;
-  document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-
-  if (selectedMainSubject === 'informatics') {
-    selectedSubject = 'informatics';
-    document.getElementById('subjectSection').classList.remove('visible');
-    document.getElementById('continueBtn').disabled = false;
-  } else {
-    selectedSubject = null;
-    document.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('subjectSection').classList.add('visible');
-    const math56 = document.getElementById('subjectsMath56');
-    const algGeo = document.getElementById('subjectsAlgGeo');
-    if (grade <= 6) { math56.style.display = 'flex'; algGeo.style.display = 'none'; }
-    else            { math56.style.display = 'none';  algGeo.style.display = 'flex'; }
-    document.getElementById('continueBtn').disabled = true;
-  }
-}
-
-function selectSubject(subject) {
-  selectedSubject = subject;
-  document.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('continueBtn').disabled = false;
-}
-
-function goToContent() {
-  if (!selectedGrade || !selectedSubject) return;
-  window.location.href = `content.html?grade=${selectedGrade}&subject=${selectedSubject}`;
 }
 </script>
 <script src="math-bg.js"></script>
