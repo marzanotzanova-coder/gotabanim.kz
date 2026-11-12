@@ -62,7 +62,7 @@
 .pk-chip.mine{border-color:rgba(26,86,219,.45);background:rgba(26,86,219,.08);color:var(--primary)}
 .pk-chip.mine::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--primary)}
 /* cabinet cards */
-.cab-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-top:26px}
+.cab-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:26px}
 .cab-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:20px 22px;box-shadow:0 4px 18px rgba(26,86,219,.06)}
 .cab-card.wide{grid-column:1/-1}
 .cab-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
@@ -95,7 +95,7 @@
 <link rel="stylesheet" href="teacher-theme.css?v=20261102">
 <script src="teacher-ui.js?v=20261102" defer></script>
 <link rel="stylesheet" href="teacher-cabinet.css?v=20261112-home">
-<script src="teacher-cabinet.js?v=20261112-stars"></script>
+<script src="teacher-cabinet.js?v=20261112-noclasses"></script>
 </head>
 <body class="teacher-app">
 <nav class="top-nav">
@@ -162,8 +162,7 @@
 
   <div class="cab-grid" id="cabinet">
     <section class="cab-card" id="cabRecent"></section>
-    <section class="cab-card" id="cabClasses"></section>
-    <section class="cab-card wide" id="cabSaved"></section>
+    <section class="cab-card" id="cabSaved"></section>
   </div>
 </div>
 

@@ -29,10 +29,9 @@ window.TeacherCabinet = (() => {
   }
   function empty(box, text) { const p = node('p', text); p.className = 'cab-empty'; box.append(p); }
   async function dashboard(user) {
-    const boxes = { recent: document.querySelector('#cabRecent'), classes: document.querySelector('#cabClasses'), saved: document.querySelector('#cabSaved') };
+    const boxes = { recent: document.querySelector('#cabRecent'), saved: document.querySelector('#cabSaved') };
     const {data, error} = await table().select('*').eq('user_id',user.id).order('updated_at',{ascending:false});
     head(boxes.recent, 'recent', 'Соңғы ашқан сабақтарым', '#e0ecff', '#1a56db');
-    head(boxes.classes, 'classes', 'Менің сыныптарым', '#ede9fe', '#7c3aed');
     head(boxes.saved, 'saved', 'Сақталғандар', '#fef3c7', '#d97706');
     if (error) {
       const retry = node('button','Кабинетті қайта жүктеу'); retry.className = 'pk-chip';
@@ -56,11 +55,6 @@ window.TeacherCabinet = (() => {
       const row = document.querySelector('#heroRow');
       if (row && !row.querySelector('.hero-continue')) { const h = link(recent); h.className = 'hero-btn hero-continue'; h.innerHTML = svg(ICON.go) + 'Соңғы сабақты жалғастыру'; row.prepend(h); }
     } else empty(boxes.recent, 'Материалдардан сабақ ашсаңыз, ол осында шығады — келесі жолы бір батырмамен жалғастырасыз.');
-    if (classes.length) {
-      const wrap = node('div'); wrap.className = 'cab-chips';
-      classes.forEach(row => { const a = link(row); a.className = 'pk-chip mine'; wrap.append(a); });
-      boxes.classes.append(wrap);
-    } else empty(boxes.classes, '«Сабаққа өту» бөлімінен сыныпты ашсаңыз, ол осында сақталады.');
     if (!saved.length) { empty(boxes.saved, 'Сабақ бетіндегі «Сақтау» батырмасымен ұнаған сабақтарды папкаларға жинаңыз.'); return; }
     for (const folder of new Set(saved.map(row => row.folder))) {
       const group = node('details'); group.className = 'cab-folder'; group.open = true;
