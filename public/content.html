@@ -71,6 +71,11 @@
 .topic-has svg{width:13px;height:13px}
 .topic-open{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff;font-weight:800;font-size:14px}
 .topic-done{font-size:11px;font-weight:700;color:#059669}
+.topic-free,.lb-free{padding:4px 11px;border-radius:99px;font-size:11px;font-weight:900;letter-spacing:.6px;color:#fff;background:linear-gradient(135deg,#10b981,#06b6d4)}
+.topic-free{position:absolute;right:10px;bottom:10px;z-index:3;box-shadow:0 4px 12px rgba(16,185,129,.4)}
+.lb-free{display:none;letter-spacing:0;font-size:13px;padding:7px 14px}
+body.is-paid .topic-free,body.is-paid .lb-free{display:none!important}
+body.lesson-open:not(.is-paid) .lb-free.on{display:inline-flex}
 .topic-card:focus-visible{outline:3px solid rgba(26,86,219,.35);outline-offset:2px}
 .topic-star{position:absolute;top:10px;right:10px;z-index:3;width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.92);color:#94a3b8;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(15,23,42,.18);transition:transform .15s,color .15s}
 .topic-star:hover{transform:scale(1.08);color:#f59e0b}.topic-star svg{width:22px;height:22px}
@@ -532,6 +537,7 @@ body.lesson-open .lesson-dl-footer{padding:16px 20px}
   <div class="lesson-bar" id="lessonBar">
     <button type="button" class="lb-back" id="lbBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Барлық сабақтар</button>
     <h2 id="lbTitle"></h2>
+    <span class="lb-free" id="lbFree">Бұл сабақ тегін — жүктеп, қолданып көріңіз</span>
     <button type="button" id="lbPrev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Алдыңғы</button>
     <button type="button" id="lbNext">Келесі<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
   </div>
@@ -666,6 +672,8 @@ function changeSubject() {
 initSwitcher();
 
 let userIsPaid = false;
+// the first lesson of every class is free to open and download
+const isFreeLesson = lesson => Number(lesson?.lesson_num) === 1;
 let currentUser = null;
 
 let catalogLoader;
@@ -686,7 +694,7 @@ function catalogStatus(state) {
 }
 async function checkContentAccess(user) {
   const isInfoSubject = subject === 'informatics';
-  if (user.email === ADMIN_EMAIL) { userIsPaid = true; return; }
+  if (user.email === ADMIN_EMAIL) { userIsPaid = true; document.body.classList.add('is-paid'); return; }
   try {
     const result = await GoTABLoad.deadline(() => sb.rpc(isInfoSubject ? 'check_paid_informatics' : 'check_paid_user', {check_id:user.id}), 8000);
     if (result.error) throw result.error;
@@ -702,6 +710,7 @@ async function checkContentAccess(user) {
     }
   }
   document.getElementById('payBar').style.display = userIsPaid ? 'none' : 'flex';
+  document.body.classList.toggle('is-paid', userIsPaid);
 }
 (async () => {
   const user = await GoTABLoad.deadline(() => requireAuth());
@@ -1007,8 +1016,8 @@ function render(overrideLessons) {
   }
   GoTABLoad.visibleVideos(grid);
 
-  async function dlFile(url, btn, label, videoTitle) {
-    if (!userIsPaid) { openModal(); return; }
+  async function dlFile(url, btn, label, videoTitle, free) {
+    if (!userIsPaid && !free) { openModal(); return; }
     if (videoTitle) {
       btn.disabled = true;
       try { await GoTABVideoDownload.save(url, videoTitle); }
@@ -1028,7 +1037,7 @@ function render(overrideLessons) {
       e.preventDefault();
       if (this.classList.contains('done')) return;
       const lesson = lessons[parseInt(this.dataset.dlPpt)];
-      dlFile(lesson.ppt.src, this, 'Жүктелді');
+      dlFile(lesson.ppt.src, this, 'Жүктелді', null, isFreeLesson(lesson));
     });
   });
 
@@ -1038,7 +1047,7 @@ function render(overrideLessons) {
       e.preventDefault();
       if (this.classList.contains('done')) return;
       const lesson = lessons[parseInt(this.dataset.dlQmj)];
-      dlFile(lesson.qmj.src, this, 'Жүктелді');
+      dlFile(lesson.qmj.src, this, 'Жүктелді', null, isFreeLesson(lesson));
     });
   });
 
@@ -1048,7 +1057,7 @@ function render(overrideLessons) {
       e.preventDefault();
       if (this.classList.contains('done')) return;
       const lesson = lessons[parseInt(this.dataset.dlVid)];
-      dlFile(lesson.video.src, this, 'Жүктеу басталды', lesson.title || 'GoTAB-анимация');
+      dlFile(lesson.video.src, this, 'Жүктеу басталды', lesson.title || 'GoTAB-анимация', isFreeLesson(lesson));
     });
   });
 
@@ -1059,16 +1068,17 @@ function render(overrideLessons) {
     el.addEventListener('click', async function(e) {
       e.preventDefault();
       if (this.classList.contains('done')) return;
-      if (!userIsPaid) { openModal(); return; }
       const lesson = lessons[parseInt(this.dataset.dlAll)];
+      if (!userIsPaid && !isFreeLesson(lesson)) { openModal(); return; }
       const files = [
         lesson.ppt  && lesson.ppt.src,
         lesson.qmj  && lesson.qmj.src,
         lesson.video && lesson.video.src,
       ].filter(Boolean);
       try {
-        const extraLinks=await GoTABExtras.getUrls(lesson.extra_files);
-        files.push(...extraLinks.map(f=>f.url));
+        // extra documents stay for subscribers only, also in a free lesson
+        if (userIsPaid) { const extraLinks=await GoTABExtras.getUrls(lesson.extra_files);
+        files.push(...extraLinks.map(f=>f.url)); }
       } catch(error) { alert(error.message); return; }
       if (!files.length) { return; }
       files.forEach((url, n) => setTimeout(() => {
@@ -1116,7 +1126,7 @@ function renderTopicCards(lessons) {
       [lesson.video && lesson.video.src, 'video', 'Анимация'], [subject !== 'informatics' && GoTABExtras.files(lesson.extra_files).length, 'extra', 'Қосымша']].filter(x => x[0]);
     const fresh = lesson.created_at && Date.now() - new Date(lesson.created_at) < 7 * 864e5, on = window.TeacherCabinet?.isSaved?.(num);
     return `<div class="topic-card" role="link" tabindex="0" data-open="${num}">
-      <div class="topic-thumb">${thumb ? `<img src="${escHtml(thumb)}" alt="" loading="${i < 3 ? 'eager' : 'lazy'}" decoding="async">` : `<div class="topic-num">${num}</div>`}<span class="lesson-badge">Сабақ ${num}</span>${fresh ? '<span class="topic-new">ЖАҢА</span>' : ''}
+      <div class="topic-thumb">${thumb ? `<img src="${escHtml(thumb)}" alt="" loading="${i < 3 ? 'eager' : 'lazy'}" decoding="async">` : `<div class="topic-num">${num}</div>`}<span class="lesson-badge">Сабақ ${num}</span>${fresh ? '<span class="topic-new">ЖАҢА</span>' : ''}${isFreeLesson(lesson) ? '<span class="topic-free">ТЕГІН</span>' : ''}
         <button type="button" class="topic-star${on ? ' on' : ''}" data-star="${num}" aria-pressed="${!!on}" aria-label="Сақтау" title="${on ? 'Сақталған — алып тастау' : 'Сақталғандарға қосу'}">${STAR}</button></div>
       <div class="topic-body"><div class="topic-title">${escHtml(lesson.title)}</div>
         <div class="topic-has">${has.map(([, k, l]) => `<span>${topicIcon(k)}${l}</span>`).join('')}</div>
@@ -1133,6 +1143,7 @@ function showLessonFromHash(lessons) {
   if (idx < 0) return;
   const lesson = openLessons[idx];
   document.getElementById('lbTitle').textContent = `${num}-сабақ. ${lesson.title || ''}`;
+  document.getElementById('lbFree').classList.toggle('on', isFreeLesson(lesson));
   window.TeacherCabinet?.opened?.(num, lesson.title || '');
   document.getElementById('lbPrev').disabled = idx === 0;
   document.getElementById('lbNext').disabled = idx === openLessons.length - 1;

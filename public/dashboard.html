@@ -83,6 +83,37 @@
 .new-item b{display:block;font-size:14px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .new-item span{font-size:12px;color:var(--muted)}
 .new-item .new-pill{flex-shrink:0;padding:4px 9px;border-radius:99px;font-size:10px;font-weight:900;letter-spacing:.6px;color:#fff;background:linear-gradient(135deg,#f43f5e,#f59e0b)}
+.hm-search{position:relative;margin-top:22px}
+.search-box{display:flex;align-items:center;gap:12px;padding:0 18px;min-height:60px;background:#fff;border:2px solid var(--border);border-radius:18px;box-shadow:0 6px 22px rgba(26,86,219,.08);transition:border-color .2s,box-shadow .2s}
+.search-box:focus-within{border-color:var(--primary);box-shadow:0 8px 28px rgba(26,86,219,.18)}
+.search-box svg{width:22px;height:22px;color:var(--primary);flex-shrink:0}
+.search-box input{flex:1;border:none;outline:none;background:none;font:inherit;font-size:16px;font-weight:600;color:var(--text);min-width:0}
+.search-box input::placeholder{color:#94a3b8;font-weight:500}
+.teacher-app .search-box input{border:none!important;box-shadow:none!important;padding:0!important;background:none!important;height:auto}
+.search-box input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+.search-box button{border:none;background:var(--surface2);color:var(--muted);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:20px;line-height:1}
+.search-results{margin-top:10px;background:#fff;border:1px solid var(--border);border-radius:18px;padding:8px 18px 14px;box-shadow:0 12px 34px rgba(26,86,219,.12)}
+.sr-group h3{font-size:12px;font-weight:900;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
+.sr-item{display:flex;flex-direction:column;padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--text)}
+.sr-item:hover,.sr-item:focus-visible{background:var(--surface2)}
+.sr-item b{font-size:15px;font-weight:700}.sr-item span{font-size:12px;color:var(--muted);margin-top:2px}
+.sr-item mark{background:#fef08a;color:inherit;border-radius:3px;padding:0 1px}
+.sr-empty{padding:14px 4px;color:var(--muted);font-size:14px}
+/* free lessons for teachers without a subscription */
+.free-card{position:relative;overflow:hidden;margin-top:22px;border-radius:24px;padding:24px;background:linear-gradient(135deg,#ecfdf5,#e0f2fe 60%,#f5f3ff);border:1.5px solid #a7f3d0;box-shadow:0 10px 30px rgba(16,185,129,.14)}
+.free-head{display:flex;gap:14px;align-items:flex-start}
+.free-head i{width:50px;height:50px;border-radius:15px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#10b981,#06b6d4);color:#fff;flex-shrink:0;box-shadow:0 6px 18px rgba(16,185,129,.35)}
+.free-head i svg{width:26px;height:26px}
+.free-head h2{font-size:20px;font-weight:900;color:#065f46}
+.free-head p{font-size:14px;color:#0f766e;line-height:1.5;margin-top:4px}
+.free-row{display:flex;gap:14px;overflow-x:auto;padding:18px 2px 6px;scroll-snap-type:x mandatory}
+.free-item{flex:0 0 220px;scroll-snap-align:start;background:#fff;border-radius:16px;overflow:hidden;text-decoration:none;color:var(--text);border:1px solid #d1fae5;box-shadow:0 4px 14px rgba(15,118,110,.08);transition:transform .2s,box-shadow .2s}
+.free-item:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(15,118,110,.18)}
+.free-thumb{position:relative;height:118px;background:linear-gradient(135deg,#0f1e3e,#1a3a7a)}
+.free-thumb img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.free-thumb em{position:absolute;left:10px;top:10px;font-style:normal;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:900;letter-spacing:.6px;color:#fff;background:linear-gradient(135deg,#10b981,#06b6d4)}
+.free-body{padding:10px 12px 12px}.free-body b{display:block;font-size:14px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.free-body span{font-size:12px;color:var(--muted)}
 .cab-chips{display:flex;flex-wrap:wrap;gap:8px}
 .cab-folder{border:1px solid var(--border);border-radius:14px;margin-top:8px;overflow:hidden}
 .cab-folder summary{cursor:pointer;padding:12px 14px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px;background:var(--surface2)}
@@ -152,6 +183,19 @@
     </nav>
   </section>
 
+  <section class="hm-search">
+    <label class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="siteSearch" type="search" placeholder="Іздеу: бөлшек, пирамида, теңдеу, функция…" autocomplete="off" aria-label="Сайттан іздеу">
+      <button type="button" id="searchClear" aria-label="Тазалау" hidden>×</button></label>
+    <div class="search-results" id="searchResults" hidden></div>
+  </section>
+
+  <section class="free-card" id="freeCard" hidden>
+    <div class="free-head"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></i>
+      <div><h2>Тегін сабақты қарап көріңіз</h2><p>Әр сыныптың 1-сабағы тегін ашық: презентация, ҚМЖ, анимация. Жүктеп алып, сабағыңызда қолданып көріңіз.</p></div></div>
+    <div class="free-row" id="freeRow"></div>
+  </section>
+
   <section class="hm-block" id="sabakka" style="scroll-margin-top:20px">
     <div class="hm-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Сабаққа өту</div>
     <div class="picker" id="picker"></div>
@@ -217,11 +261,45 @@ document.getElementById('heroQuote').textContent = PROVERBS[Math.floor(now / 864
   // subscription end date in the greeting
   try {
     const { data } = await sb.rpc('check_my_subscription'); const r = Array.isArray(data) ? data[0] : data;
+    if (!(r?.is_paid && r.paid_until && new Date(r.paid_until) > now)) void showFreeLessons();
     if (r?.is_paid && r.paid_until && new Date(r.paid_until) > now) {
       const d = new Date(r.paid_until);
       document.getElementById('heroRow').insertAdjacentHTML('beforeend', `<span class="hero-sub"><svg class="hm-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Жазылым ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()} дейін</span>`);
     }
-  } catch (_) {}
+  } catch (_) { void showFreeLessons(); }
+})();
+
+// free first lessons of every class
+async function showFreeLessons() {
+  const { data, error } = await sb.from('materials').select('grade,subject,lesson_num,title,ppt_thumb_url,ppt_url,qmj_url,video_url').eq('lesson_num', 1).order('grade');
+  const rows = (data || []).filter(r => r.ppt_url || r.qmj_url || r.video_url);
+  if (error || !rows.length) return;
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  document.getElementById('freeRow').innerHTML = rows.map(r => `<a class="free-item" href="content.html?grade=${r.grade}&subject=${encodeURIComponent(r.subject)}#sabak-1">
+    <div class="free-thumb">${r.ppt_thumb_url ? `<img src="${esc(r.ppt_thumb_url)}" alt="" loading="lazy">` : ''}<em>ТЕГІН</em></div>
+    <div class="free-body"><b>${esc(r.title)}</b><span>${r.grade}-сынып · ${SUBJ[r.subject] || ''}</span></div></a>`).join('');
+  document.getElementById('freeCard').hidden = false;
+}
+
+// search bar: results grouped by kind, matched words highlighted
+(() => {
+  const input = document.getElementById('siteSearch'), box = document.getElementById('searchResults'), clear = document.getElementById('searchClear');
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const mark = (text, q) => { let h = esc(text); q.toLowerCase().split(/\s+/).filter(w => w.length > 1).forEach(w => { h = h.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<mark>$1</mark>'); }); return h; };
+  let timer, serial = 0;
+  async function run() {
+    const q = input.value.trim(), id = ++serial; clear.hidden = !q;
+    if (q.length < 2) { box.hidden = true; return; }
+    let res; try { res = await GoTABSearch.find(q); } catch (_) { return; }
+    if (id !== serial || !res) return;
+    const groups = [['Сабақтар', res.lessons], ['Зертхана', res.labs], ['Ойындар', res.games], ['Көрнекіліктер', res.visuals]].filter(g => g[1].length);
+    box.innerHTML = groups.length ? groups.map(([name, list]) => `<div class="sr-group"><h3>${name} · ${list.length}</h3>${list.map(r => `<a class="sr-item" href="${r.href}"><b>${mark(r.title, q)}</b><span>${esc(r.meta)}</span></a>`).join('')}</div>`).join('')
+      : `<div class="sr-empty">«${esc(q)}» бойынша ештеңе табылмады. Басқа сөзбен іздеп көріңіз.</div>`;
+    box.hidden = false;
+  }
+  input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(run, 200); });
+  input.addEventListener('keydown', e => { if (e.key === 'Escape') { input.value = ''; run(); } });
+  clear.onclick = () => { input.value = ''; run(); input.focus(); };
 })();
 
 // lessons added during the last 7 days, newest first
@@ -243,6 +321,7 @@ async function logout() {
   window.location.href = 'index.html';
 }
 </script>
+<script src="site-search.js?v=20261112"></script>
 <script src="math-bg.js"></script>
 <script src="hero-glitter.js?v=20261112"></script>
 </body>
