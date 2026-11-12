@@ -572,6 +572,7 @@
   </div>
 </div>
 
+<script src="video-download.js?v=20261112"></script>
 <script src="content-load.js?v=20261104-fast"></script>
 <script src="supabase.js"></script>
 <script src="qmj-preview.js?v=20261111-notice"></script>
@@ -942,10 +943,16 @@ function render(overrideLessons) {
 
   GoTABLoad.visibleVideos(grid);
 
-  function dlFile(url, btn, label) {
+  async function dlFile(url, btn, label, videoTitle) {
     if (!userIsPaid) { openModal(); return; }
-    const a = document.createElement('a');
-    a.href = url; a.download = ''; a.click();
+    if (videoTitle) {
+      btn.disabled = true;
+      try { await GoTABVideoDownload.save(url, videoTitle); }
+      catch (error) { alert(error.message); return; }
+      finally { btn.disabled = false; }
+    } else {
+      const a = document.createElement('a'); a.href = url; a.download = ''; a.click();
+    }
     if (btn) { btn.textContent = '✓ ' + label; btn.classList.add('done'); }
   }
 
@@ -977,7 +984,7 @@ function render(overrideLessons) {
       e.preventDefault();
       if (this.classList.contains('done')) return;
       const lesson = lessons[parseInt(this.dataset.dlVid)];
-      dlFile(lesson.video.src, this, 'Жүктелді');
+      dlFile(lesson.video.src, this, 'Жүктеу басталды', lesson.title || 'GoTAB-анимация');
     });
   });
 
@@ -1001,7 +1008,8 @@ function render(overrideLessons) {
       } catch(error) { alert(error.message); return; }
       if (!files.length) { return; }
       files.forEach((url, n) => setTimeout(() => {
-        const a = document.createElement('a'); a.href = url; a.download = ''; a.click();
+        if (url === lesson.video?.src) { GoTABVideoDownload.save(url, lesson.title).catch(error => alert(error.message)); }
+        else { const a = document.createElement('a'); a.href = url; a.download = ''; a.click(); }
       }, n * 400));
       this.textContent = '✓ Барлығы жүктелді';
       this.classList.add('done');
