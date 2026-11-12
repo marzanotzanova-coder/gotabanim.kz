@@ -125,7 +125,8 @@ function ui() { const order = ['base', 'apex', 'edges', 'section'], k = order.in
 const msg = (t, ok) => { const m = $('msg'); m.className = ok ? 'ok' : 'no'; m.innerHTML = t; };
 function convex(P) { let sg = 0; for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length], c = P[(i + 2) % P.length], cr = (b.x - a.x) * (c.z - b.z) - (b.z - a.z) * (c.x - b.x); if (Math.abs(cr) < 1e-6) return false; if (sg && Math.sign(cr) !== sg) return false; sg = Math.sign(cr); } return true; }
 function inside(p) { const P = S.base; let s = 0; for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length], cr = (b.x - a.x) * (p.z - a.z) - (b.z - a.z) * (p.x - a.x); if (Math.abs(cr) < 1e-6) return false; if (s && Math.sign(cr) !== s) return false; s = Math.sign(cr); } return true; }
-function closeBase() { if (S.base.length < 3) return; if (!convex(S.base)) { $('tip').textContent = '⚠ Табан дөңес көпбұрыш болуы керек — «Артқа» басып түзет'; return; } S.mode = 'apex'; S.hover = null; draw(); }
+const snd = k => window.labSound?.[k]?.(); // lab-sound.js effects
+function closeBase() { if (S.base.length < 3) return; if (!convex(S.base)) { snd('no'); $('tip').textContent = '⚠ Табан дөңес көпбұрыш болуы керек — «Артқа» басып түзет'; return; } snd('ok'); S.mode = 'apex'; S.hover = null; draw(); }
 
 // pointer: floor point (snapped to the grid) and screen-space picking
 const ray = new THREE.Raycaster(), floor = new THREE.Plane(V(0, 1, 0), 0);
@@ -144,28 +145,30 @@ renderer.domElement.addEventListener('pointerdown', e => {
 renderer.domElement.addEventListener('pointercancel', e => {activePointers.delete(e.pointerId);down=null;if(!activePointers.size)multiTouch=false;});
 renderer.domElement.addEventListener('pointermove', e => { if (e.buttons || (S.mode !== 'base' && S.mode !== 'apex')) return; const j = S.mode === 'base' ? S.base.findIndex(q => near(q, e)) : -1, p = j >= 0 ? S.base[j].clone() : floorAt(e); if (!p || (S.hover && S.hover.equals(p))) return; S.hover = p; draw(); });
 renderer.domElement.addEventListener('pointerup', e => { const start=down;down=null;activePointers.delete(e.pointerId);if(multiTouch){if(!activePointers.size)multiTouch=false;return;}if(!start||start.id!==e.pointerId||Math.hypot(e.clientX-start.x,e.clientY-start.y)>(start.touch?14:6))return;
-  if (S.mode === 'base') { const j = S.base.findIndex(q => near(q, e)); if (j >= 0) { if (S.base.length - j >= 3) { if (j > 0) S.base.splice(0, j); return closeBase(); } $('tip').textContent = '⚠ Бұл нүкте бұрыннан бар — жаңа нүктені басқа жерге қой'; return; } if (S.base.length >= 6) return; const p = floorAt(e); if (!p || S.base.some(q => q.equals(p))) return; S.base.push(p); draw(); }
-  else if (S.mode === 'apex') { const p = floorAt(e); if (!p) return; if (!inside(p)) { $('tip').textContent = '⚠ H нүктесі табанның ішінде болуы керек'; return; } S.H = p; flyTo(V(5, 3.6, 6.2)); draw(); }
-  else if (S.mode === 'edges') { const i = S.base.findIndex((p, j) => !S.lat.includes(j) && near(p, e)); if (i < 0) return; S.lat.push(i); if (S.lat.length === S.base.length) { S.mode = 'section'; flyTo(V(4.2, 3.4, 5.6)); } draw(); }
+  if (S.mode === 'base') { const j = S.base.findIndex(q => near(q, e)); if (j >= 0) { if (S.base.length - j >= 3) { if (j > 0) S.base.splice(0, j); return closeBase(); } snd('no'); $('tip').textContent = '⚠ Бұл нүкте бұрыннан бар — жаңа нүктені басқа жерге қой'; return; } if (S.base.length >= 6) return; const p = floorAt(e); if (!p || S.base.some(q => q.equals(p))) return; S.base.push(p); snd('tap'); draw(); }
+  else if (S.mode === 'apex') { const p = floorAt(e); if (!p) return; if (!inside(p)) { snd('no'); $('tip').textContent = '⚠ H нүктесі табанның ішінде болуы керек'; return; } snd('tap'); S.H = p; flyTo(V(5, 3.6, 6.2)); draw(); }
+  else if (S.mode === 'edges') { const i = S.base.findIndex((p, j) => !S.lat.includes(j) && near(p, e)); if (i < 0) return; S.lat.push(i); if (S.lat.length === S.base.length) { snd('ok'); S.mode = 'section'; flyTo(V(4.2, 3.4, 5.6)); } else snd('tap'); draw(); }
   else if (S.mode === 'section' && S.pts.length < 3) { let best = null;
     edges().forEach(([p, q, nm]) => { const A = scr(p), B = scr(q), dx = B[0] - A[0], dy = B[1] - A[1], t = Math.max(0, Math.min(1, ((e.clientX - A[0]) * dx + (e.clientY - A[1]) * dy) / (dx * dx + dy * dy))), dist = Math.hypot(A[0] + t * dx - e.clientX, A[1] + t * dy - e.clientY);
       if (dist < (e.pointerType==='touch'?42:30) && (!best || dist < best.dist)) best = { dist, t: Math.abs(t - .5) < .1 ? .5 : t, p, q, nm }; });
-    if (best) { S.pts.push({ v: best.p.clone().lerp(best.q, best.t), t: best.t, e: best.nm }); draw(); } } });
+    if (best) { S.pts.push({ v: best.p.clone().lerp(best.q, best.t), t: best.t, e: best.nm }); snd(S.pts.length === 3 ? 'ok' : 'tap'); draw(); } } });
 // smooth camera move to a new viewpoint
 let fly = null; function flyTo(to) { fly = { from: camera.position.clone(), to, t: 0 }; }
 $('undo').onclick = () => { S.base.pop(); draw(); }; $('close').onclick = closeBase;
 $('h').oninput = e => { S.h = +e.target.value; draw(); };
-$('okApex').onclick = () => { S.mode = 'edges'; flyTo(V(5, 4.2, 6.5)); draw(); };
+$('okApex').onclick = () => { snd('ok'); S.mode = 'edges'; flyTo(V(5, 4.2, 6.5)); draw(); };
 $('clear').onclick = () => { S.pts = []; $('msg').className = ''; draw(); };
 $('reset').onclick = () => { Object.assign(S, { mode: 'base', base: [], H: null, lat: [], pts: [], hover: null }); $('msg').className = ''; flyTo(V(0.01, 8.5, 6.5)); draw(); };
 $('demo').onclick = () => { Object.assign(S, { mode: 'section', base: [V(-1.5, 0, 1.5), V(1.5, 0, 1.5), V(1.5, 0, -1.5), V(-1.5, 0, -1.5)], H: V(0, 0, 0), h: 2.4, lat: [0, 1, 2, 3], pts: [], hover: null }); $('h').value = 2.4; $('msg').className = ''; flyTo(V(4.2, 3.4, 5.6)); draw(); };
 $('check').onclick = () => { const ok = S.pts.length === 3 && ['SA', 'SB', 'SC'].every(nm => S.pts.some(p => p.e === nm && Math.abs(p.t - .5) < .01)), n = S.base.length;
+  snd(ok ? 'done' : 'no');
   if (ok) msg(`✓ Дұрыс! Қима — табанға параллель ${n === 3 ? 'үшбұрыш' : n === 4 ? 'төртбұрыш' : n + '-бұрыш'}, оның қабырғалары табанның қабырғаларынан 2 есе кіші.`, true);
   else msg(S.pts.length < 3 ? 'Алдымен 3 нүкте қойыңыз.' : 'Қате. Нүктелер SA, SB, SC қырларының дәл ортасында болуы керек.', false); };
 draw();
 (function loop() { requestAnimationFrame(loop); if (fly) { fly.t = Math.min(1, fly.t + 1 / 60); const k = fly.t < .5 ? 2 * fly.t * fly.t : 1 - Math.pow(-2 * fly.t + 2, 2) / 2; camera.position.lerpVectors(fly.from, fly.to, k); if (fly.t >= 1) fly = null; }
   controls.update(); renderer.render(scene, camera); labels.render(scene, camera); })();
 </script>
+<script src="lab-sound.js?v=20261112"></script>
 <script src="supabase.js"></script><script src="supabase-client.js?v=20261103-lab-cards"></script><script src="lab-paywall.js?v=20261111-plans"></script>
 <script>labGate();</script>
 </body>

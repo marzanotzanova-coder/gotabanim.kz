@@ -167,7 +167,8 @@ function ui(sec) { lastSec = sec; const n = S.pts.length;
   $('st1').classList.toggle('done', n === 3 && !sec?.bad); $('undo').disabled = !n; $('clear').disabled = !n;
   document.querySelectorAll('.task').forEach((b, i) => { b.classList.toggle('on', i === S.task); b.classList.toggle('ok', S.solved.has(i)); });
   $('tq').innerHTML = '<b style="display:inline">Тапсырма:</b> ' + TASKS[S.task].q; }
-const msg = (t, c) => { const m = $('msg'); m.className = c; m.innerHTML = ic({ ok: 'check', no: 'x', hint: 'bulb' }[c]) + '<span>' + t + '</span>'; };
+const snd = k => window.labSound?.[k]?.(); // lab-sound.js effects
+const msg = (t, c) => { snd(c === 'ok' ? 'done' : c === 'no' ? 'no' : null); const m = $('msg'); m.className = c; m.innerHTML = ic({ ok: 'check', no: 'x', hint: 'bulb' }[c]) + '<span>' + t + '</span>'; };
 
 // pointer: pick the nearest edge on screen, snap to quarters of the edge
 function scr(v) { const rc = renderer.domElement.getBoundingClientRect(), p = v.clone().project(camera); return [(p.x + 1) / 2 * rc.width + rc.left, (1 - p.y) / 2 * rc.height + rc.top]; }
@@ -183,9 +184,9 @@ renderer.domElement.addEventListener('pointermove', e => { if (e.buttons || e.po
   if ((h && S.hover && h.equals(S.hover)) || (!h && !S.hover)) return; S.hover = h; draw(); });
 renderer.domElement.addEventListener('pointerup', e => { const start = down; down = null; activePointers.delete(e.pointerId); if (multiTouch) { if (!activePointers.size) multiTouch = false; return; }
   if (!start || start.id !== e.pointerId || Math.hypot(e.clientX - start.x, e.clientY - start.y) > (start.touch ? 14 : 6)) return;
-  const p = pick(e); if (!p) return; if (S.pts.length < 3 && S.pts.some(q => q.v.distanceTo(p.v) < 1e-3)) { $('tip').innerHTML = ic('warn') + 'Бұл нүкте бұрыннан бар — басқа жерге қой'; return; }
-  const tg = target(); if (tg && tg.v.distanceTo(p.v) > 1e-3) { $('tip').innerHTML = ic('warn') + 'Бұл емес — жыпылықтап тұрған сары нүктені бас'; return; }
-  if (S.pts.length >= 3) { S.pts = []; S.guide = false; } S.pts.push(p); S.hover = null; $('msg').className = ''; draw(); if (S.pts.length === 3) check(); });
+  const p = pick(e); if (!p) return; if (S.pts.length < 3 && S.pts.some(q => q.v.distanceTo(p.v) < 1e-3)) { snd('no'); $('tip').innerHTML = ic('warn') + 'Бұл нүкте бұрыннан бар — басқа жерге қой'; return; }
+  const tg = target(); if (tg && tg.v.distanceTo(p.v) > 1e-3) { snd('no'); $('tip').innerHTML = ic('warn') + 'Бұл емес — жыпылықтап тұрған сары нүктені бас'; return; }
+  if (S.pts.length >= 3) { S.pts = []; S.guide = false; } S.pts.push(p); S.hover = null; $('msg').className = ''; draw(); if (S.pts.length === 3) check(); else snd('tap'); });
 
 // smooth camera move to a new viewpoint
 let fly = null; function flyTo(to) { fly = { from: camera.position.clone(), to, t: 0 }; }
@@ -203,6 +204,7 @@ draw();
 (function loop() { requestAnimationFrame(loop); if (fly) { fly.t = Math.min(1, fly.t + 1 / 60); const k = fly.t < .5 ? 2 * fly.t * fly.t : 1 - Math.pow(-2 * fly.t + 2, 2) / 2; camera.position.lerpVectors(fly.from, fly.to, k); if (fly.t >= 1) fly = null; }
   if (tball) tball.scale.setScalar(1 + .3 * Math.sin(performance.now() / 160)); controls.update(); renderer.render(scene, camera); labels.render(scene, camera); })();
 </script>
+<script src="lab-sound.js?v=20261112"></script>
 <script src="supabase.js"></script><script src="supabase-client.js?v=20261104-lab-cube"></script><script src="lab-paywall.js?v=20261111-plans"></script>
 <script>labGate();</script>
 </body>
