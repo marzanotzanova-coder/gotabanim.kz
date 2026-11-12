@@ -75,6 +75,8 @@
 .topic-free{position:absolute;right:10px;bottom:10px;z-index:3;box-shadow:0 4px 12px rgba(16,185,129,.4)}
 .lb-free{display:none;letter-spacing:0;font-size:13px;padding:7px 14px}
 body.is-paid .topic-free,body.is-paid .lb-free{display:none!important}
+/* free lesson for teachers without a subscription: view only, no download buttons at all */
+body:not(.is-paid) .free-lesson :is([data-dl-ppt],[data-dl-qmj],[data-dl-vid],[data-dl-all],.slide-dl-hint,.extras-card){display:none!important}
 body.lesson-open:not(.is-paid) .lb-free.on{display:inline-flex}
 .topic-card:focus-visible{outline:3px solid rgba(26,86,219,.35);outline-offset:2px}
 .topic-star{position:absolute;top:10px;right:10px;z-index:3;width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.92);color:#94a3b8;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(15,23,42,.18);transition:transform .15s,color .15s}
@@ -954,7 +956,7 @@ function render(overrideLessons) {
     const hasAnySrc  = hasPptSrc || hasQmjSrc || hasVidSrc || GoTABExtras.files(lesson.extra_files).length;
 
     return `
-    <div class="lesson-unit" id="lesson-${lessonNum}" data-lesson-num="${lessonNum}">
+    <div class="lesson-unit${isFreeLesson(lesson) ? ' free-lesson' : ''}" id="lesson-${lessonNum}" data-lesson-num="${lessonNum}">
 
       <!-- PRESENTATION -->
       <div class="ppt-section">
