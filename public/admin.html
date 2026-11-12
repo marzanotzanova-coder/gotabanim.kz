@@ -307,6 +307,14 @@ tr:hover td{background:#f8faff}
     </div>
   </div>
 
+  <!-- ── Мұғалімдер пікірі ── -->
+  <div class="admin-section admin-list-card">
+    <div class="admin-section-title">💬 Мұғалімдер пікірі <span class="req-count-badge" id="fbCount" style="display:none">0</span></div>
+    <div class="pay-req-list admin-list-scroll" id="fbList" tabindex="0" role="region" aria-label="Мұғалімдер пікірі">
+      <div style="color:var(--muted);font-size:14px;padding:10px 0">Жүктелуде...</div>
+    </div>
+  </div>
+
   <div class="admin-section admin-list-card">
     <div class="admin-section-title">👥 Тіркелген мұғалімдер</div>
     <input class="search-input" id="searchInput" placeholder="Аты немесе email бойынша іздеу..." oninput="filterUsers()">
@@ -525,6 +533,7 @@ const MONTHS = ['қаңтар','ақпан','наурыз','сәуір','мам�
     await Promise.all([
       loadUsers().catch(e => showLoadErr('usersBody', e, 7)),
       loadPaymentRequests().catch(e => showLoadErr('payReqList', e)),
+      loadFeedback().catch(e => showLoadErr('fbList', e)),
       loadLessons().catch(e => showLoadErr('lessonsGrid', e)),
     ]);
   } catch (e) {
@@ -655,6 +664,21 @@ async function unbanUser(userId) {
   const { error } = await sb.rpc('unban_user', { uid: userId });
   if (error) { alert('Қате: ' + error.message); return; }
   await loadUsers();
+}
+
+// teachers' comments about the site: what they like, what is missing, ideas
+async function loadFeedback() {
+  const { data, error } = await sb.from('site_feedback').select('*').order('created_at', { ascending: false }).limit(300);
+  const list = document.getElementById('fbList');
+  if (error) { list.innerHTML = '<div style="color:var(--muted);font-size:13px">Пікірлер кестесі әлі қосылмаған</div>'; return; }
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const count = document.getElementById('fbCount'); count.textContent = data.length; count.style.display = data.length ? 'inline-flex' : 'none';
+  if (!data.length) { list.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:10px 0">Әзірге пікір жоқ</div>'; return; }
+  const part = (label, color, text) => text ? `<div style="margin-top:8px"><div style="font-size:11px;font-weight:800;color:${color};text-transform:uppercase;letter-spacing:.4px">${label}</div><div style="font-size:14px;line-height:1.5;white-space:pre-wrap">${esc(text)}</div></div>` : '';
+  list.innerHTML = data.map(f => `<div class="pay-req-card" style="display:block">
+    <div class="pay-req-name">${esc(f.user_name || '—')}</div>
+    <div class="pay-req-email">${esc(f.user_email || '')} · ${new Date(f.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+    ${part('Ұнағаны', '#059669', f.likes)}${part('Кемшіліктері', '#e11d48', f.dislikes)}${part('Ұсыныс', '#d97706', f.ideas)}</div>`).join('');
 }
 
 async function loadPaymentRequests() {

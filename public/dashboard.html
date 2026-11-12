@@ -23,6 +23,36 @@
 .hero-ava{position:relative;width:68px;height:68px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#1a56db;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.25),0 0 28px rgba(34,211,238,.7)}
 .hero-ava::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid transparent;border-top-color:#67e8f9;border-right-color:#c4b5fd;animation:hero-ring 4s linear infinite}
 @keyframes hero-ring{to{transform:rotate(360deg)}}
+.hero-ava{border:none;padding:0;cursor:pointer;font-family:inherit}
+.hero-ava img{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover}
+.hero-ava img ~ #heroAvaTxt{visibility:hidden}
+.hero-ava .ava-cam{position:absolute;right:-4px;bottom:-4px;z-index:2;width:26px;height:26px;border-radius:50%;background:#1a56db;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.hero-ava .ava-cam svg{width:13px;height:13px}
+.hero-ava:hover .ava-cam{transform:scale(1.1)}
+.hero-ava.busy{opacity:.55;pointer-events:none}
+/* feedback card and the gentle reminder */
+.fb-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:22px;box-shadow:0 4px 18px rgba(26,86,219,.06)}
+.fb-sub{font-size:14px;color:var(--muted);margin:-4px 0 14px}
+.fb-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.fb-field{display:flex;flex-direction:column;gap:6px;font-weight:800;font-size:14px}
+.fb-field span{display:flex;align-items:center;gap:6px}
+.fb-field span::before{content:'';width:10px;height:10px;border-radius:50%}
+.fb-plus span::before{background:#10b981}.fb-minus span::before{background:#f43f5e}.fb-idea span::before{background:#f59e0b}
+.fb-field textarea{min-height:110px;resize:vertical;padding:12px;border-radius:12px;border:1.5px solid var(--border);font:inherit;font-weight:500;font-size:14px;line-height:1.5;color:var(--text);background:var(--surface2)}
+.fb-field textarea:focus{outline:none;border-color:var(--primary);background:#fff}
+.fb-foot{grid-column:1/-1;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.fb-send{padding:12px 22px;min-height:46px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff;font:inherit;font-weight:800;font-size:15px;cursor:pointer}
+.fb-send:disabled{opacity:.6}
+#fbStatus{font-size:14px;font-weight:700;color:var(--muted)}
+.fb-thanks{display:flex;align-items:center;gap:12px;padding:16px;border-radius:14px;background:#ecfdf5;color:#065f46;font-weight:700;font-size:15px}
+.fb-thanks button{margin-left:auto;border:1px solid #a7f3d0;background:#fff;color:#047857;border-radius:10px;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer}
+.fb-toast{position:fixed;right:20px;bottom:20px;z-index:500;max-width:340px;background:#fff;border:1px solid var(--border);border-radius:18px;padding:16px 18px;box-shadow:0 18px 44px rgba(15,23,42,.18);animation:fb-in .4s ease-out}
+@keyframes fb-in{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.fb-toast b{display:block;font-size:15px;margin-bottom:4px}.fb-toast p{font-size:13px;color:var(--muted);line-height:1.5}
+.fb-toast div{display:flex;gap:8px;margin-top:12px}
+.fb-toast button{flex:1;padding:10px;border-radius:10px;font:inherit;font-weight:800;font-size:13px;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text)}
+.fb-toast button.go{background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff;border:none}
+@media(max-width:760px){.fb-grid{grid-template-columns:1fr}.fb-toast{left:12px;right:12px;max-width:none}}
 .hero-hi{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800;padding:5px 12px;border-radius:99px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28)}
 .hero-hi svg{width:15px;height:15px;color:#fde68a}
 .hero-quote{margin-top:14px;display:flex;gap:10px;align-items:flex-start;max-width:620px;padding:12px 16px;border-radius:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);font-size:14px;line-height:1.5;font-style:italic}
@@ -165,7 +195,8 @@
     <span class="hero-orb o1"></span><span class="hero-orb o2"></span><span class="hero-orb o3"></span><span class="hero-shine"></span>
     <div class="hero-in">
       <div class="hero-top">
-        <div class="hero-ava" id="heroAva" aria-hidden="true">G</div>
+        <button type="button" class="hero-ava" id="heroAva" title="Суретіңізді қою" aria-label="Суретіңізді қою"><span id="heroAvaTxt">G</span><span class="ava-cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg></span></button>
+        <input type="file" id="avaFile" accept="image/*" hidden>
         <div><span class="hero-hi" id="heroHi"></span><div class="hero-date" id="heroDate" style="margin-top:6px"></div></div>
       </div>
       <h1 id="greeting" style="margin-top:16px">Сәлеметсіз бе!</h1>
@@ -210,6 +241,17 @@
     <section class="cab-card" id="cabRecent"></section>
     <section class="cab-card" id="cabSaved"></section>
   </div>
+
+  <section class="fb-card hm-block" id="feedback" hidden>
+    <div class="cab-head"><i style="background:#e0f2fe;color:#0284c7"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></i><h2>Сайт жайлы өз ойыңызды қалдырыңыз</h2></div>
+    <p class="fb-sub">Пікіріңіз GoTAB-ты жақсартуға көмектеседі. Қалаған өрісіңізді ғана толтырсаңыз жеткілікті.</p>
+    <form id="fbForm" class="fb-grid">
+      <label class="fb-field fb-plus"><span>Ұнағаны (плюстары)</span><textarea name="likes" maxlength="2000" placeholder="Мысалы: зертхана сабақта өте ыңғайлы, презентациялар әдемі…"></textarea></label>
+      <label class="fb-field fb-minus"><span>Кемшіліктері</span><textarea name="dislikes" maxlength="2000" placeholder="Мысалы: кейбір сабақтарда анимация әлі жоқ…"></textarea></label>
+      <label class="fb-field fb-idea"><span>Тағы не қосайық?</span><textarea name="ideas" maxlength="2000" placeholder="Мысалы: 9-сыныпқа көбірек ойын қосыңыздар…"></textarea></label>
+      <div class="fb-foot"><button type="submit" class="fb-send">Пікірді жіберу</button><output id="fbStatus"></output></div>
+    </form>
+  </section>
 </div>
 
 <script src="supabase.js"></script>
@@ -246,8 +288,11 @@ document.getElementById('heroQuote').textContent = PROVERBS[Math.floor(now / 864
   const name = user.user_metadata?.name || user.email;
   document.getElementById('userName').textContent = name;
   const teacherName = user.user_metadata?.name?.trim();
-  document.querySelector('#greeting').textContent = 'Сәлеметсіз бе' + (teacherName ? ', ' + teacherName : '') + '!';
-  document.getElementById('heroAva').textContent = (teacherName || name).split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || 'G';
+  const isAdmin = user.email === ADMIN_EMAIL;
+  document.querySelector('#greeting').textContent = isAdmin ? 'Сәлем, Админ!' : 'Сәлеметсіз бе' + (teacherName ? ', ' + teacherName : '') + '!';
+  setupAvatar(user);
+  if (!isAdmin) setupFeedback(user, teacherName || name);
+  document.getElementById('heroAvaTxt').textContent = isAdmin ? 'А' : (teacherName || name).split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || 'G';
   void TeacherCabinet.dashboard(user);
   void showNewLessons();
   if (user.email === ADMIN_EMAIL) {
@@ -313,6 +358,73 @@ async function showNewLessons() {
     document.getElementById('newList').innerHTML = data.map(r => `<a class="new-item" href="content.html?grade=${r.grade}&subject=${encodeURIComponent(r.subject)}#sabak-${r.lesson_num}"><span class="new-pill">ЖАҢА</span><div><b>${esc(r.title)}</b><span>${r.grade}-сынып · ${SUBJ[r.subject] || ''} · ${r.lesson_num}-сабақ</span></div></a>`).join('');
     document.getElementById('cabNew').hidden = false;
   } catch (_) {}
+}
+
+// ── avatar: the teacher's own picture in the round badge (square crop, 320 px, kept in Supabase Storage)
+function showAvatar(url) {
+  const ava = document.getElementById('heroAva'); let img = ava.querySelector('img');
+  if (!img) { img = document.createElement('img'); img.alt = ''; ava.prepend(img); }
+  img.src = url;
+}
+function setupAvatar(user) {
+  const ava = document.getElementById('heroAva'), input = document.getElementById('avaFile');
+  if (user.user_metadata?.avatar_url) showAvatar(user.user_metadata.avatar_url);
+  ava.onclick = () => input.click();
+  input.onchange = async () => {
+    const file = input.files[0]; input.value = '';
+    if (!file || !file.type.startsWith('image/')) return;
+    if (file.size > 15 * 1024 * 1024) { alert('Сурет тым үлкен — 15 МБ-тан кішісін таңдаңыз.'); return; }
+    ava.classList.add('busy');
+    try {
+      const img = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = URL.createObjectURL(file); });
+      const side = Math.min(img.naturalWidth, img.naturalHeight), c = document.createElement('canvas'); c.width = c.height = 320;
+      c.getContext('2d').drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, 320, 320);
+      URL.revokeObjectURL(img.src);
+      const blob = await new Promise(ok => c.toBlob(ok, 'image/jpeg', .88));
+      const path = `${user.id}/avatar-${Date.now()}.jpg`;
+      const up = await sb.storage.from('avatars').upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000' });
+      if (up.error) throw up.error;
+      const url = sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+      const res = await sb.auth.updateUser({ data: { avatar_url: url } });
+      if (res.error) throw res.error;
+      showAvatar(url);
+    } catch (_) { alert('Сурет сақталмады. Қайта көріңіз.'); }
+    finally { ava.classList.remove('busy'); }
+  };
+}
+
+// ── feedback: a card on the page, plus one gentle reminder from the third visit (not again for 2 weeks after «Кейін»)
+function setupFeedback(user, name) {
+  const card = document.getElementById('feedback'), form = document.getElementById('fbForm'), status = document.getElementById('fbStatus');
+  const store = { get: k => { try { return localStorage.getItem(k); } catch (_) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (_) {} } };
+  const doneKey = 'gotab_fb_done_' + user.id, laterKey = 'gotab_fb_later_' + user.id, visitsKey = 'gotab_visits_' + user.id;
+  card.hidden = false;
+  const thanks = () => { form.hidden = true; let t = card.querySelector('.fb-thanks');
+    if (!t) { t = document.createElement('div'); t.className = 'fb-thanks'; t.innerHTML = '<span>Рахмет! Пікіріңіз бізге жетті.</span><button type="button">Тағы жазу</button>'; card.append(t);
+      t.querySelector('button').onclick = () => { t.remove(); form.reset(); status.textContent = ''; form.hidden = false; }; } };
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const f = new FormData(form), row = { user_name: name || '', likes: f.get('likes').trim(), dislikes: f.get('dislikes').trim(), ideas: f.get('ideas').trim() };
+    if (!row.likes && !row.dislikes && !row.ideas) { status.textContent = 'Кем дегенде бір өрісті толтырыңыз.'; return; }
+    const btn = form.querySelector('.fb-send'); btn.disabled = true; status.textContent = 'Жіберілуде…';
+    const { error } = await sb.from('site_feedback').insert(row);
+    btn.disabled = false;
+    if (error) { status.textContent = 'Жіберілмеді. Қайта көріңіз.'; return; }
+    store.set(doneKey, '1'); document.querySelector('.fb-toast')?.remove(); thanks();
+  };
+  const visits = Number(store.get(visitsKey) || 0) + 1; store.set(visitsKey, String(visits));
+  const later = Number(store.get(laterKey) || 0);
+  if (store.get(doneKey) || visits < 3 || Date.now() - later < 14 * 864e5) return;
+  setTimeout(async () => {
+    const { data } = await sb.from('site_feedback').select('id').eq('user_id', user.id).limit(1);
+    if (data?.length) { store.set(doneKey, '1'); return; }
+    const t = document.createElement('div'); t.className = 'fb-toast'; t.setAttribute('role', 'dialog'); t.setAttribute('aria-label', 'Пікір');
+    t.innerHTML = '<b>Сайт ұнап жүр ме?</b><p>Ойыңызды бір-екі сөзбен жазыңыз — GoTAB-ты бірге жақсартамыз.</p><div><button type="button" class="go">Пікір жазу</button><button type="button">Кейін</button></div>';
+    document.body.append(t);
+    const [go, no] = t.querySelectorAll('button');
+    go.onclick = () => { t.remove(); card.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => form.querySelector('textarea').focus(), 500); };
+    no.onclick = () => { t.remove(); store.set(laterKey, String(Date.now())); };
+  }, 15000);
 }
 
 async function logout() {
