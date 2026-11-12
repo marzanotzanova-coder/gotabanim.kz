@@ -31,7 +31,7 @@ window.TeacherCabinet = (() => {
   async function dashboard(user) {
     const boxes = { recent: document.querySelector('#cabRecent'), classes: document.querySelector('#cabClasses'), saved: document.querySelector('#cabSaved') };
     const {data, error} = await table().select('*').eq('user_id',user.id).order('updated_at',{ascending:false});
-    head(boxes.recent, 'recent', 'Соңғы ашқан сабағым', '#e0ecff', '#1a56db');
+    head(boxes.recent, 'recent', 'Соңғы ашқан сабақтарым', '#e0ecff', '#1a56db');
     head(boxes.classes, 'classes', 'Менің сыныптарым', '#ede9fe', '#7c3aed');
     head(boxes.saved, 'saved', 'Сақталғандар', '#fef3c7', '#d97706');
     if (error) {
@@ -41,7 +41,7 @@ window.TeacherCabinet = (() => {
       return;
     }
     const classes = data.filter(row => row.kind === 'class');
-    const recent = data.find(row => row.kind === 'recent');
+    const recents = data.filter(row => row.kind === 'recent').slice(0,5), recent = recents[0];
     const saved = data.filter(row => row.kind === 'saved');
     window.onCabinetClasses?.(classes);
     // last lesson: one big link back into it
@@ -50,6 +50,8 @@ window.TeacherCabinet = (() => {
       const t = node('div'); t.append(node('b', recent.title || ('Сабақ ' + recent.lesson_num)), node('span', label(recent) + ' · ' + recent.lesson_num + '-сабақ'));
       const go = node('span'); go.className = 'go'; go.innerHTML = 'Жалғастыру ' + svg(ICON.go);
       a.append(t, go); boxes.recent.append(a);
+      // the lessons opened before it, as short links
+      recents.slice(1).forEach(r => { const l = link(r); l.className = 'cab-more'; boxes.recent.append(l); });
       // the hero also offers to continue it
       const row = document.querySelector('#heroRow');
       if (row && !row.querySelector('.hero-continue')) { const h = link(recent); h.className = 'hero-btn hero-continue'; h.innerHTML = svg(ICON.go) + 'Соңғы сабақты жалғастыру'; row.prepend(h); }
@@ -79,11 +81,23 @@ window.TeacherCabinet = (() => {
       boxes.saved.append(group);
     }
   }
-  let opener = null;
+  let opener = null, starToggle = null;
+  const saved = new Set(), savedChanged = () => document.dispatchEvent(new CustomEvent('cabinet-saved'));
   function catalog(user, grade, subject) {
     const grid = document.querySelector('#lessonsGrid');
     const readSaved = () => table().select('lesson_num,grade,subject,folder').eq('user_id',user.id).eq('kind','saved');
     void write(user,'class',{grade,subject,lesson_num:0}).catch(console.warn);
+    // saved lessons of this class: the stars on the lesson cards show and toggle them
+    saved.clear();
+    readSaved().then(({data}) => { (data || []).filter(r => r.grade === grade && r.subject === subject).forEach(r => saved.add(r.lesson_num)); savedChanged(); });
+    starToggle = async (num, title) => {
+      const was = saved.has(num);
+      was ? saved.delete(num) : saved.add(num); savedChanged();
+      const {error} = was
+        ? await table().delete().match({user_id:user.id,kind:'saved',grade,subject,lesson_num:num})
+        : await table().upsert({grade,subject,lesson_num:num,title,folder:'',user_id:user.id,kind:'saved',updated_at:new Date().toISOString()});
+      if (error) { was ? saved.add(num) : saved.delete(num); savedChanged(); alert('Сақталмады. Қайта көріңіз.'); }
+    };
     // a lesson opened from its card counts as the last opened lesson
     opener = (num, title) => void write(user,'recent',{grade,subject,lesson_num:num,title}).catch(console.warn);
     grid.addEventListener('click',async event => {
@@ -116,11 +130,11 @@ window.TeacherCabinet = (() => {
         try {
           await write(user,'saved',{...row,folder:input.value.trim()});
           dialog.close();
-          save.textContent = 'Сақталды';
+          save.textContent = 'Сақталды'; saved.add(row.lesson_num); savedChanged();
         } catch { status.textContent = 'Сақталмады. Қайта көріңіз.'; }
         finally { submit.disabled = false; }
       };
     },true);
   }
-  return {dashboard,catalog,opened:(num,title) => opener?.(num,title)};
+  return {dashboard,catalog,opened:(num,title) => opener?.(num,title),isSaved:num => saved.has(num),toggleSaved:(num,title) => starToggle?.(num,title)};
 })();

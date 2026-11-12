@@ -55,6 +55,15 @@
 .cab-recent{display:flex;align-items:center;gap:14px;padding:14px;border-radius:14px;background:var(--surface2);text-decoration:none;color:var(--text)}
 .cab-recent b{display:block;font-size:15px}.cab-recent span{font-size:13px;color:var(--muted)}
 .cab-recent .go{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff;font-weight:800;font-size:13px;white-space:nowrap}
+.cab-more{display:flex;align-items:center;gap:8px;padding:10px 4px;border-bottom:1px solid var(--border);color:var(--text);text-decoration:none;font-size:14px;font-weight:600}
+.cab-more:last-child{border-bottom:none}.cab-more:hover{color:var(--primary)}
+.cab-recent{margin-bottom:6px}
+.new-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.new-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid var(--border);background:var(--surface2);text-decoration:none;color:var(--text);transition:border-color .15s,transform .15s}
+.new-item:hover{border-color:var(--primary);transform:translateY(-1px)}
+.new-item b{display:block;font-size:14px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.new-item span{font-size:12px;color:var(--muted)}
+.new-item .new-pill{flex-shrink:0;padding:4px 9px;border-radius:99px;font-size:10px;font-weight:900;letter-spacing:.6px;color:#fff;background:linear-gradient(135deg,#f43f5e,#f59e0b)}
 .cab-chips{display:flex;flex-wrap:wrap;gap:8px}
 .cab-folder{border:1px solid var(--border);border-radius:14px;margin-top:8px;overflow:hidden}
 .cab-folder summary{cursor:pointer;padding:12px 14px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px;background:var(--surface2)}
@@ -68,7 +77,7 @@
 <link rel="stylesheet" href="teacher-theme.css?v=20261102">
 <script src="teacher-ui.js?v=20261102" defer></script>
 <link rel="stylesheet" href="teacher-cabinet.css?v=20261112-home">
-<script src="teacher-cabinet.js?v=20261112-home"></script>
+<script src="teacher-cabinet.js?v=20261112-stars"></script>
 </head>
 <body class="teacher-app">
 <nav class="top-nav">
@@ -123,6 +132,11 @@
     <div class="picker" id="picker"></div>
   </section>
 
+  <section class="cab-card hm-block" id="cabNew" hidden>
+    <div class="cab-head"><i style="background:#ffe4e6;color:#e11d48"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg></i><h2>Осы аптада қосылған жаңа сабақтар</h2></div>
+    <div class="new-list" id="newList"></div>
+  </section>
+
   <div class="cab-grid" id="cabinet">
     <section class="cab-card" id="cabRecent"></section>
     <section class="cab-card" id="cabClasses"></section>
@@ -161,6 +175,7 @@ document.getElementById('heroDate').textContent = `${now.getDate()} ${MONTHS[now
   const teacherName = user.user_metadata?.name?.trim();
   document.querySelector('#greeting').textContent = 'Сәлеметсіз бе' + (teacherName ? ', ' + teacherName : '') + '!';
   void TeacherCabinet.dashboard(user);
+  void showNewLessons();
   if (user.email === ADMIN_EMAIL) {
     const adminBtn = document.createElement('a');
     adminBtn.href = 'admin.html';
@@ -178,6 +193,19 @@ document.getElementById('heroDate').textContent = `${now.getDate()} ${MONTHS[now
     }
   } catch (_) {}
 })();
+
+// lessons added during the last 7 days, newest first
+const SUBJ = { math: 'Математика', algebra: 'Алгебра', geometry: 'Геометрия', informatics: 'Информатика' };
+async function showNewLessons() {
+  try {
+    const since = new Date(Date.now() - 7 * 864e5).toISOString();
+    const { data, error } = await sb.from('materials').select('grade,subject,lesson_num,title,created_at').gte('created_at', since).order('created_at', { ascending: false }).limit(12);
+    if (error || !data?.length) return;
+    const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    document.getElementById('newList').innerHTML = data.map(r => `<a class="new-item" href="content.html?grade=${r.grade}&subject=${encodeURIComponent(r.subject)}#sabak-${r.lesson_num}"><span class="new-pill">ЖАҢА</span><div><b>${esc(r.title)}</b><span>${r.grade}-сынып · ${SUBJ[r.subject] || ''} · ${r.lesson_num}-сабақ</span></div></a>`).join('');
+    document.getElementById('cabNew').hidden = false;
+  } catch (_) {}
+}
 
 async function logout() {
   localStorage.removeItem('gotab_last_page');
