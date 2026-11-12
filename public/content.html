@@ -94,16 +94,31 @@ body.lesson-open:not(.is-paid) .lb-free.on{display:inline-flex}
 body:not(.lesson-open) #lessonsGrid{display:none}
 body.lesson-open #topicGrid{display:none}
 body.lesson-open .lesson-bar{display:flex}
-body.lesson-open .lessons-grid{display:block;max-width:1100px}
+body.lesson-open .lessons-grid{display:block;max-width:1200px}
 body.lesson-open .lesson-unit:not(.is-open){display:none}
-body.lesson-open .lesson-unit:hover{transform:none}
-body.lesson-open .lesson-unit .ppt-preview{height:min(50vw,420px)}
-body.lesson-open .lesson-unit .ppt-body{padding:16px 20px}
-body.lesson-open .lesson-unit .ppt-title{font-size:18px}
-body.lesson-open .lesson-unit .sub-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
-body.lesson-open .lesson-unit .sub-card{border-left:1px solid var(--border);padding:18px}
-body.lesson-open .lesson-unit .sub-preview{height:200px}
-body.lesson-open .lesson-dl-footer{padding:16px 20px}
+/* lesson page: presentation, ҚМЖ, animation and extras as four equal cards in one row */
+.lessons-grid .lesson-unit{background:none!important;border:none!important;box-shadow:none!important;overflow:visible!important;transform:none!important}
+.lu-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;align-items:stretch}
+.lu-cards > .lu-card,.lu-cards > .extras-card{background:var(--surface)!important;border:1px solid var(--border)!important;border-radius:18px!important;padding:14px!important;display:flex!important;flex-direction:column;gap:10px;box-shadow:0 4px 18px rgba(26,86,219,.07);margin:0!important}
+.lu-head{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px;color:var(--text)}
+.lu-head i{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lu-head i svg{width:18px;height:18px}
+.lu-meta{margin-left:auto;font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
+.lu-card .ppt-preview,.lu-card .sub-preview{height:auto!important;aspect-ratio:16/10;border-radius:12px;overflow:hidden;margin:0;flex-shrink:0}
+.lu-card .ppt-preview .slide-thumb{object-fit:contain;background:#0f1e3e}
+.lu-card .ppt-preview[data-preview]{cursor:zoom-in}
+.lu-card .slide-dl-hint{display:none}
+.lu-actions{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.lu-actions .btn-dl-sm,.lu-actions .btn-preview{width:100%;margin:0;justify-content:center;min-height:42px}
+.lu-empty{font-size:13px;color:var(--muted)}
+.lessons-grid .lesson-dl-footer{display:flex;justify-content:flex-end;gap:10px;padding:16px 0 0!important;border:none!important;flex-wrap:wrap;background:none!important}
+.lu-cards .extras-heading{display:flex;align-items:center;gap:9px}
+.lu-cards .extras-heading .gt-icon{width:34px;height:34px;padding:8px;border-radius:10px;background:#fef3c7;color:#d97706;flex-shrink:0}
+.lu-cards .extras-label{font-size:15px!important;font-weight:800!important;color:var(--text)!important}
+.lessons-grid .lesson-dl-footer .btn-dl-all{flex:0 1 auto;min-height:46px;padding:0 22px}
+.lessons-grid .lesson-dl-footer .cab-save{margin:0;min-height:46px;padding:0 18px}
+@media(max-width:1100px){.lu-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.lu-cards{grid-template-columns:minmax(0,1fr)}.lessons-grid .lesson-dl-footer{justify-content:stretch}.lessons-grid .lesson-dl-footer>*{flex:1}}
 @media(max-width:640px){.lesson-bar h2{order:-1;flex-basis:100%;font-size:18px}.lesson-bar button{flex:1;justify-content:center;padding:10px 8px;font-size:13px}}
 /* ── LESSON UNIT (one lesson = ppt + qmj + video) ── */
 .lesson-unit{
@@ -957,59 +972,51 @@ function render(overrideLessons) {
 
     return `
     <div class="lesson-unit${isFreeLesson(lesson) ? ' free-lesson' : ''}" id="lesson-${lessonNum}" data-lesson-num="${lessonNum}">
+      <div class="lu-cards">
 
-      <!-- PRESENTATION -->
-      <div class="ppt-section">
-        <div class="ppt-preview">
-          ${previewInner}
-        </div>
-        <div class="ppt-body">
-          <div class="ppt-title">${lesson.title}</div>
-          <button class="cab-save" data-save-lesson>Сақтау</button>
-          <div class="ppt-meta">
-            <span class="badge-ppt">PPT</span>
-            ${lesson.ppt ? lesson.ppt.meta : ''}
+        <!-- PRESENTATION -->
+        <div class="ppt-section lu-card">
+          <div class="lu-head"><i style="background:#e0ecff;color:#1a56db"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></i>Презентация<span class="lu-meta">${lesson.ppt ? lesson.ppt.meta : ''}</span></div>
+          <div class="ppt-preview"${hasSlides ? ` data-preview="${i}"` : ''}>
+            ${previewInner}
           </div>
-          ${hasPptSrc ? `<button class="btn-dl-sm btn-dl-ppt" data-dl-ppt="${i}">⬇ PPT жүктеу</button>` : ''}
+          <div class="ppt-title" hidden>${lesson.title}</div>
+          <div class="lu-actions">
+            ${hasSlides ? `<button class="btn-dl-sm btn-preview" data-preview="${i}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Алдын ала қарау</button>` : ''}
+            ${hasPptSrc ? `<button class="btn-dl-sm btn-dl-ppt" data-dl-ppt="${i}">⬇ PPT жүктеу</button>` : ''}
+            ${!hasSlides && !hasPptSrc ? '<div class="lu-empty">Презентация әлі қосылмаған</div>' : ''}
+          </div>
         </div>
-      </div>
-
-      <div class="unit-divider"></div>
-
-      <!-- ҚМЖ + VIDEO -->
-      <div class="sub-row">
 
         <!-- ҚМЖ -->
-        <div class="sub-card">
+        <div class="sub-card lu-card">
+          <div class="lu-head"><i style="background:#dcfce7;color:#16a34a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg></i>ҚМЖ<span class="lu-meta">${hasQmjSrc ? lesson.qmj.meta : ''}</span></div>
           <div class="sub-preview qmj-preview" style="${lesson.qmj && lesson.qmj.thumb ? 'background:#fff;padding:0;overflow:hidden' : ''}">
             ${qmjPrev}
           </div>
-          <div class="sub-type-label qmj-label"><span>📄</span> ҚМЖ</div>
-          <div class="sub-meta">${hasQmjSrc ? lesson.qmj.meta : 'ҚМЖ әлі қосылмаған'}</div>
-          ${hasQmjSrc ? `<button class="btn-dl-sm btn-preview" data-qmj-preview="${i}">ҚМЖ алдын ала қарау</button>` : ''}
-          ${hasQmjSrc ? `<button class="btn-dl-sm btn-dl-qmj" data-dl-qmj="${i}">⬇ ҚМЖ жүктеу</button>` : ''}
+          <div class="lu-actions">
+            ${hasQmjSrc ? `<button class="btn-dl-sm btn-preview" data-qmj-preview="${i}">ҚМЖ алдын ала қарау</button>` : ''}
+            ${hasQmjSrc ? `<button class="btn-dl-sm btn-dl-qmj" data-dl-qmj="${i}">⬇ ҚМЖ жүктеу</button>` : '<div class="lu-empty">ҚМЖ әлі қосылмаған</div>'}
+          </div>
         </div>
 
-        <!-- ANIMATION VIDEO -->
-        <div class="sub-card">
+        <!-- ANIMATION -->
+        <div class="sub-card lu-card">
+          <div class="lu-head"><i style="background:#ede9fe;color:#7c3aed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></i>Анимация<span class="lu-meta">${hasVidSrc && lesson.video ? lesson.video.meta : ''}</span></div>
           <div class="sub-preview video-preview">${videoPrev}</div>
-          <div class="sub-type-label vid-label"><span>🎬</span> Анимация</div>
-          <div class="sub-meta">${lesson.video ? lesson.video.meta : '—'}</div>
-          ${hasVidSrc ? `<button class="btn-dl-sm btn-preview" data-watch="${i}">▶ Анимацияны көру</button>` : ''}
-          ${hasVidSrc ? `<button class="btn-dl-sm btn-dl-vid" data-dl-vid="${i}">⬇ Видео жүктеу</button>` : ''}
+          <div class="lu-actions">
+            ${hasVidSrc ? `<button class="btn-dl-sm btn-preview" data-watch="${i}">▶ Анимацияны көру</button>` : ''}
+            ${hasVidSrc ? `<button class="btn-dl-sm btn-dl-vid" data-dl-vid="${i}">⬇ Видео жүктеу</button>` : '<div class="lu-empty">Анимация жақында қосылады</div>'}
+          </div>
         </div>
-        ${subject !== 'informatics' ? GoTABExtras.renderCard(lesson,i) : ''}
 
+        ${subject !== 'informatics' ? GoTABExtras.renderCard(lesson,i) : ''}
       </div>
 
       <div class="lesson-dl-footer">
-        ${lesson.slides && lesson.slides.length > 0 ? `<button class="btn-preview" data-preview="${i}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Алдын ала</button>` : ''}
-        ${hasAnySrc
-          ? `<button class="btn-dl-all" data-dl-all="${i}">⬇ ${lessonNum}-сабақ жалпы жүктеу</button>`
-          : `<button class="btn-dl-all" data-dl-all="${i}">⬇ Барлығын жүктеу</button>`
-        }
+        <button class="cab-save" data-save-lesson>Сақтау</button>
+        <button class="btn-dl-all" data-dl-all="${i}">⬇ ${lessonNum}-сабақты түгел жүктеу</button>
       </div>
-
     </div>`;
   }).join('');
 
