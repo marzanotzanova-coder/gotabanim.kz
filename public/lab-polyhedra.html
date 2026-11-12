@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoTAB — Зертхана: Дұрыс көпжақтар</title>
+<link rel="stylesheet" href="gotab.css">
+<link rel="stylesheet" href="teacher-theme.css?v=20261102">
+<style>
+body{overflow:hidden}
+.lab{display:flex;height:calc(100vh - 64px)}
+#view{flex:1;position:relative;background:var(--bg);touch-action:none}
+#view canvas{display:block}
+.side{width:390px;flex-shrink:0;background:#fff;border-left:1px solid var(--border);padding:22px;overflow-y:auto}
+.side h2{font-size:20px;font-weight:900;margin-bottom:4px}.side .sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+.st{display:flex;gap:12px;padding:12px 14px;border:1.5px solid var(--primary);border-radius:14px;margin-bottom:10px;background:var(--surface2);box-shadow:0 4px 14px rgba(26,86,219,.1)}
+.st .n{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.st.done .n{background:var(--success)}.st>div:last-child{flex:1;min-width:0}
+.st b{display:block;font-size:15px;margin-bottom:3px}.st p{font-size:13px;color:var(--muted);line-height:1.45}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border:none;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;margin-top:8px;min-height:48px}
+.btn.p{background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff}.btn.g{background:#fff;border:1.5px solid var(--border);color:var(--text)}
+.btn:disabled{opacity:.4;cursor:default}
+.bar{display:flex;gap:8px;margin-top:8px}.bar .btn{margin-top:0}
+svg.i{width:20px;height:20px;flex-shrink:0}
+.kinds{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.kind{padding:10px 8px;min-height:52px;border-radius:12px;border:1.5px solid var(--border);background:#fff;font-weight:800;font-size:14px;line-height:1.2;font-family:inherit;color:var(--text);cursor:pointer}
+.kind small{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:2px}
+.kind.on{border-color:var(--primary);background:rgba(26,86,219,.08);color:var(--primary)}
+.kind .i{display:none;width:15px;height:15px;vertical-align:-2px;margin-right:3px;color:var(--success)}.kind.ok .i{display:inline-block}
+#desc{margin-top:10px;font-size:14px;line-height:1.5}
+#prog{margin-top:10px;padding:10px 12px;border-radius:10px;background:#fff;border:1.5px dashed var(--border);font-size:14px;font-weight:700}
+#prog .barbg{height:8px;border-radius:99px;background:var(--border);margin-top:8px;overflow:hidden}#prog .barfill{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--cyan));transition:width .3s}
+#guide{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(245,158,11,.15);color:#92400e;font-size:14px;font-weight:800;line-height:1.45}#guide.on{display:block}
+#result{display:none}#result.on{display:flex}
+.facts{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}.facts td{padding:7px 4px;border-bottom:1px solid var(--border)}.facts td:last-child{text-align:right;font-weight:800}
+.euler{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(16,185,129,.1);color:#065f46;font-size:14px;line-height:1.5}
+.why{margin-top:12px;font-size:12.5px;color:var(--muted);line-height:1.5}
+#tip{display:flex;align-items:center;gap:8px;position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(15,23,42,.88);color:#fff;border-radius:12px;padding:10px 18px;font-size:15px;font-weight:700;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:820px){.lab{flex-direction:column;height:auto}#view{height:62vh}.side{width:auto;border-left:none}body{overflow:auto}#tip{font-size:13px}}
+@media(pointer:coarse){#view canvas{-webkit-user-select:none;user-select:none;touch-action:none}}
+</style>
+</head>
+<body class="teacher-app">
+<nav class="top-nav"><img src="gotab_logo.png" alt="GoTAB"><div class="nav-user"><a href="labs.html" style="font-weight:700;color:var(--primary);text-decoration:none">← Зертханалар</a></div></nav>
+<div class="lab">
+  <div id="view"><div id="tip"></div></div>
+  <div class="side">
+    <h2>Дұрыс көпжақтар</h2><div class="sub">Геометриялық зертханалық жұмыс · 10–11-сынып</div>
+    <div class="st"><div class="n">1</div><div><b>Көпжақты таңда</b><p>Дұрыс көпжақ бесеу ғана. Біреуін таңда — оның жазбасы еденге жайылады.</p>
+      <div class="kinds" id="kinds"></div><div id="desc"></div></div></div>
+    <div class="st" id="st2"><div class="n">2</div><div><b>Жазбаны бүктеп құрастыр</b><p>Жазбаның жағын бас — ол қыры бойымен жоғары бүктеледі. Қайта бассаң, жазылады. Жасыл жақ — табан, ол орнында тұрады.</p>
+      <div id="prog"></div><div id="guide"></div>
+      <button class="btn p" id="guideBtn"><i data-ic="steps"></i>Қадам-қадаммен көрсет</button>
+      <div class="bar"><button class="btn g" id="auto"><i data-ic="play"></i>Бірден құрастыр</button><button class="btn g" id="unfold"><i data-ic="unfold"></i>Жазбаға қайтару</button></div></div></div>
+    <div class="st" id="result"><div class="n">3</div><div><b>Санап көр</b><p>Көпжақ дайын! Айналдырып, жақтарын, қырларын, төбелерін сана.</p>
+      <table class="facts" id="facts"></table><div class="euler" id="euler"></div></div></div>
+    <div class="why"><b style="display:inline">Неге тек бесеу?</b> Бір төбеде кемінде 3 жақ тоғысады, ал олардың бұрыштарының қосындысы 360°-тан кем болуы керек. Үшбұрыштан: 3, 4 немесе 5 жақ (180°, 240°, 300°). Шаршыдан: 3 жақ (270°). Бесбұрыштан: 3 жақ (324°). Алтыбұрыштың үшеуі 360° береді — олар жазық болып жатып қалады.</div>
+    <div class="bar" style="margin-top:14px"><button class="btn g" id="reset"><i data-ic="restart"></i>Басынан бастау</button><button class="btn g" id="cam"><i data-ic="focus"></i>Көріністі қайтару</button></div>
+  </div>
+</div>
+<script src="lab-polyhedra-geom.js?v=20261112"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+const $ = id => document.getElementById(id), view = $('view');
+const IC = { check: '<path d="M20 6 9 17l-5-5"/>', warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  pointer: '<path d="M22 14a8 8 0 0 1-8 8"/><path d="M18 11v-1a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1"/><path d="M10 9.5V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v10"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',
+  steps: '<path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/>', play: '<polygon points="6 3 20 12 6 21 6 3"/>',
+  unfold: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
+  restart: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>', focus: '<circle cx="12" cy="12" r="3"/><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>' };
+const ic = k => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</svg>`;
+document.querySelectorAll('[data-ic]').forEach(el => el.outerHTML = ic(el.dataset.ic));
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); view.appendChild(renderer.domElement);
+const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
+const controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.minDistance = 3; controls.maxDistance = 30;
+// trackpad: two-finger swipe orbits the camera, pinch (ctrl+wheel) zooms; a real mouse wheel still zooms
+const sph = new THREE.Spherical();
+function orbit(dAz, dPol) { const off = camera.position.clone().sub(controls.target); sph.setFromVector3(off); sph.theta += dAz; sph.phi = Math.min(Math.PI - .05, Math.max(.05, sph.phi + dPol)); off.setFromSpherical(sph); camera.position.copy(controls.target).add(off); camera.lookAt(controls.target); }
+view.addEventListener('wheel', e => { const mouse = e.deltaMode !== 0 || (e.wheelDeltaY && Math.abs(e.wheelDeltaY) % 120 === 0 && !e.deltaX);
+  if (e.ctrlKey || mouse) return; e.preventDefault(); e.stopPropagation(); if (!fly) orbit(e.deltaX * .006, e.deltaY * .006); }, { capture: true, passive: false });
+scene.add(new THREE.HemisphereLight(0xffffff, 0xb8c6e0, 1.2)); const dl = new THREE.DirectionalLight(0xffffff, 1.1); dl.position.set(4, 9, 6); scene.add(dl);
+scene.add(new THREE.GridHelper(16, 32, 0x9fb3d8, 0xd3ddef));
+function resize() { const w = view.clientWidth, h = view.clientHeight; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+
+// the five solids: [button, plural note, face shape, faces meeting at a vertex, face angle, name meaning]
+const KINDS = {
+  tetra: { name: 'Тетраэдр', small: '4 жақ', face: 'тең қабырғалы үшбұрыш', from: 'тең қабырғалы үшбұрыштан', meet: 3, ang: 60, greek: '«тетра» — төрт' },
+  cube: { name: 'Куб', small: 'гексаэдр · 6 жақ', face: 'шаршы', from: 'шаршыдан', meet: 3, ang: 90, greek: '«гекса» — алты' },
+  octa: { name: 'Октаэдр', small: '8 жақ', face: 'тең қабырғалы үшбұрыш', from: 'тең қабырғалы үшбұрыштан', meet: 4, ang: 60, greek: '«окта» — сегіз' },
+  dodeca: { name: 'Додекаэдр', small: '12 жақ', face: 'дұрыс бесбұрыш', from: 'дұрыс бесбұрыштан', meet: 3, ang: 108, greek: '«додека» — он екі' },
+  icosa: { name: 'Икосаэдр', small: '20 жақ', face: 'тең қабырғалы үшбұрыш', from: 'тең қабырғалы үшбұрыштан', meet: 5, ang: 60, greek: '«икоси» — жиырма' } };
+const SCALE = 1.3, S = { kind: 'tetra', solid: null, net: null, k: [], tgt: [], guide: false, auto: null, solved: new Set() };
+const M = { face: new THREE.MeshStandardMaterial({ color: 0x93c5fd, roughness: .55, side: THREE.DoubleSide, transparent: true, opacity: .92, polygonOffset: true, polygonOffsetFactor: 1 }),
+  done: new THREE.MeshStandardMaterial({ color: 0x60a5fa, roughness: .5, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 1 }),
+  base: new THREE.MeshStandardMaterial({ color: 0x5eead4, roughness: .55, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 1 }),
+  next: new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xf59e0b, emissiveIntensity: .3, roughness: .5, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 1 }),
+  line: new THREE.LineBasicMaterial({ color: 0x1e3a8a }) };
+let root = new THREE.Group(), inner = new THREE.Group(), meshes = []; root.add(inner); root.scale.setScalar(SCALE); scene.add(root);
+
+// build the face meshes of the chosen solid; each face is moved by its own fold matrix
+function build(kind) {
+  S.kind = kind; S.solid = solid(kind); const best = buildNet(S.solid, 7); S.net = best.net; S.size = best.size;
+  S.k = S.solid.F.map((_, i) => i === 0 ? 1 : 0); S.tgt = S.k.slice(); S.guide = false; S.auto = null;
+  meshes.forEach(m => { m.geometry.dispose(); inner.remove(m); }); meshes = [];
+  inner.position.set(-best.cx, 0, -best.cz);
+  S.solid.F.forEach((f, i) => {
+    const P = f.v.map(v => new THREE.Vector3(...S.solid.V[v])), pos = [];
+    for (let j = 1; j < P.length - 1; j++) pos.push(...P[0].toArray(), ...P[j].toArray(), ...P[j + 1].toArray());
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals();
+    const m = new THREE.Mesh(g, M.face); m.matrixAutoUpdate = false; m.userData.f = i;
+    m.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(P), M.line)); inner.add(m); meshes.push(m); });
+  pose(); home(); ui();
+}
+function pose() { const Ms = poses(S.solid, S.net, S.k); meshes.forEach((m, i) => { m.matrix.fromArray(Ms[i]); m.matrixWorldNeedsUpdate = true; }); }
+const order = () => S.net.order.slice(1), nextFace = () => order().find(f => S.tgt[f] < 1);
+const folded = () => order().filter(f => S.tgt[f] === 1).length, complete = () => S.k.every(x => x === 1);
+// camera turns to the finished solid, which stands on the base face
+function showSolid() { const Ms = poses(S.solid, S.net, S.k); let h = 0; S.solid.F.forEach((f, i) => f.v.forEach(v => { h = Math.max(h, new THREE.Vector3(...S.solid.V[v]).applyMatrix4(new THREE.Matrix4().fromArray(Ms[i])).y); }));
+  const c = new THREE.Vector3(...inner.position.toArray()).multiplyScalar(SCALE).setY(h * SCALE / 2), d = h * SCALE * 2.2 + 3;
+  controls.target.copy(c); flyTo(c.clone().add(new THREE.Vector3(d * .55, d * .45, d * .7))); }
+function home() { const d = S.size * SCALE * 1.15 + 3.5; controls.target.set(0, .4, 0); flyTo(new THREE.Vector3(d * .15, d * .9, d * .75)); }
+
+function ui() { const K = KINDS[S.kind], n = order().length, done = folded(), nx = S.guide ? nextFace() : null;
+  document.querySelectorAll('.kind').forEach(b => { b.classList.toggle('on', b.dataset.k === S.kind); b.classList.toggle('ok', S.solved.has(b.dataset.k)); });
+  $('desc').innerHTML = `<b style="display:inline">${K.name}</b> — ${S.solid.F.length} ${K.from} тұрады. Аты грекше ${K.greek} дегенді білдіреді.`;
+  $('prog').innerHTML = `Бүктелген жақтар: ${done} / ${n}<div class="barbg"><div class="barfill" style="width:${done / n * 100}%"></div></div>`;
+  meshes.forEach((m, i) => m.material = i === 0 ? M.base : i === nx ? M.next : S.tgt[i] === 1 ? M.done : M.face);
+  $('guide').classList.toggle('on', S.guide && !!nx); $('guideBtn').style.display = S.guide && nx ? 'none' : '';
+  if (S.guide && nx) $('guide').textContent = `${done + 1}-қадам: сары жыпылықтаған жақты бас — ол бүктеледі.`;
+  const fin = complete(); $('result').classList.toggle('on', fin); $('st2').classList.toggle('done', fin);
+  if (fin) { const V = S.solid.V.length, F = S.solid.F.length, E = S.solid.F.reduce((s, f) => s + f.v.length, 0) / 2;
+    $('facts').innerHTML = `<tr><td>Жақтары (Ж)</td><td>${F}</td></tr><tr><td>Жағының пішіні</td><td>${K.face}</td></tr><tr><td>Төбелері (Т)</td><td>${V}</td></tr><tr><td>Қырлары (Қ)</td><td>${E}</td></tr><tr><td>Бір төбеде тоғысатын жақтар</td><td>${K.meet}</td></tr>`;
+    $('euler').innerHTML = `<b style="display:inline">Эйлер формуласы:</b> Т − Қ + Ж = ${V} − ${E} + ${F} = 2.<br>Бір төбедегі бұрыштар: ${K.meet} × ${K.ang}° = ${K.meet * K.ang}° — 360°-тан кем.`; }
+  $('tip').innerHTML = fin ? `${ic('check')}${K.name} құрастырылды! Айналдырып, санап көр` : S.guide && nx ? `${ic('pointer')}${done + 1}-қадам: сары жақты бас` : done === 0 ? `${ic('pointer')}Жазбаның көк жағын бас — ол бүктеледі` : `${ic('pointer')}Тағы ${n - done} жақты бүкте`; }
+
+$('kinds').innerHTML = Object.entries(KINDS).map(([k, v]) => `<button class="kind" data-k="${k}">${ic('check')}${v.name}<small>${v.small}</small></button>`).join('');
+$('kinds').onclick = e => { const b = e.target.closest('.kind'); if (b) build(b.dataset.k); };
+
+// pointer: tap a face (finger taps and mouse clicks; drags orbit the camera)
+const ray = new THREE.Raycaster(), activePointers = new Set(); let down = null, multiTouch = false;
+renderer.domElement.addEventListener('pointerdown', e => { activePointers.add(e.pointerId);
+  if (activePointers.size > 1) { multiTouch = true; down = null; } else { multiTouch = false; down = { id: e.pointerId, x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' }; } }, { capture: true });
+renderer.domElement.addEventListener('pointercancel', e => { activePointers.delete(e.pointerId); down = null; if (!activePointers.size) multiTouch = false; });
+renderer.domElement.addEventListener('pointerup', e => { const start = down; down = null; activePointers.delete(e.pointerId); if (multiTouch) { if (!activePointers.size) multiTouch = false; return; }
+  if (!start || start.id !== e.pointerId || Math.hypot(e.clientX - start.x, e.clientY - start.y) > (start.touch ? 14 : 6)) return;
+  const rc = renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX - rc.left) / rc.width * 2 - 1, -(e.clientY - rc.top) / rc.height * 2 + 1), camera);
+  const hit = ray.intersectObjects(meshes, false)[0]; if (!hit) return; const f = hit.object.userData.f;
+  if (f === 0) { $('tip').innerHTML = ic('warn') + 'Бұл — табан, ол орнында тұрады. Басқа жақты бас'; return; }
+  if (S.guide && f !== nextFace()) { $('tip').innerHTML = ic('warn') + 'Бұл емес — сары жыпылықтаған жақты бас'; return; }
+  S.auto = null; S.tgt[f] = S.tgt[f] === 1 ? 0 : 1; ui(); });
+
+let fly = null; function flyTo(to) { fly = { from: camera.position.clone(), to, t: 0 }; }
+$('guideBtn').onclick = () => { S.guide = true; S.auto = null; S.tgt = S.tgt.map((_, i) => i === 0 ? 1 : 0); ui(); };
+$('auto').onclick = () => { S.guide = false; S.auto = { list: order().filter(f => S.tgt[f] < 1), t: 0 }; ui(); };
+$('unfold').onclick = () => { S.guide = false; S.auto = null; S.tgt = S.tgt.map((_, i) => i === 0 ? 1 : 0); ui(); home(); };
+$('reset').onclick = () => { S.solved.clear(); build('tetra'); };
+$('cam').onclick = home;
+build('tetra');
+
+const clock = new THREE.Clock();
+(function loop() { requestAnimationFrame(loop); const dt = Math.min(clock.getDelta(), .05);
+  if (S.auto && S.auto.list.length && (S.auto.t -= dt) <= 0) { S.tgt[S.auto.list.shift()] = 1; S.auto.t = .45; ui(); }
+  let moved = false; S.k.forEach((v, i) => { const t = S.tgt[i]; if (v !== t) { S.k[i] = t > v ? Math.min(t, v + dt * 1.6) : Math.max(t, v - dt * 1.6); moved = true; } });
+  if (moved) { pose(); if (complete()) { S.solved.add(S.kind); S.guide = false; ui(); showSolid(); } }
+  const nx = S.guide ? nextFace() : null; M.next.emissiveIntensity = nx != null ? .25 + .25 * Math.sin(performance.now() / 160) : .3;
+  if (fly) { fly.t = Math.min(1, fly.t + 1 / 60); const k = fly.t < .5 ? 2 * fly.t * fly.t : 1 - Math.pow(-2 * fly.t + 2, 2) / 2; camera.position.lerpVectors(fly.from, fly.to, k); if (fly.t >= 1) fly = null; }
+  controls.update(); renderer.render(scene, camera); })();
+</script>
+<script src="supabase.js"></script><script src="supabase-client.js?v=20261112-polyhedra"></script><script src="lab-paywall.js?v=20261111-plans"></script>
+<script>labGate();</script>
+</body>
+</html>

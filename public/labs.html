@@ -36,11 +36,13 @@
       <h3>Пирамида және оның қимасы</h3><p>Пирамиданы құрастыр, жазықтықпен қимасын сал</p><span class="tag">Геометрия · 10–11-сынып</span><a class="btn-lab-use" href="lab-pyramid.html">Қолдану</a></div>
     <div class="lcard"><span class="lab-lock"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Жазылым қажет</span><div class="ic"><canvas id="cubc" width="520" height="300" style="width:260px;height:150px"></canvas></div>
       <h3>Куб және оның қимасы</h3><p>Қырларға 3 нүкте қойып, кубтың қимасын сал</p><span class="tag">Геометрия · 10–11-сынып</span><a class="btn-lab-use" href="lab-cube.html">Қолдану</a></div>
+    <div class="lcard"><span class="lab-lock"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Жазылым қажет</span><div class="ic"><canvas id="polyc" width="520" height="300" style="width:260px;height:150px"></canvas></div>
+      <h3>Дұрыс көпжақтар</h3><p>Бес дұрыс көпжақты жазбасынан бүктеп құрастыр</p><span class="tag">Геометрия · 10–11-сынып</span><a class="btn-lab-use" href="lab-polyhedra.html">Қолдану</a></div>
     <div class="lcard soon"><div class="ic">🧊</div><h3>Призма және жазбасы</h3><p>Жақында</p></div>
     <div class="lcard soon"><div class="ic">⚪</div><h3>Айналу денелері</h3><p>Жақында</p></div>
   </div>
 </div>
-<script src="supabase.js"></script><script src="supabase-client.js?v=20261104-lab-cube"></script><script src="lab-paywall.js?v=20261111-plans"></script>
+<script src="supabase.js"></script><script src="supabase-client.js?v=20261112-polyhedra"></script><script src="lab-paywall.js?v=20261111-plans"></script>
 <script>(async()=>{const u=await labGate();if(u)document.getElementById('userName').textContent=u.user_metadata?.name||u.email;})();</script>
 <script>
 // spinning pyramid with its mid-height section on the lab card
@@ -63,6 +65,16 @@ function poly(pts,fill,stroke,lw){g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[
 function frame(t){const a=t/1700;g.clearRect(0,0,W,H);const b=B.map(v=>P(v,a)),u=T.map(v=>P(v,a)),h=X.map(v=>P(v,a));
 poly(b,'rgba(90,169,255,.16)');[0,1,2,3].forEach(i=>poly([b[i],b[(i+1)%4],u[(i+1)%4],u[i]],'rgba(90,169,255,.1)'));poly(h,'rgba(249,115,22,.55)','#ea580c',4);
 [0,1,2,3].forEach(i=>{poly([b[i],b[(i+1)%4]],null,'#1a56db',5);poly([u[i],u[(i+1)%4]],null,'#1a56db',5);poly([b[i],u[i]],null,'#1a56db',5);});requestAnimationFrame(frame);}requestAnimationFrame(frame);})();
+</script>
+<script>
+// spinning icosahedron on the regular-polyhedra card
+(function(){const c=document.getElementById('polyc');if(!c)return;const g=c.getContext('2d'),W=c.width,H=c.height,p=(1+Math.sqrt(5))/2,V=[];
+[[0,1,p],[1,p,0],[p,0,1]].forEach(b=>[1,-1].forEach(s1=>[1,-1].forEach(s2=>{const v=b.slice();let k=0;for(let i=0;i<3;i++)if(v[i]){v[i]*=k++?s2:s1;}V.push(v);})));
+const d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]),F=[];
+for(let i=0;i<12;i++)for(let j=i+1;j<12;j++)for(let k=j+1;k<12;k++)if(d(V[i],V[j])<2.1&&d(V[j],V[k])<2.1&&d(V[i],V[k])<2.1)F.push([i,j,k]);
+function frame(t){const a=t/2200,ca=Math.cos(a),sa=Math.sin(a),tx=.45,P=V.map(v=>{const x=v[0]*ca-v[2]*sa,z=v[0]*sa+v[2]*ca,y=v[1]*Math.cos(tx)-z*Math.sin(tx),zz=v[1]*Math.sin(tx)+z*Math.cos(tx),k=7/(7+zz);return[W/2+x*k*62,H/2-y*k*62,zz];});
+g.clearRect(0,0,W,H);F.map(f=>({f,z:(P[f[0]][2]+P[f[1]][2]+P[f[2]][2])/3})).sort((A,B)=>B.z-A.z).forEach(({f,z})=>{g.beginPath();f.forEach((i,n)=>n?g.lineTo(P[i][0],P[i][1]):g.moveTo(P[i][0],P[i][1]));g.closePath();
+const l=Math.max(0,Math.min(1,.55-z*.18));g.fillStyle=`rgba(${Math.round(70+90*l)},${Math.round(130+80*l)},${Math.round(225+25*l)},.95)`;g.fill();g.strokeStyle='#1a56db';g.lineWidth=3;g.lineJoin='round';g.stroke();});requestAnimationFrame(frame);}requestAnimationFrame(frame);})();
 </script>
 <script src="math-bg.js"></script>
 </body>
