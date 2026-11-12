@@ -23,8 +23,7 @@ async function requireAuth() {
 async function redirectIfLoggedIn() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
-    const last = localStorage.getItem('gotab_last_page') || 'dashboard.html';
-    window.location.href = last;
+    window.location.href = 'dashboard.html';
   }
 }
 
