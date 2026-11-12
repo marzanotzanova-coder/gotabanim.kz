@@ -470,9 +470,10 @@ body.lesson-open .lesson-dl-footer{padding:16px 20px}
 <script src="teacher-cabinet.js?v=20261112-noclasses"></script>
 </head>
 <body class="teacher-app">
+<script src="gotab-loader.js?v=20261112"></script>
 
 <nav class="top-nav">
-  <img src="gotab_logo.png" alt="GoTAB">
+  <img src="gotab_logo_anim.webp" onerror="this.onerror=null;this.src='gotab_logo.png'" alt="GoTAB">
   <div class="nav-user">
     <span class="nav-user-name" id="userName"></span>
     <button class="btn-logout" onclick="logout()">Шығу</button>
@@ -523,6 +524,7 @@ body.lesson-open .lesson-dl-footer{padding:16px 20px}
   </div>
 
   <div class="catalog-status" id="catalogStatus" role="status" aria-live="polite">
+    <img class="gt-go" id="catalogGo" src="gotab_go_loader.webp" alt="" style="width:64px;height:auto">
     <span id="catalogStatusText">Сабақтар жүктелуде…</span>
     <button type="button" id="catalogRetry" onclick="location.reload()">Қайта жүктеу</button>
   </div>
@@ -678,6 +680,7 @@ function catalogStatus(state) {
   };
   box.hidden = state === 'ready';
   document.getElementById('catalogStatusText').textContent = messages[state] || '';
+  document.getElementById('catalogGo').hidden = !['loading','retrying','refreshing'].includes(state);
   document.getElementById('catalogRetry').hidden = !['error', 'stale'].includes(state);
   document.getElementById('lessonsGrid').setAttribute('aria-busy', String(['loading','retrying','refreshing'].includes(state)));
 }
