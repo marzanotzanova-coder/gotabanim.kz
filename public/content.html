@@ -656,7 +656,7 @@ async function checkContentAccess(user) {
   const user = await GoTABLoad.deadline(() => requireAuth());
   if (!user) return;
   currentUser = user;
-  TeacherCabinet.catalog(user,grade,subject);
+  window.TeacherCabinet?.catalog(user,grade,subject);
   document.getElementById('userName').textContent = user.user_metadata?.name || user.email;
 
   const isInfoSubject = subject === 'informatics';

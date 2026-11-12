@@ -1,4 +1,4 @@
-const TeacherCabinet = (() => {
+window.TeacherCabinet = (() => {
   const table = () => sb.from('teacher_cabinet');
   const subjects = {math:'Математика', algebra:'Алгебра', geometry:'Геометрия', informatics:'Информатика'};
   const label = row => row.grade + '-сынып · ' + subjects[row.subject];
