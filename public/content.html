@@ -537,7 +537,7 @@ body.lesson-open .lesson-dl-footer{padding:16px 20px}
   <div class="lesson-bar" id="lessonBar">
     <button type="button" class="lb-back" id="lbBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Барлық сабақтар</button>
     <h2 id="lbTitle"></h2>
-    <span class="lb-free" id="lbFree">Бұл сабақ тегін — жүктеп, қолданып көріңіз</span>
+    <span class="lb-free" id="lbFree">Бұл сабақты тегін қарап көріңіз</span>
     <button type="button" id="lbPrev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Алдыңғы</button>
     <button type="button" id="lbNext">Келесі<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
   </div>
@@ -633,7 +633,7 @@ body.lesson-open .lesson-dl-footer{padding:16px 20px}
 <script src="video-download.js?v=20261112"></script>
 <script src="content-load.js?v=20261104-fast"></script>
 <script src="supabase.js"></script>
-<script src="qmj-preview.js?v=20261111-notice"></script>
+<script src="qmj-preview.js?v=20261112-free"></script>
 <script src="supabase-client.js?v=20261104-fast"></script>
 <script src="lesson-extras.js?v=20261111-practical"></script>
 <script>
@@ -672,7 +672,7 @@ function changeSubject() {
 initSwitcher();
 
 let userIsPaid = false;
-// the first lesson of every class is free to open and download
+// the first lesson of every class is free to view (slides, ҚМЖ and the animation with sound, no watermark); downloads need a subscription
 const isFreeLesson = lesson => Number(lesson?.lesson_num) === 1;
 let currentUser = null;
 
@@ -993,6 +993,7 @@ function render(overrideLessons) {
           <div class="sub-preview video-preview">${videoPrev}</div>
           <div class="sub-type-label vid-label"><span>🎬</span> Анимация</div>
           <div class="sub-meta">${lesson.video ? lesson.video.meta : '—'}</div>
+          ${hasVidSrc ? `<button class="btn-dl-sm btn-preview" data-watch="${i}">▶ Анимацияны көру</button>` : ''}
           ${hasVidSrc ? `<button class="btn-dl-sm btn-dl-vid" data-dl-vid="${i}">⬇ Видео жүктеу</button>` : ''}
         </div>
         ${subject !== 'informatics' ? GoTABExtras.renderCard(lesson,i) : ''}
@@ -1016,8 +1017,8 @@ function render(overrideLessons) {
   }
   GoTABLoad.visibleVideos(grid);
 
-  async function dlFile(url, btn, label, videoTitle, free) {
-    if (!userIsPaid && !free) { openModal(); return; }
+  async function dlFile(url, btn, label, videoTitle) {
+    if (!userIsPaid) { openModal(); return; }
     if (videoTitle) {
       btn.disabled = true;
       try { await GoTABVideoDownload.save(url, videoTitle); }
@@ -1030,14 +1031,14 @@ function render(overrideLessons) {
   }
 
   setQmjPreviewDocuments(lessons.filter(l=>l.qmj?.src).map(l=>({title:l.title,url:l.qmj.src})));
-  grid.querySelectorAll('[data-qmj-preview]').forEach(button=>button.addEventListener('click',()=>{const lesson=lessons[Number(button.dataset.qmjPreview)];if(lesson?.qmj?.src)openQmjPreview(lesson.qmj.src,lesson.title);}));
+  grid.querySelectorAll('[data-qmj-preview]').forEach(button=>button.addEventListener('click',()=>{const lesson=lessons[Number(button.dataset.qmjPreview)];if(lesson?.qmj?.src)openQmjPreview(lesson.qmj.src,lesson.title,{watermark:!isFreeLesson(lesson)});}));
   // PPT download
   grid.querySelectorAll('[data-dl-ppt]').forEach(el => {
     el.addEventListener('click', function(e) {
       e.preventDefault();
       if (this.classList.contains('done')) return;
       const lesson = lessons[parseInt(this.dataset.dlPpt)];
-      dlFile(lesson.ppt.src, this, 'Жүктелді', null, isFreeLesson(lesson));
+      dlFile(lesson.ppt.src, this, 'Жүктелді');
     });
   });
 
@@ -1047,9 +1048,16 @@ function render(overrideLessons) {
       e.preventDefault();
       if (this.classList.contains('done')) return;
       const lesson = lessons[parseInt(this.dataset.dlQmj)];
-      dlFile(lesson.qmj.src, this, 'Жүктелді', null, isFreeLesson(lesson));
+      dlFile(lesson.qmj.src, this, 'Жүктелді');
     });
   });
+
+  // Watch the animation with sound: subscribers in every lesson, everyone in the free lesson
+  grid.querySelectorAll('[data-watch]').forEach(el => el.addEventListener('click', () => {
+    const lesson = lessons[parseInt(el.dataset.watch)];
+    if (!userIsPaid && !isFreeLesson(lesson)) { openModal(); return; }
+    openVideoPlayer(lesson.video.src, lesson.title);
+  }));
 
   // Video download
   grid.querySelectorAll('[data-dl-vid]').forEach(el => {
@@ -1057,7 +1065,7 @@ function render(overrideLessons) {
       e.preventDefault();
       if (this.classList.contains('done')) return;
       const lesson = lessons[parseInt(this.dataset.dlVid)];
-      dlFile(lesson.video.src, this, 'Жүктеу басталды', lesson.title || 'GoTAB-анимация', isFreeLesson(lesson));
+      dlFile(lesson.video.src, this, 'Жүктеу басталды', lesson.title || 'GoTAB-анимация');
     });
   });
 
@@ -1068,17 +1076,16 @@ function render(overrideLessons) {
     el.addEventListener('click', async function(e) {
       e.preventDefault();
       if (this.classList.contains('done')) return;
+      if (!userIsPaid) { openModal(); return; }
       const lesson = lessons[parseInt(this.dataset.dlAll)];
-      if (!userIsPaid && !isFreeLesson(lesson)) { openModal(); return; }
       const files = [
         lesson.ppt  && lesson.ppt.src,
         lesson.qmj  && lesson.qmj.src,
         lesson.video && lesson.video.src,
       ].filter(Boolean);
       try {
-        // extra documents stay for subscribers only, also in a free lesson
-        if (userIsPaid) { const extraLinks=await GoTABExtras.getUrls(lesson.extra_files);
-        files.push(...extraLinks.map(f=>f.url)); }
+        const extraLinks=await GoTABExtras.getUrls(lesson.extra_files);
+        files.push(...extraLinks.map(f=>f.url));
       } catch(error) { alert(error.message); return; }
       if (!files.length) { return; }
       files.forEach((url, n) => setTimeout(() => {
@@ -1161,6 +1168,25 @@ document.getElementById('lbNext').onclick = () => { const i = currentLessonIdx()
 addEventListener('hashchange', () => showLessonFromHash());
 addEventListener('popstate', () => showLessonFromHash());
 
+// ── Animation player (sound on, no download button) ──
+function openVideoPlayer(src, title) {
+  let box = document.getElementById('videoPlayer');
+  if (!box) {
+    document.body.insertAdjacentHTML('beforeend', `<div id="videoPlayer" role="dialog" aria-modal="true" style="position:fixed;inset:0;z-index:9500;background:rgba(10,18,40,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:12px">
+      <div style="width:min(1100px,100%);display:flex;align-items:center;gap:12px;color:#fff"><b id="videoPlayerTitle" style="flex:1;font-size:17px"></b><button type="button" id="videoPlayerClose" aria-label="Жабу" style="width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:22px;cursor:pointer">✕</button></div>
+      <video id="videoPlayerEl" controls playsinline controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture oncontextmenu="return false" style="width:min(1100px,100%);max-height:80vh;border-radius:14px;background:#000"></video></div>`);
+    box = document.getElementById('videoPlayer');
+    const close = () => { const v = document.getElementById('videoPlayerEl'); v.pause(); v.removeAttribute('src'); v.load(); box.style.display = 'none'; document.body.style.overflow = ''; };
+    document.getElementById('videoPlayerClose').onclick = close;
+    box.addEventListener('click', e => { if (e.target === box) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && box.style.display !== 'none') close(); });
+  }
+  document.getElementById('videoPlayerTitle').textContent = title || 'Анимация';
+  const v = document.getElementById('videoPlayerEl'); v.src = src; v.muted = false;
+  box.style.display = 'flex'; document.body.style.overflow = 'hidden';
+  v.play().catch(() => {});
+}
+
 // ── Payment modal ──
 function openModal()  { document.getElementById('payModal').classList.add('open'); }
 function closeModal() { document.getElementById('payModal').classList.remove('open'); }
@@ -1221,7 +1247,7 @@ function renderSlideOnCanvas(canvas, src, label) {
     canvas.height = img.naturalHeight || 720;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0);
-    drawWatermark(ctx, canvas.width, canvas.height, label);
+    if (label) drawWatermark(ctx, canvas.width, canvas.height, label);
   };
   img.onerror = () => {
     canvas.width = 1280; canvas.height = 720;
@@ -1252,7 +1278,8 @@ async function openPreview(lesson, lessonNum) {
   document.getElementById('previewBadge').textContent = `Сабақ ${lessonNum}`;
   document.getElementById('previewTitle').textContent = lesson.title;
 
-  const wmLabel = currentUser?.email || 'GoTAB.kz';
+  const wmLabel = isFreeLesson(lesson) ? null : (currentUser?.email || 'GoTAB.kz');
+  const note = document.querySelector('#previewModal .preview-watermark-note'); if (note) note.hidden = !wmLabel;
 
   // Show modal immediately with loading placeholders
   const track = document.getElementById('carouselTrack');

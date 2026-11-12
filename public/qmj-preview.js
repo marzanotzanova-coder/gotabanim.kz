@@ -22,15 +22,17 @@ modal.querySelector('[data-qmj-close]').onclick=close;modal.addEventListener('cl
 document.addEventListener('keydown',e=>{if(modal.hidden)return;preventCopyShortcut(e);if(e.key==='Escape'){e.preventDefault();close();}if(e.key==='Tab'){const bs=Array.from(modal.querySelectorAll('button'));if(e.shiftKey&&document.activeElement===bs[0]){e.preventDefault();bs.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===bs.at(-1)){e.preventDefault();bs[0].focus();}}});
 window.setQmjPreviewDocuments=items=>{documents=items;};
 window.openQmjPreviewPicker=()=>{controller?.abort();serial++;show('ҚМЖ алдын ала қарау');status.textContent='Қарайтын ҚМЖ-ны таңдаңыз';const list=document.createElement('div');list.className='qmj-picker';documents.forEach(item=>{const b=document.createElement('button');b.type='button';b.textContent=item.title;b.onclick=()=>window.openQmjPreview(item.url,item.title);list.append(b);});if(!documents.length)status.textContent='Бұл сыныпта ҚМЖ әлі қосылмаған';slot.append(list);};
-window.openQmjPreview=async(url,title)=>{
- controller?.abort();controller=new AbortController();const id=++serial;show('ҚМЖ · '+title);status.textContent='ҚМЖ-ның барлық беттері жүктелуде…';
+window.openQmjPreview=async(url,title,opts)=>{
+ controller?.abort();controller=new AbortController();const id=++serial;show('ҚМЖ · '+title);
+ // a free lesson is shown without the GoTAB watermark
+ const wm=opts?.watermark!==false;const note=modal.querySelector('.preview-watermark-note');if(note)note.hidden=!wm;status.textContent='ҚМЖ-ның барлық беттері жүктелуде…';
  try{const source=new URL(url,location.href);if(!['http:','https:'].includes(source.protocol))throw Error('ҚМЖ сілтемесі жарамсыз.');
  const frame=document.createElement('iframe');frame.title=title+' — ҚМЖ';frame.setAttribute('sandbox','allow-same-origin');slot.append(frame);
- if(/\.pdf(?:\?|$)/i.test(source.href)){frame.src=source.href+'#toolbar=0';addWatermark(slot);status.textContent='';return;}
+ if(/\.pdf(?:\?|$)/i.test(source.href)){frame.src=source.href+'#toolbar=0';if(wm)addWatermark(slot);status.textContent='';return;}
  const [response]=await Promise.all([fetch(source.href,{signal:controller.signal}),dependencies()]);if(!response.ok)throw Error('ҚМЖ файлы жүктелмеді ('+response.status+').');const bytes=await response.arrayBuffer();if(id!==serial)return;
  const d=frame.contentDocument;d.open();d.write('<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>html{background:#edf2f8}body{margin:0;overflow:auto}section.docx{position:relative!important;isolation:isolate;box-shadow:0 2px 12px #17365d12!important}.docx-wrapper{padding:16px!important}a{pointer-events:none}.docx-wrapper,.docx-wrapper *{user-select:none!important;-webkit-user-select:none!important;-webkit-touch-callout:none!important}img{-webkit-user-drag:none}@media print{body{visibility:hidden!important}}</style></head><body></body></html>');d.close();
  await window.docx.renderAsync(bytes,d.body,d.head,{breakPages:true,ignoreLastRenderedPageBreak:false,renderHeaders:true,renderFooters:true,renderFootnotes:true,renderEndnotes:true,renderAltChunks:false,useBase64URL:true});if(id!==serial)return;
- protectDocument(d);const pages=Array.from(d.querySelectorAll('section.docx'));pages.forEach(addWatermark);const width=Math.max(1,...pages.map(p=>p.getBoundingClientRect().width))+32;fit=Math.min(1,frame.clientWidth/width);scale=fit;zoom();status.textContent='ҚМЖ толық ашылды';
+ protectDocument(d);const pages=Array.from(d.querySelectorAll('section.docx'));if(wm)pages.forEach(addWatermark);const width=Math.max(1,...pages.map(p=>p.getBoundingClientRect().width))+32;fit=Math.min(1,frame.clientWidth/width);scale=fit;zoom();status.textContent='ҚМЖ толық ашылды';
  }catch(e){if(id!==serial||e.name==='AbortError')return;slot.replaceChildren();status.textContent='ҚМЖ-ны ашу мүмкін болмады. '+e.message;}
 };
 })();
