@@ -1103,7 +1103,7 @@ function renderTopicCards(lessons) {
 }
 function showLessonFromHash(lessons) {
   if (lessons) openLessons = lessons;
-  const m = location.hash.match(/^#sabak-(\d+)$/), num = m ? Number(m[1]) : 0;
+  const m = location.hash.match(/^#(?:sabak|lesson)-(\d+)$/), num = m ? Number(m[1]) : 0;
   const idx = openLessons.findIndex((l, i) => (Number(l.lesson_num) || i + 1) === num);
   document.body.classList.toggle('lesson-open', idx >= 0);
   document.querySelectorAll('#lessonsGrid .lesson-unit').forEach(u => u.classList.toggle('is-open', Number(u.dataset.lessonNum) === num));
@@ -1114,7 +1114,7 @@ function showLessonFromHash(lessons) {
   document.getElementById('lbNext').disabled = idx === openLessons.length - 1;
 }
 const lessonNumAt = i => Number(openLessons[i]?.lesson_num) || i + 1;
-function currentLessonIdx() { const m = location.hash.match(/^#sabak-(\d+)$/); return m ? openLessons.findIndex((l, i) => lessonNumAt(i) === Number(m[1])) : -1; }
+function currentLessonIdx() { const m = location.hash.match(/^#(?:sabak|lesson)-(\d+)$/); return m ? openLessons.findIndex((l, i) => lessonNumAt(i) === Number(m[1])) : -1; }
 document.getElementById('topicGrid').addEventListener('click', e => { const c = e.target.closest('[data-open]'); if (!c) return; location.hash = 'sabak-' + c.dataset.open; window.scrollTo({ top: 0 }); });
 document.getElementById('lbBack').onclick = () => { history.pushState(null, '', location.pathname + location.search); showLessonFromHash(); };
 document.getElementById('lbPrev').onclick = () => { const i = currentLessonIdx(); if (i > 0) { location.hash = 'sabak-' + lessonNumAt(i - 1); window.scrollTo({ top: 0 }); } };
