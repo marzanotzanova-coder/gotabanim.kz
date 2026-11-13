@@ -143,8 +143,8 @@
 .qcard-btn.play:hover{opacity:.88}
 </style>
 <link rel="stylesheet" href="teacher-theme.css?v=20261102">
-<script src="quiz-scenes.js"></script>
-<link rel="stylesheet" href="quiz-studio.css">
+<script src="quiz-scenes.js?v=motion1"></script>
+<link rel="stylesheet" href="quiz-studio.css?v=motion1">
 <script src="teacher-ui.js?v=20261102" defer></script>
 </head>
 <body class="teacher-app">
@@ -198,7 +198,7 @@
   <div class="qm-step visible" id="step1">
     <div class="st-title">Ойын көрінісін таңдаңыз</div>
     <div class="st-sub">Таңдалған көрініс оқушылардың ойын экранында ашылады.</div>
-    <div class="scene-banner" id="sceneBanner"><span id="sceneName"></span></div>
+    <div class="scene-banner" id="sceneBanner"><div id="bannerMotion" aria-hidden="true"></div><span id="sceneName"></span></div>
     <div class="themes-grid" id="themesGrid"></div>
     <div class="snav">
       <div></div>
@@ -324,7 +324,7 @@ let currentUser = null;
 function renderThemes() {
   document.getElementById('themesGrid').innerHTML = Object.entries(quizScenes).map(([id, label]) => `
     <button type="button" class="theme-card" data-scene="${id}" onclick="selTheme('${id}')">
-      <img src="quiz-scenes/${id}.webp" alt=""><span class="scene-label">${label}</span>
+      ${quizSceneMarkup(id)}<span class="scene-label">${label}</span>
     </button>`).join('');
   selTheme(state.theme);
 }
@@ -334,7 +334,7 @@ function selTheme(id) {
   document.querySelectorAll('[data-scene]').forEach(card => {
     card.setAttribute('aria-pressed', String(card.dataset.scene === state.theme));
   });
-  document.getElementById('sceneBanner').style.backgroundImage = `url("quiz-scenes/${state.theme}.webp")`;
+  document.getElementById('bannerMotion').innerHTML = quizSceneMarkup(state.theme);
   document.getElementById('sceneName').textContent = quizScenes[state.theme];
 }
 
@@ -569,7 +569,7 @@ async function loadMyQuizzes() {
     document.getElementById('quizCards').innerHTML = data.map(q => `
       <div class="qcard">
         <div class="qcard-top">
-          <img class="qcard-ico" alt="" src="quiz-scenes/${Object.hasOwn(quizScenes,q.theme) ? q.theme : 'underwater'}.webp">
+          <div class="qcard-ico">${quizSceneMarkup(q.theme)}</div>
           <div>
             <div class="qcard-title">${q.title}</div>
           </div>

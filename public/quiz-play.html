@@ -347,11 +347,12 @@ body{font-family:'Inter',sans-serif;min-height:100vh;overflow:hidden;
 @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 </style>
 <link rel="stylesheet" href="teacher-theme.css?v=20261102">
-<script src="quiz-scenes.js"></script>
+<script src="quiz-scenes.js?v=motion1"></script>
 <script src="teacher-ui.js?v=20261102" defer></script>
 </head>
 <body class="teacher-app">
 
+<style>#themeLayer .quiz-motion{width:100%;height:100%;display:block}#themeLayer::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,11,25,.28),rgba(4,11,25,.6))}</style>
 <!-- Theme background layer -->
 <div id="themeLayer"></div>
 
@@ -988,9 +989,7 @@ function quitGame() { show('sIntro'); stopTimer(); }
 // THEME BACKGROUNDS
 // ══════════════════════════════════════
 function initTheme(theme) {
-  const scene = Object.hasOwn(quizScenes, theme) ? theme : 'underwater';
-  document.getElementById('themeLayer').style.backgroundImage =
-    `linear-gradient(180deg, rgba(5,14,30,.4), rgba(5,14,30,.62)), url("quiz-scenes/${scene}.webp")`;
+  document.getElementById('themeLayer').innerHTML = quizSceneMarkup(theme);
 }
 
 // ── HELPERS ──
