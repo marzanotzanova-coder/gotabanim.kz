@@ -104,7 +104,7 @@ body{font-family:'Inter',sans-serif;min-height:100vh;overflow:hidden;
 
 /* ─── THEME LAYER ─── */
 #themeLayer{position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:linear-gradient(to bottom,var(--bg1),var(--bg2))}
+  background:var(--bg1) center / cover no-repeat}
 .bubble{position:absolute;border-radius:50%;background:rgba(255,255,255,.15);
   border:1px solid rgba(255,255,255,.3);animation:bubRise var(--dur,5s) var(--del,0s) infinite ease-in}
 .fish{position:absolute;bottom:30%;font-size:22px;animation:fishSwim 12s -4s infinite linear}
@@ -347,6 +347,7 @@ body{font-family:'Inter',sans-serif;min-height:100vh;overflow:hidden;
 @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 </style>
 <link rel="stylesheet" href="teacher-theme.css?v=20261102">
+<script src="quiz-scenes.js"></script>
 <script src="teacher-ui.js?v=20261102" defer></script>
 </head>
 <body class="teacher-app">
@@ -512,11 +513,11 @@ function showError(msg) {
 
 function setupIntro() {
   const typeNames = { quiz:'Викторина', match:'Сәйкестендіру', carousel:'Карусель', sort:'Сұрыптау' };
-  const themeNames = { underwater:'🌊 Су Астында', cave:'⛰️ Тау Ішінде', space:'🚀 Ғарыш', forest:'🌿 Орман', steppe:'🌅 Қазақ Даласы', cyberpunk:'🌆 Киберпанк', volcano:'🌋 Вулкан', arctic:'🧊 Арктика', retro:'🕹️ Ретро Аркада', magic:'✨ Сиқыр' };
+
   document.getElementById('introBadge').textContent = (typeNames[quiz.game_type]||quiz.game_type).toUpperCase();
   document.getElementById('introTitle').textContent = quiz.title;
   document.getElementById('introMeta').textContent =
-    [themeNames[quiz.theme], quiz.grade, quiz.subject, quiz.questions.length + ' сұрақ'].filter(Boolean).join(' · ');
+    [quizScenes[quiz.theme], quiz.grade, quiz.subject, quiz.questions.length + ' сұрақ'].filter(Boolean).join(' · ');
 }
 
 function show(id) {
@@ -987,323 +988,9 @@ function quitGame() { show('sIntro'); stopTimer(); }
 // THEME BACKGROUNDS
 // ══════════════════════════════════════
 function initTheme(theme) {
-  const layer = document.getElementById('themeLayer');
-  layer.innerHTML = '';
-  if (theme === 'underwater') {
-    for (let i=0;i<18;i++) {
-      const b = document.createElement('div');
-      const sz = 6 + Math.random()*18;
-      b.className = 'bubble';
-      b.style.cssText = `left:${Math.random()*100}%;bottom:-30px;
-        width:${sz}px;height:${sz}px;
-        --dur:${4+Math.random()*7}s;--del:${Math.random()*8}s`;
-      layer.appendChild(b);
-    }
-    const fish = document.createElement('div');
-    fish.className = 'fish';
-    fish.textContent = '🐠';
-    fish.style.bottom = (25+Math.random()*40)+'%';
-    layer.appendChild(fish);
-    const fish2 = document.createElement('div');
-    fish2.className = 'fish';
-    fish2.textContent = '🐟';
-    fish2.style.cssText = `bottom:${15+Math.random()*30}%;animation-delay:-7s;animation-duration:16s;font-size:16px`;
-    layer.appendChild(fish2);
-  } else if (theme === 'cave') {
-    for (let i=0;i<10;i++) {
-      const s = document.createElement('div');
-      s.className = 'stalactite';
-      const w = 4+Math.random()*7;
-      s.style.cssText = `left:${i*10+Math.random()*6}%;--w1:${w}px;--w2:${w}px;--h:${25+Math.random()*60}px`;
-      layer.appendChild(s);
-    }
-    const colors = ['#00ffff','#ff66ff','#ffff44','#44ffaa','#ff8844'];
-    colors.forEach((c,i) => {
-      const cr = document.createElement('div');
-      cr.className = 'crystal';
-      cr.style.cssText = `bottom:${3+Math.random()*12}%;left:${8+i*18}%;
-        width:${10+Math.random()*8}px;height:${18+Math.random()*14}px;
-        background:${c};color:${c};--dur:${1.5+Math.random()}s;--del:${i*.4}s`;
-      layer.appendChild(cr);
-    });
-    [15,35,55,75,90].forEach(pos => {
-      const t = document.createElement('div');
-      t.className = 'torch';
-      t.style.cssText = `left:${pos}%;bottom:${8+Math.random()*15}%`;
-      layer.appendChild(t);
-    });
-  } else if (theme === 'space') {
-    for (let i=0;i<70;i++) {
-      const s = document.createElement('div');
-      s.className = 'star-dot';
-      const sz = .8+Math.random()*2.5;
-      s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;
-        width:${sz}px;height:${sz}px;--dur:${1+Math.random()*3}s;--del:${Math.random()*4}s`;
-      layer.appendChild(s);
-    }
-    for (let i=0;i<3;i++) {
-      const ss = document.createElement('div');
-      ss.className = 'shooting-star';
-      ss.style.cssText = `top:${5+Math.random()*30}%;left:${Math.random()*60}%;
-        --del:${3+i*4}s`;
-      layer.appendChild(ss);
-    }
-    // planet
-    const planet = document.createElement('div');
-    planet.style.cssText = `position:absolute;top:5%;right:8%;width:55px;height:55px;border-radius:50%;
-      background:radial-gradient(circle at 35% 35%,#c084fc,#4c0066);
-      box-shadow:0 0 20px rgba(192,132,252,.5)`;
-    layer.appendChild(planet);
-    const ring = document.createElement('div');
-    ring.style.cssText = `position:absolute;top:calc(5% + 20px);right:calc(8% - 18px);
-      width:90px;height:18px;border-radius:50%;border:3px solid rgba(192,132,252,.4);
-      transform:rotateX(60deg)`;
-    layer.appendChild(ring);
-  } else if (theme === 'forest') {
-    const leaves = ['🍃','🍂','🌿','🍀'];
-    for (let i=0;i<12;i++) {
-      const l = document.createElement('div');
-      l.className = 'leaf';
-      l.textContent = leaves[Math.floor(Math.random()*leaves.length)];
-      l.style.cssText = `left:${Math.random()*100}%;top:-20px;font-size:${14+Math.random()*10}px;
-        --dur:${3+Math.random()*4}s;--del:${Math.random()*6}s`;
-      layer.appendChild(l);
-    }
-    for (let i=0;i<20;i++) {
-      const ff = document.createElement('div');
-      ff.className = 'firefly';
-      ff.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;
-        --dur:${2+Math.random()*3}s;--del:${Math.random()*5}s`;
-      layer.appendChild(ff);
-    }
-  } else if (theme === 'steppe') {
-    const sun = document.createElement('div');
-    sun.className = 'sun-el';
-    sun.style.cssText = `top:30px;left:50%;transform:translateX(-50%);
-      width:60px;height:60px;
-      background:radial-gradient(circle,#fff700,#ffb300)`;
-    layer.appendChild(sun);
-    // sun rays
-    for (let i=0;i<8;i++) {
-      const ray = document.createElement('div');
-      ray.style.cssText = `position:absolute;top:30px;left:50%;width:2px;height:30px;
-        background:rgba(255,215,0,.3);transform-origin:top center;
-        transform:translateX(-50%) rotate(${i*45}deg) translateY(30px);`;
-      layer.appendChild(ray);
-    }
-    // geometric pattern overlay
-    const pat = document.createElement('div');
-    pat.style.cssText = `position:absolute;inset:0;opacity:.06;
-      background-image:repeating-linear-gradient(45deg,#fff8dc 0,#fff8dc 1px,transparent 0,transparent 50%);
-      background-size:20px 20px`;
-    layer.appendChild(pat);
-    // grass
-    const grass = document.createElement('div');
-    grass.className = 'grass';
-    for (let i=0;i<30;i++) {
-      const blade = document.createElement('div');
-      blade.className = 'grass-blade';
-      const h = 20+Math.random()*30;
-      blade.style.cssText = `left:${Math.random()*100}%;height:${h}px;
-        --dur:${1+Math.random()*1.5}s;--del:${Math.random()*1.5}s`;
-      grass.appendChild(blade);
-    }
-    layer.appendChild(grass);
-  } else if (theme === 'cyberpunk') {
-    // neon grid background
-    const grid = document.createElement('div');
-    grid.style.cssText = `position:absolute;inset:0;opacity:.2;
-      background-image:linear-gradient(rgba(0,255,249,.6) 1px,transparent 1px),
-        linear-gradient(90deg,rgba(0,255,249,.6) 1px,transparent 1px);
-      background-size:40px 40px;`;
-    layer.appendChild(grid);
-    // horizon line
-    const hl = document.createElement('div');
-    hl.style.cssText = `position:absolute;bottom:30%;left:0;right:0;height:1px;
-      background:linear-gradient(90deg,transparent,#00fff9 30%,#ff00ff 70%,transparent);opacity:.5;`;
-    layer.appendChild(hl);
-    // city buildings silhouette
-    [5,14,24,35,46,57,66,76,86,93].forEach(x => {
-      const b = document.createElement('div');
-      const h = 40+Math.floor(Math.random()*120);
-      b.style.cssText = `position:absolute;bottom:30%;left:${x}%;width:6%;height:${h}px;
-        background:rgba(0,0,20,.95);border:1px solid rgba(0,255,249,.15);box-sizing:border-box;`;
-      // windows
-      for (let wy=8;wy<h-10;wy+=14) {
-        for (let wx=4;wx<90;wx+=30) {
-          const w = document.createElement('div');
-          w.style.cssText = `position:absolute;left:${wx}%;bottom:${wy}px;
-            width:20%;height:7px;background:${Math.random()>.4?'rgba(0,255,249,.3)':'rgba(255,0,255,.2)'};`;
-          b.appendChild(w);
-        }
-      }
-      layer.appendChild(b);
-    });
-    // neon particles
-    for (let i=0;i<30;i++) {
-      const p = document.createElement('div');
-      p.className = 'neon-particle';
-      const c = Math.random()>.5?'#00fff9':'#ff00ff';
-      const sz = .8+Math.random()*3;
-      p.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*70}%;
-        width:${sz}px;height:${sz}px;background:${c};box-shadow:0 0 6px ${c};
-        --dur:${1+Math.random()*2.5}s;--del:${Math.random()*3}s`;
-      layer.appendChild(p);
-    }
-  } else if (theme === 'volcano') {
-    // lava pool at bottom
-    const lavaPool = document.createElement('div');
-    lavaPool.className = 'lava-glow';
-    lavaPool.style.cssText = `height:80px;background:linear-gradient(to top,#ff2200,#ff6600 50%,transparent);opacity:.7;`;
-    layer.appendChild(lavaPool);
-    // volcano cone
-    const cone = document.createElement('div');
-    cone.style.cssText = `position:absolute;bottom:0;left:50%;transform:translateX(-50%);
-      width:0;height:0;border-left:160px solid transparent;border-right:160px solid transparent;
-      border-bottom:260px solid #1a0000;filter:drop-shadow(0 -10px 20px rgba(255,60,0,.4));`;
-    layer.appendChild(cone);
-    // smoke at top of cone
-    for (let i=0;i<8;i++) {
-      const sm = document.createElement('div');
-      sm.className = 'bubble';
-      const sz = 18+Math.random()*30;
-      sm.style.cssText = `left:${44+Math.random()*12}%;bottom:48%;
-        width:${sz}px;height:${sz}px;
-        background:rgba(80,80,80,.4);border:1px solid rgba(100,100,100,.3);
-        --dur:${3+Math.random()*4}s;--del:${Math.random()*4}s`;
-      layer.appendChild(sm);
-    }
-    // ember particles
-    for (let i=0;i<24;i++) {
-      const e = document.createElement('div');
-      e.className = 'ember';
-      const sz = 2+Math.random()*6;
-      e.style.cssText = `left:${38+Math.random()*24}%;bottom:40%;
-        width:${sz}px;height:${sz}px;
-        background:${Math.random()>.5?'#ff6600':'#ffcc00'};
-        box-shadow:0 0 4px currentColor;
-        --dur:${1.5+Math.random()*3}s;--del:${Math.random()*4}s`;
-      layer.appendChild(e);
-    }
-    // lava rocks
-    [-15,-5,5,15].forEach(offset => {
-      const r = document.createElement('div');
-      r.style.cssText = `position:absolute;bottom:0;left:calc(50% + ${offset*8}px);
-        width:${30+Math.random()*40}px;height:${15+Math.random()*20}px;
-        background:#2a0000;border-radius:50% 50% 0 0;`;
-      layer.appendChild(r);
-    });
-  } else if (theme === 'arctic') {
-    // aurora layers
-    const aColors = ['rgba(0,255,136,.18)','rgba(0,168,204,.15)','rgba(0,255,200,.12)'];
-    aColors.forEach((c,i) => {
-      const a = document.createElement('div');
-      a.className = 'aurora';
-      a.style.cssText = `height:${120+i*40}px;background:linear-gradient(to bottom,${c},transparent);
-        --dur:${4+i*1.5}s;--del:${i*.8}s`;
-      layer.appendChild(a);
-    });
-    // ice crystals
-    for (let i=0;i<6;i++) {
-      const cr = document.createElement('div');
-      cr.className = 'crystal';
-      const sz = 12+Math.random()*16;
-      cr.style.cssText = `bottom:${2+Math.random()*10}%;left:${5+i*17}%;
-        width:${sz}px;height:${sz*1.8}px;
-        background:rgba(168,240,255,.6);
-        box-shadow:0 0 10px rgba(168,240,255,.4);
-        --dur:${2+Math.random()}s;--del:${i*.3}s`;
-      layer.appendChild(cr);
-    }
-    // snowflakes
-    for (let i=0;i<35;i++) {
-      const s = document.createElement('div');
-      s.className = 'snowflake';
-      s.textContent = Math.random()>.5?'❄':'*';
-      s.style.cssText = `left:${Math.random()*100}%;top:-20px;
-        font-size:${8+Math.random()*14}px;
-        --dur:${4+Math.random()*6}s;--del:${Math.random()*8}s`;
-      layer.appendChild(s);
-    }
-    // frozen ground
-    const ground = document.createElement('div');
-    ground.style.cssText = `position:absolute;bottom:0;left:0;right:0;height:60px;
-      background:linear-gradient(to top,rgba(168,240,255,.3),transparent);`;
-    layer.appendChild(ground);
-  } else if (theme === 'retro') {
-    // scanlines
-    const scan = document.createElement('div');
-    scan.style.cssText = `position:absolute;inset:0;
-      background-image:repeating-linear-gradient(transparent,transparent 2px,rgba(0,0,0,.3) 2px,rgba(0,0,0,.3) 4px);
-      pointer-events:none;`;
-    layer.appendChild(scan);
-    // crt glow border
-    const crt = document.createElement('div');
-    crt.style.cssText = `position:absolute;inset:0;
-      box-shadow:inset 0 0 60px rgba(57,255,20,.08),inset 0 0 120px rgba(57,255,20,.04);`;
-    layer.appendChild(crt);
-    // pixel blocks
-    const colors = ['#39ff14','#ff2d78','#00eeff','#ffdd00','#ff00ff'];
-    for (let i=0;i<40;i++) {
-      const px = document.createElement('div');
-      px.className = 'px-block';
-      const c = colors[Math.floor(Math.random()*colors.length)];
-      const sz = 4+Math.floor(Math.random()*8);
-      px.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;
-        width:${sz}px;height:${sz}px;background:${c};opacity:.5;
-        --dur:${.6+Math.random()*1.5}s;--del:${Math.random()*2}s`;
-      layer.appendChild(px);
-    }
-    // retro grid perspective
-    const pgrid = document.createElement('div');
-    pgrid.style.cssText = `position:absolute;bottom:0;left:0;right:0;height:40%;opacity:.15;
-      background-image:linear-gradient(rgba(57,255,20,.8) 1px,transparent 1px),
-        linear-gradient(90deg,rgba(57,255,20,.8) 1px,transparent 1px);
-      background-size:30px 15px;transform:perspective(200px) rotateX(40deg);transform-origin:bottom;`;
-    layer.appendChild(pgrid);
-  } else if (theme === 'magic') {
-    // nebula clouds
-    ['rgba(200,80,255,.12)','rgba(255,105,180,.08)','rgba(100,0,200,.1)'].forEach((c,i) => {
-      const nb = document.createElement('div');
-      nb.style.cssText = `position:absolute;border-radius:50%;
-        width:${200+i*80}px;height:${150+i*60}px;
-        top:${10+i*15}%;left:${10+i*20}%;
-        background:radial-gradient(circle,${c},transparent);
-        animation:sunPulse ${4+i}s ${i}s infinite alternate;`;
-      layer.appendChild(nb);
-    });
-    // magic sparkles
-    const sparkChars = ['✦','✧','★','✶','✸'];
-    for (let i=0;i<50;i++) {
-      const sp = document.createElement('div');
-      sp.className = 'magic-spark';
-      const c = Math.random()>.5?'#ffd700':'#ff69b4';
-      sp.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;
-        font-size:${8+Math.random()*14}px;color:${c};
-        text-shadow:0 0 6px ${c};
-        --dur:${1+Math.random()*2}s;--del:${Math.random()*3}s`;
-      sp.textContent = sparkChars[Math.floor(Math.random()*sparkChars.length)];
-      layer.appendChild(sp);
-    }
-    // central glowing orb
-    const orb = document.createElement('div');
-    orb.style.cssText = `position:absolute;top:12%;left:50%;transform:translateX(-50%);
-      width:80px;height:80px;border-radius:50%;
-      background:radial-gradient(circle,rgba(255,230,100,.6),rgba(200,80,255,.4),transparent 70%);
-      box-shadow:0 0 40px rgba(200,80,255,.3),0 0 80px rgba(255,215,0,.15);
-      animation:sunPulse 3s infinite alternate;`;
-    layer.appendChild(orb);
-    // floating runes
-    ['ᚠ','ᚢ','ᚦ','ᛗ','ᛟ'].forEach((r,i) => {
-      const rune = document.createElement('div');
-      rune.textContent = r;
-      rune.style.cssText = `position:absolute;font-size:20px;
-        left:${8+i*20}%;top:${30+Math.random()*40}%;
-        color:rgba(255,215,0,.2);
-        animation:twinkle ${2+i*.5}s ${i*.3}s infinite alternate;`;
-      layer.appendChild(rune);
-    });
-  }
+  const scene = Object.hasOwn(quizScenes, theme) ? theme : 'underwater';
+  document.getElementById('themeLayer').style.backgroundImage =
+    `linear-gradient(180deg, rgba(5,14,30,.4), rgba(5,14,30,.62)), url("quiz-scenes/${scene}.webp")`;
 }
 
 // ── HELPERS ──
