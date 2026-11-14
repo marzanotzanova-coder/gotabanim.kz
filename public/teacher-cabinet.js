@@ -1,6 +1,6 @@
 window.TeacherCabinet = (() => {
   const table = () => sb.from('teacher_cabinet');
-  const subjects = {math:'Математика', algebra:'Алгебра', geometry:'Геометрия', informatics:'Информатика'};
+  const subjects = {math:'Математика', algebra:'Алгебра', geometry:'Геометрия', informatics:'Информатика', math_emn:'Математика (ЖМБ)', algebra_emn:'Алгебра (ЖМБ)', geometry_emn:'Геометрия (ЖМБ)'};
   const label = row => row.grade + '-сынып · ' + subjects[row.subject];
   function node(tag, text) {
     const el = document.createElement(tag);
@@ -30,7 +30,7 @@ window.TeacherCabinet = (() => {
   function empty(box, text) { const p = node('p', text); p.className = 'cab-empty'; box.append(p); }
   async function dashboard(user) {
     const boxes = { recent: document.querySelector('#cabRecent'), saved: document.querySelector('#cabSaved') };
-    const {data, error} = await table().select('*').eq('user_id',user.id).order('updated_at',{ascending:false});
+    const {data, error} = await table().select('*').eq('user_id',user.id).neq('subject','informatics').order('updated_at',{ascending:false});
     head(boxes.recent, 'recent', 'Соңғы ашқан сабақтарым', '#e0ecff', '#1a56db');
     head(boxes.saved, 'saved', 'Сақталғандар', '#fef3c7', '#d97706');
     if (error) {

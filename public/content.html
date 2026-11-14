@@ -497,7 +497,7 @@ body.lesson-open .lesson-unit:not(.is-open){display:none}
 <link rel="stylesheet" href="teacher-theme.css?v=20261104-cards">
 <script src="teacher-ui.js?v=20261102" defer></script>
 <link rel="stylesheet" href="teacher-cabinet.css?v=20261112-home">
-<script src="teacher-cabinet.js?v=20261112-noclasses"></script>
+<script src="teacher-cabinet.js?v=20261114-emn"></script>
 </head>
 <body class="teacher-app">
 <script src="gotab-loader.js?v=20261112"></script>
@@ -660,10 +660,10 @@ body.lesson-open .lesson-unit:not(.is-open){display:none}
 <script src="supabase.js"></script>
 <script src="qmj-preview.js?v=20261112-free"></script>
 <script src="supabase-client.js?v=20261104-fast"></script>
-<script src="lesson-extras.js?v=20261114-names"></script>
+<script src="lesson-extras.js?v=20261114-emn"></script>
 <script>
 const GRADES_LABEL = {5:'5-сынып',6:'6-сынып',7:'7-сынып',8:'8-сынып',9:'9-сынып',10:'10-сынып',11:'11-сынып'};
-const SUBJECT_LABEL = {math:'Математика',algebra:'Алгебра',geometry:'Геометрия',informatics:'Информатика'};
+const SUBJECT_LABEL = {math:'Математика',algebra:'Алгебра',geometry:'Геометрия',informatics:'Информатика',math_emn:'Математика (ЖМБ)',algebra_emn:'Алгебра (ЖМБ)',geometry_emn:'Геометрия (ЖМБ)'};
 
 const params  = new URLSearchParams(location.search);
 const grade   = parseInt(params.get('grade')) || 5;
@@ -671,6 +671,8 @@ const subject = params.get('subject') || 'math';
 
 document.title = `GoTAB — ${GRADES_LABEL[grade]} ${SUBJECT_LABEL[subject]}`;
 
+// ЖМБ = жаратылыстану-математика бағыты; its subjects end with _emn and keep their own lessons
+const EMN = subject.endsWith('_emn') ? '_emn' : '';
 function initSwitcher() {
   document.getElementById('gradeSel').value = grade;
   if (subject === 'informatics') {
@@ -678,8 +680,8 @@ function initSwitcher() {
   } else {
     const isLower = grade <= 6;
     document.getElementById('subjectSel').innerHTML = isLower
-      ? '<option value="math">Математика</option>'
-      : '<option value="algebra">Алгебра</option><option value="geometry">Геометрия</option>';
+      ? `<option value="math${EMN}">${SUBJECT_LABEL['math' + EMN]}</option>`
+      : `<option value="algebra${EMN}">${SUBJECT_LABEL['algebra' + EMN]}</option><option value="geometry${EMN}">${SUBJECT_LABEL['geometry' + EMN]}</option>`;
   }
   document.getElementById('subjectSel').value = subject;
 }
@@ -688,7 +690,7 @@ function changeGrade() {
   if (subject === 'informatics') {
     window.location.href = `content.html?grade=${g}&subject=informatics`;
   } else {
-    window.location.href = `content.html?grade=${g}&subject=${g <= 6 ? 'math' : 'algebra'}`;
+    window.location.href = `content.html?grade=${g}&subject=${g <= 6 ? 'math' : 'algebra'}${EMN}`;
   }
 }
 function changeSubject() {

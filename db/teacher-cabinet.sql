@@ -2,7 +2,7 @@ create table public.teacher_cabinet (
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   kind text not null check (kind in ('class','recent','saved')),
   grade smallint not null check (grade between 5 and 11),
-  subject text not null check (subject in ('math','algebra','geometry','informatics')),
+  subject text not null check (subject in ('math','algebra','geometry','informatics','math_emn','algebra_emn','geometry_emn')),
   lesson_num integer not null check (lesson_num >= 0),
   title text not null default '',
   folder text not null default '' check (length(folder) <= 80),

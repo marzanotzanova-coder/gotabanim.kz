@@ -359,10 +359,16 @@ tr:hover td{background:#f8faff}
         </select>
         <select class="form-input" id="fSubject">
           <option value="">Пән...</option>
+          <optgroup label="Қоғамдық-гуманитарлық бағыт">
           <option value="math">Математика (5-6)</option>
           <option value="algebra">Алгебра (7-11)</option>
           <option value="geometry">Геометрия (7-11)</option>
-          <option value="informatics">Информатика (5-11)</option>
+          </optgroup>
+          <optgroup label="Жаратылыстану-математика бағыт">
+          <option value="math_emn">ЖМБ · Математика (5-6)</option>
+          <option value="algebra_emn">ЖМБ · Алгебра (7-11)</option>
+          <option value="geometry_emn">ЖМБ · Геометрия (7-11)</option>
+          </optgroup>
         </select>
       </div>
       <div class="form-row">
@@ -475,10 +481,16 @@ tr:hover td{background:#f8faff}
         <option value="11">11-сынып</option>
       </select>
       <select class="form-input" id="upSubject">
+        <optgroup label="Қоғамдық-гуманитарлық бағыт">
         <option value="math">Математика</option>
         <option value="algebra">Алгебра</option>
         <option value="geometry">Геометрия</option>
-        <option value="informatics">Информатика</option>
+        </optgroup>
+        <optgroup label="Жаратылыстану-математика бағыт">
+        <option value="math_emn">ЖМБ · Математика</option>
+        <option value="algebra_emn">ЖМБ · Алгебра</option>
+        <option value="geometry_emn">ЖМБ · Геометрия</option>
+        </optgroup>
       </select>
       <input class="form-input" id="upLessonNum" type="number" placeholder="Сабақ №" min="1">
     </div>
@@ -508,7 +520,7 @@ tr:hover td{background:#f8faff}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="supabase.js"></script>
 <script src="supabase-client.js"></script>
-<script src="lesson-extras.js?v=20261114-names"></script>
+<script src="lesson-extras.js?v=20261114-emn"></script>
 <script src="pptx-slides.js?v=20261111-background"></script>
 <script src="qmj-thumbnail.js?v=20261111"></script>
 <script src="admin-pptx.js?v=20261111"></script>
@@ -783,7 +795,7 @@ function renderLessons() {
     grid.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:20px 0">Материалдар жоқ</div>';
     return;
   }
-  const SUBJ = { math:'Математика', algebra:'Алгебра', geometry:'Геометрия', informatics:'Информатика' };
+  const SUBJ = { math:'Математика', algebra:'Алгебра', geometry:'Геометрия', informatics:'Информатика', math_emn:'ЖМБ · Математика', algebra_emn:'ЖМБ · Алгебра', geometry_emn:'ЖМБ · Геометрия' };
   const sorted = [...allLessons].sort((a,b) => a.grade - b.grade || a.lesson_num - b.lesson_num);
   grid.innerHTML = sorted.map(l => {
     const slideCount = Array.isArray(l.slides_urls) ? l.slides_urls.length : 0;
@@ -1082,7 +1094,7 @@ function openSlidesModal(lessonId) {
   slidesModalLesson = allLessons.find(l => l.id === lessonId);
   if (!slidesModalLesson) return;
   const l = slidesModalLesson;
-  const SUBJ = { math:'Математика', algebra:'Алгебра', geometry:'Геометрия', informatics:'Информатика' };
+  const SUBJ = { math:'Математика', algebra:'Алгебра', geometry:'Геометрия', informatics:'Информатика', math_emn:'ЖМБ · Математика', algebra_emn:'ЖМБ · Алгебра', geometry_emn:'ЖМБ · Геометрия' };
   document.getElementById('slideModalTitle').textContent = l.title || '—';
   document.getElementById('slideModalSub').textContent =
     `${l.grade}-сынып · ${SUBJ[l.subject]||l.subject} · ${l.lesson_num}-сабақ`;

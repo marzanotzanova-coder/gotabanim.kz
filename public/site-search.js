@@ -1,7 +1,7 @@
 // Search across the whole site: lessons of every class (from the database), quizzes, games, labs and visuals.
 // Used by the search bar on the home page.
 window.GoTABSearch = (() => {
-  const SUBJ = { math: 'Математика', algebra: 'Алгебра', geometry: 'Геометрия', informatics: 'Информатика' };
+  const SUBJ = { math: 'Математика', algebra: 'Алгебра', geometry: 'Геометрия', math_emn: 'Математика (ЖМБ)', algebra_emn: 'Алгебра (ЖМБ)', geometry_emn: 'Геометрия (ЖМБ)' };
   const LABS = [
     ['Пирамида және оның қимасы', 'пирамида қима жазықтық табан төбе стереометрия', 'lab-pyramid.html'],
     ['Куб және оның қимасы', 'куб қима жазықтық алтыбұрыш бесбұрыш трапеция стереометрия', 'lab-cube.html'],
@@ -17,7 +17,7 @@ window.GoTABSearch = (() => {
   async function load() {
     if (lessons) return;
     const [m, q] = await Promise.all([
-      sb.from('materials').select('grade,subject,lesson_num,title,topic').order('grade').order('lesson_num'),
+      sb.from('materials').select('grade,subject,lesson_num,title,topic').neq('subject', 'informatics').order('grade').order('lesson_num'),
       sb.from('quizzes').select('id,title,theme').limit(300)]);
     lessons = m.data || []; quizzes = q.data || [];
   }
