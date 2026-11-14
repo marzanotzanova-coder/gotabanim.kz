@@ -163,6 +163,51 @@
 .btn-whatsapp{width:100%;padding:14px;background:linear-gradient(135deg,#25d366,#1da851);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s}
 .btn-whatsapp:hover{opacity:.9}
 .game-lock{display:none;position:absolute;right:12px;top:12px;z-index:4;align-items:center;gap:6px;padding:7px 10px;border-radius:20px;background:#fffffff2;color:#2858a6;font-size:11px;font-weight:700;box-shadow:0 2px 8px #0002;pointer-events:none}.games-locked .game-lock{display:flex}.pay-wall-box{position:relative;max-height:calc(100dvh - 40px);overflow:auto}.pay-wall-close{position:absolute;right:12px;top:12px;width:34px;height:34px;border:1px solid #dce5f1;border-radius:10px;background:#f4f7fb;color:#2858a6;font-size:22px;cursor:pointer}
+
+/* ── glow: the quiz banner shifts colours, has a running light border and floating math symbols (quiz-fx.js) ── */
+@property --gl-a{syntax:'<angle>';inherits:false;initial-value:0deg}
+.create-card{position:relative;overflow:hidden;isolation:isolate;border:2px solid transparent;
+  background:linear-gradient(120deg,#060b24,#16136b,#3b1a8f,#0b4f7a,#060b24) padding-box,conic-gradient(from var(--gl-a),#22d3ee,#818cf8,#c084fc,#f472b6,#34d399,#22d3ee) border-box;
+  background-size:300% 300%,100% 100%;animation:gl-spin 5s linear infinite,gl-shift 16s ease-in-out infinite,gl-glow 2.4s ease-in-out infinite alternate}
+.create-card>*:not(.create-fx){position:relative;z-index:2}
+.create-card::before,.create-card::after{content:'';position:absolute;border-radius:50%;filter:blur(46px);pointer-events:none;z-index:0;animation:gl-orb 14s ease-in-out infinite}
+.create-card::before{width:260px;height:260px;background:#22d3ee;opacity:.32;right:-60px;top:-110px}
+.create-card::after{width:240px;height:240px;background:#a855f7;opacity:.35;left:24%;bottom:-150px;animation-delay:-7s}
+.create-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.create-tag{background:linear-gradient(90deg,#67e8f9,#c4b5fd,#f9a8d4,#67e8f9);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gl-text 4s linear infinite}
+.create-title{text-shadow:0 0 22px rgba(129,140,248,.55)}
+.create-sub{color:rgba(255,255,255,.72)}
+.gtype-mini{--c:#22d3ee;border-color:color-mix(in srgb,var(--c) 55%,transparent);color:#fff;background:color-mix(in srgb,var(--c) 14%,transparent);box-shadow:0 0 10px color-mix(in srgb,var(--c) 25%,transparent)}
+.gtype-mini svg{color:var(--c)}
+.gtype-mini:nth-child(2){--c:#a78bfa}.gtype-mini:nth-child(3){--c:#f472b6}.gtype-mini:nth-child(4){--c:#34d399}.gtype-mini:nth-child(5){--c:#fbbf24}.gtype-mini:nth-child(6){--c:#60a5fa}
+.gtype-mini:hover{border-color:var(--c);color:#fff;background:color-mix(in srgb,var(--c) 30%,transparent);box-shadow:0 0 18px color-mix(in srgb,var(--c) 60%,transparent);transform:translateY(-2px)}
+.btn-create-big{position:relative;overflow:hidden;border:2px solid transparent;background:linear-gradient(135deg,#2563eb,#7c3aed) padding-box,conic-gradient(from var(--gl-a),#67e8f9,#c4b5fd,#f9a8d4,#fde68a,#67e8f9) border-box;animation:gl-spin 3s linear infinite,gl-btn 1.8s ease-in-out infinite alternate}
+.btn-create-big::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.45) 50%,transparent 65%);transform:translateX(-120%);animation:gl-shine 3s ease-in-out infinite;pointer-events:none}
+.btn-create-big:hover{opacity:1;transform:translateY(-2px) scale(1.03)}
+/* each game card glows in its own colours */
+.fgcard{--c1:#22d3ee;--c2:#3b82f6;--c3:#818cf8;border:2px solid transparent;
+  background:linear-gradient(#fff,#fff) padding-box,conic-gradient(from var(--gl-a),var(--c1),var(--c2),var(--c3),var(--c1)) border-box;
+  animation:gl-spin 5s linear infinite,gl-card 2.6s ease-in-out infinite alternate}
+.featured-grid .fgcard:nth-child(2){--c1:#c084fc;--c2:#ec4899;--c3:#8b5cf6;animation-delay:0s,-.6s}
+.featured-grid .fgcard:nth-child(3){--c1:#34d399;--c2:#06b6d4;--c3:#3b82f6;animation-delay:0s,-1.2s}
+.featured-grid .fgcard:nth-child(4){--c1:#fbbf24;--c2:#f59e0b;--c3:#a855f7;animation-delay:0s,-1.8s}
+.fgcard:hover{transform:translateY(-6px);border-color:transparent;box-shadow:0 14px 40px color-mix(in srgb,var(--c2) 35%,transparent),0 0 30px color-mix(in srgb,var(--c1) 45%,transparent)}
+.fgcard-title-wrap .t{text-shadow:0 0 18px var(--c1),0 0 36px var(--c2)}
+.fgcard-title-wrap .s{color:var(--c1)}
+.fgcard-tag{background:color-mix(in srgb,var(--c2) 12%,transparent);color:color-mix(in srgb,var(--c2) 80%,#000)}
+.fgcard-m svg{color:var(--c2)}
+.btn-fgplay{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--c2),var(--c3))!important;border:none;color:#fff;box-shadow:0 6px 18px color-mix(in srgb,var(--c2) 40%,transparent)}
+.btn-fgplay::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.4) 50%,transparent 65%);transform:translateX(-120%);animation:gl-shine 3.4s ease-in-out infinite;pointer-events:none}
+.btn-fgplay:hover{color:#fff;box-shadow:0 8px 26px color-mix(in srgb,var(--c2) 60%,transparent)}
+@keyframes gl-spin{to{--gl-a:360deg}}
+@keyframes gl-shift{0%,100%{background-position:0% 50%,0 0}50%{background-position:100% 50%,0 0}}
+@keyframes gl-glow{from{box-shadow:0 10px 30px rgba(15,23,42,.25),0 0 18px rgba(34,211,238,.25)}to{box-shadow:0 10px 30px rgba(15,23,42,.25),0 0 40px rgba(168,85,247,.45)}}
+@keyframes gl-orb{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-40px,24px) scale(1.15)}}
+@keyframes gl-text{to{background-position:200% 0}}
+@keyframes gl-btn{from{box-shadow:0 4px 18px rgba(37,99,235,.4)}to{box-shadow:0 6px 30px rgba(124,58,237,.65),0 0 0 4px rgba(167,139,250,.15)}}
+@keyframes gl-shine{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+@keyframes gl-card{from{box-shadow:0 6px 18px color-mix(in srgb,var(--c2) 14%,transparent)}to{box-shadow:0 8px 28px color-mix(in srgb,var(--c2) 30%,transparent),0 0 22px color-mix(in srgb,var(--c1) 30%,transparent)}}
+@media(prefers-reduced-motion:reduce){.create-card,.create-card::before,.create-card::after,.create-tag,.btn-create-big,.btn-create-big::after,.fgcard,.btn-fgplay::after{animation:none}}
 </style>
 <link rel="stylesheet" href="teacher-theme.css?v=20261103-previews">
 <script src="teacher-ui.js?v=20261102" defer></script>
@@ -718,5 +763,6 @@ async function sendReceipt(){
 }
 </script>
 <script src="pay-plans.js?v=20261114-blue"></script>
+<script src="quiz-fx.js?v=20261114"></script>
 </body>
 </html>
