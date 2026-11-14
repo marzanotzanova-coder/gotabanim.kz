@@ -10,13 +10,46 @@
   window.payPlan = () => chosen;
   window.payPlanText = () => `Тариф: ${chosen.label} — ${money(chosen.price)}`;
 
-  const CSS = `.pp-warn{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 12px;padding:0 36px;color:#dc2626;font-size:12px;font-weight:700;line-height:1.35;text-align:center}
+  const CSS = `@property --pp-a{syntax:'<angle>';inherits:false;initial-value:0deg}
+.pp-warn{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 12px;padding:0 36px;color:#dc2626;font-size:12px;font-weight:700;line-height:1.35;text-align:center}
 .pp-warn svg{width:14px;height:14px;flex-shrink:0}
-.pp-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
-.pp-tab{position:relative;padding:10px 4px 8px;border-radius:12px;border:1.5px solid rgba(26,86,219,.18);background:#fff;cursor:pointer;font-family:inherit;color:#0f172a;min-height:56px}
-.pp-tab b{display:block;font-size:14px;font-weight:800}.pp-tab span{display:block;font-size:11px;font-weight:600;color:#64748b;margin-top:2px}
-.pp-tab.on{border-color:#1a56db;background:rgba(26,86,219,.08)}.pp-tab.on b{color:#1a56db}
-.pp-tab i{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-style:normal;font-size:9px;font-weight:800;background:#10b981;color:#fff;border-radius:99px;padding:1px 7px;white-space:nowrap}`;
+.pp-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.pp-tab{position:relative;padding:10px 4px 8px;border-radius:14px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;font-family:inherit;color:#0f172a;min-height:58px;transition:transform .2s,box-shadow .2s}
+.pp-tab:hover{transform:translateY(-2px)}
+.pp-tab b{display:block;font-size:14px;font-weight:800}.pp-tab span{display:block;font-size:11px;font-weight:700;color:#64748b;margin-top:2px}
+/* 1 month: calm */
+.pp-tab[data-m="1"].on{border-color:#1a56db;background:rgba(26,86,219,.07);box-shadow:0 4px 12px rgba(26,86,219,.15)}.pp-tab[data-m="1"].on b{color:#1a56db}
+/* 6 months: violet-pink running border with a soft glow */
+.pp-tab[data-m="6"]{border:2px solid transparent;background:linear-gradient(#fff,#fdf4ff) padding-box,conic-gradient(from var(--pp-a),#8b5cf6,#ec4899,#6366f1,#d946ef,#8b5cf6) border-box;animation:pp-spin 4s linear infinite,pp-glow6 2.2s ease-in-out infinite alternate}
+.pp-tab[data-m="6"] b{background:linear-gradient(90deg,#7c3aed,#db2777);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pp-tab[data-m="6"].on{background:linear-gradient(135deg,#f5f3ff,#fce7f3) padding-box,conic-gradient(from var(--pp-a),#8b5cf6,#ec4899,#6366f1,#d946ef,#8b5cf6) border-box}
+/* 1 year: rainbow-gold running border, the brightest glow and a shine */
+.pp-tab[data-m="12"]{border:2px solid transparent;background:linear-gradient(110deg,transparent 35%,rgba(255,236,170,.9) 50%,transparent 65%) padding-box,linear-gradient(#fffdf5,#fff4dc) padding-box,conic-gradient(from var(--pp-a),#f59e0b,#ef4444,#ec4899,#8b5cf6,#06b6d4,#facc15,#f59e0b) border-box;background-size:250% 100%,100% 100%,100% 100%;animation:pp-spin 2.6s linear infinite,pp-glow12 1.8s ease-in-out infinite alternate,pp-sweep 3.2s ease-in-out infinite}
+.pp-tab[data-m="12"] b{background:linear-gradient(90deg,#d97706,#dc2626,#db2777);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pp-tab[data-m="12"] span{color:#b45309}
+.pp-tab[data-m="12"].on{background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.95) 50%,transparent 65%) padding-box,linear-gradient(135deg,#fef3c7,#fde68a 60%,#fbcfe8) padding-box,conic-gradient(from var(--pp-a),#f59e0b,#ef4444,#ec4899,#8b5cf6,#06b6d4,#facc15,#f59e0b) border-box;background-size:250% 100%,100% 100%,100% 100%}
+.pp-tab.on{transform:translateY(-2px) scale(1.03)}
+.pp-tab i{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-style:normal;font-size:9.5px;font-weight:900;letter-spacing:.3px;background:linear-gradient(90deg,#f59e0b,#ef4444,#ec4899);color:#fff;border-radius:99px;padding:2px 8px;white-space:nowrap;animation:pp-badge 1.6s ease-in-out infinite alternate}
+/* the big price follows the chosen plan */
+[data-pp] .pp-amount{transition:color .3s}
+[data-pp][data-plan="6"]{box-shadow:0 0 0 1.5px rgba(168,85,247,.35),0 0 22px rgba(236,72,153,.18)}
+[data-pp][data-plan="6"] .pp-amount{background:linear-gradient(90deg,#7c3aed,#db2777);-webkit-background-clip:text;background-clip:text;color:transparent}
+[data-pp][data-plan="12"]{box-shadow:0 0 0 1.5px rgba(245,158,11,.5),0 0 28px rgba(245,158,11,.3)}
+[data-pp][data-plan="12"] .pp-amount{background:linear-gradient(90deg,#d97706,#ef4444,#ec4899,#d97706);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:pp-text 3s linear infinite;filter:drop-shadow(0 0 10px rgba(245,158,11,.35))}
+/* the WhatsApp receipt button: running light border, shine and a soft green glow */
+button.btn-whatsapp{position:relative;overflow:hidden;border:2px solid transparent;background:linear-gradient(135deg,#25d366,#16a34a) padding-box,conic-gradient(from var(--pp-a),#dcfce7,#22c55e,#fef08a,#4ade80,#dcfce7) border-box;animation:pp-spin 3s linear infinite,pp-wa 1.8s ease-in-out infinite alternate;transition:transform .2s}
+button.btn-whatsapp::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.5) 50%,transparent 65%);transform:translateX(-120%);animation:pp-shine 2.8s ease-in-out infinite;pointer-events:none}
+button.btn-whatsapp:hover{opacity:1;transform:translateY(-2px)}
+button.btn-whatsapp:disabled{animation:none;box-shadow:none}button.btn-whatsapp:disabled::after{display:none}
+@keyframes pp-spin{to{--pp-a:360deg}}
+@keyframes pp-glow6{from{box-shadow:0 0 8px rgba(139,92,246,.25)}to{box-shadow:0 0 18px rgba(236,72,153,.45)}}
+@keyframes pp-glow12{from{box-shadow:0 0 12px rgba(245,158,11,.35)}to{box-shadow:0 0 26px rgba(239,68,68,.45),0 0 40px rgba(245,158,11,.25)}}
+@keyframes pp-sweep{0%,55%{background-position:120% 0,0 0,0 0}100%{background-position:-20% 0,0 0,0 0}}
+@keyframes pp-badge{from{box-shadow:0 0 4px rgba(245,158,11,.5)}to{box-shadow:0 0 12px rgba(239,68,68,.7)}}
+@keyframes pp-text{to{background-position:200% 0}}
+@keyframes pp-wa{from{box-shadow:0 4px 14px rgba(34,197,94,.3)}to{box-shadow:0 6px 26px rgba(34,197,94,.6),0 0 0 4px rgba(34,197,94,.12)}}
+@keyframes pp-shine{0%,50%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+@media (prefers-reduced-motion:reduce){.pp-tab,.pp-tab i,[data-pp] .pp-amount,button.btn-whatsapp,button.btn-whatsapp::after{animation:none!important}}`;
   const WARN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
 
   function paint() {
@@ -24,6 +57,7 @@
     document.querySelectorAll('[data-pp="tag"], [data-pp="wall"]').forEach(box => {
       box.previousElementSibling.querySelectorAll('.pp-tab').forEach(t => t.classList.toggle('on', +t.dataset.m === chosen.months));
       box.querySelector('.pp-amount').textContent = money(chosen.price);
+      box.dataset.plan = chosen.months;
     });
   }
   // turn each price box (.price-tag on materials pages, .pay-wall-price on games/labs) into a plan picker
