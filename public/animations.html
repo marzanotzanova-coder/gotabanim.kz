@@ -13,12 +13,10 @@
 .teacher-app .animation-card:hover{transform:translateY(-6px)}
 .teacher-app .animation-card h3{font-size:15px;font-weight:800;color:#0f172a;margin:14px 4px 4px}
 .teacher-app .animation-card p{margin:4px 4px 12px;font-weight:600;color:color-mix(in srgb,var(--c2) 75%,#334155)}
-.teacher-app .animation-screen{position:relative;border-radius:14px;background:radial-gradient(circle at 30% 20%,color-mix(in srgb,var(--c1) 55%,transparent),transparent 55%),radial-gradient(circle at 75% 80%,color-mix(in srgb,var(--c3) 55%,transparent),transparent 55%),linear-gradient(160deg,#0b1230,#151a4a);isolation:isolate}
-.teacher-app .animation-screen::before{content:attr(data-title);position:absolute;left:14px;right:14px;top:18%;z-index:0;text-align:center;color:#fff;font-weight:900;font-size:19px;line-height:1.25;text-shadow:0 0 18px var(--c1),0 0 34px var(--c2);pointer-events:none}
-.teacher-app .animation-screen::after{content:'';position:absolute;inset:0;z-index:0;background-image:radial-gradient(rgba(255,255,255,.18) 1px,transparent 1px);background-size:20px 20px;pointer-events:none}
-.teacher-app .animation-screen video{position:relative;z-index:2}
-.teacher-app .animation-play{position:relative;z-index:1;width:68px;height:68px;border:none;color:#fff;background:linear-gradient(135deg,var(--c2),var(--c3));box-shadow:0 0 0 6px color-mix(in srgb,var(--c1) 30%,transparent),0 0 30px var(--c2);animation:an-pulse 1.6s ease-in-out infinite;margin-top:30%}
-.teacher-app .animation-play svg{width:30px;height:30px;fill:currentColor}
+.teacher-app .animation-screen{position:relative;border-radius:14px;background:#0f172a}
+.teacher-app .animation-card.locked .animation-screen::before{content:attr(data-title);position:absolute;left:14px;right:14px;top:16%;text-align:center;color:#fff;font-weight:800;font-size:18px;line-height:1.3;pointer-events:none}
+.teacher-app .animation-play{position:relative;width:60px;height:60px;border:none;color:#fff;background:rgba(255,255,255,.16)}
+.teacher-app .animation-play svg{width:26px;height:26px;fill:currentColor}
 .teacher-app .animation-lock{position:absolute;top:10px;right:10px;z-index:2;display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:99px;background:#ffffffee;color:#2563eb;font-size:11px;font-weight:800}
 .teacher-app .animation-card .btn-dl-sm{position:relative;overflow:hidden;display:block;width:100%;padding:11px;border:none;border-radius:12px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;background:linear-gradient(135deg,var(--c2),var(--c3));box-shadow:0 6px 18px color-mix(in srgb,var(--c2) 40%,transparent)}
 .teacher-app .animation-card .btn-dl-sm::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.45) 50%,transparent 65%);transform:translateX(-120%);animation:an-shine 3.2s ease-in-out infinite;pointer-events:none}
