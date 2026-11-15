@@ -19,16 +19,30 @@ body{overflow:hidden}
 .st{padding:12px 14px;border:1.5px solid var(--border);border-radius:14px;margin-bottom:10px;background:#fff}
 .st>b{display:block;font-size:15px;margin-bottom:6px}
 .gh{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:12px 0 6px}.gh:first-of-type{margin-top:2px}
-.tasks{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.task{padding:8px 9px;min-height:52px;border-radius:12px;border:1.5px solid var(--border);background:#fff;font-family:inherit;color:var(--text);cursor:pointer;text-align:left;line-height:1.2}
-.task b{display:block;font-size:14px;font-weight:800}.task small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
-.task.on{border-color:var(--primary);background:rgba(26,86,219,.08)}.task.on b{color:var(--primary)}
-.task.ok b::after{content:' ✓';color:var(--success)}
+.tasks{display:flex;flex-direction:column;gap:6px}
+.task{display:flex;align-items:center;gap:10px;padding:8px 10px;min-height:52px;border-radius:12px;border:1.5px solid var(--border);background:#fff;font-family:inherit;color:var(--text);cursor:pointer;text-align:left;line-height:1.25;width:100%}
+.task .tn{width:30px;height:30px;border-radius:9px;background:#eef3fb;color:var(--primary);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.task b{display:block;font-size:14px;font-weight:700}.task small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+.task.on{border-color:var(--primary);background:rgba(26,86,219,.08)}.task.on .tn{background:var(--primary);color:#fff}
+.task.ok .tn{background:var(--success);color:#fff}
+.nav{display:flex;align-items:center;gap:8px;margin-bottom:10px}.nav .btn{width:58px;flex-shrink:0;margin:0;font-size:24px}
+.nav .cnt{flex:1;text-align:center;line-height:1.2}.nav .cnt b{display:block;font-size:20px;font-weight:900}.nav .cnt span{font-size:12px;color:var(--muted);font-weight:700}
+.step{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;margin-top:10px;padding:10px 14px;border-radius:14px;border:2px solid var(--primary);background:#fff;color:var(--primary);font:800 16px Inter,sans-serif;cursor:pointer;text-align:left}
+.step .sn{width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0}
+.step.done{border-color:var(--success);background:rgba(16,185,129,.08);color:#047857}.step.done .sn{background:var(--success)}
+.step:active{transform:scale(.98)}
+details.list{margin-top:16px;border-top:1px solid var(--border);padding-top:12px}details.list summary{font-weight:800;font-size:15px;cursor:pointer;min-height:36px;list-style:none;display:flex;align-items:center;gap:8px}
+details.list summary::before{content:'▸';color:var(--primary);transition:transform .2s}details.list[open] summary::before{transform:rotate(90deg)}
+#board{position:absolute;left:14px;top:14px;max-width:min(520px,calc(100% - 140px));background:#fffffff2;border:1px solid var(--border);border-radius:16px;padding:14px 16px;box-shadow:0 8px 26px rgba(23,54,93,.12);z-index:3}
+#board .bh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}#board .bh span{font-size:12px;font-weight:800;padding:3px 9px;border-radius:99px;background:rgba(26,86,219,.1);color:var(--primary)}#board .bh span+span{background:#f1f5f9;color:#475569}
+#bq{font-size:19px;font-weight:800;line-height:1.35;color:#0f172a}#bf{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.4}
+#bans{display:none;margin-top:10px;font-size:26px;font-weight:900;color:#047857}#bans.on{display:block}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}.slot{border:2px dashed var(--border);border-radius:12px;padding:6px 4px;text-align:center;min-height:62px}
+.slot small{display:block;font-size:10.5px;color:var(--muted);font-weight:700;line-height:1.2}.slot b{display:block;font-size:22px;font-weight:900;margin-top:2px;min-height:26px}
+.slot.cur{border-color:#f59e0b;background:rgba(245,158,11,.1)}.slot.r b{color:#e11d48}.slot.o b{color:#d97706}.slot.a b{color:#7c3aed}.slot.b b{color:#ea580c}.slot.fill{border-style:solid}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{min-height:42px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:#fff;font:700 13px Inter,sans-serif;color:var(--text);cursor:pointer}
 .chip.on{border-color:var(--primary);background:rgba(26,86,219,.08);color:var(--primary)}
-#q{font-size:15px;line-height:1.5;padding:12px 14px;border-radius:12px;background:rgba(26,86,219,.06);margin-bottom:4px}
-#q .fg{display:block;font-size:12px;color:var(--muted);margin-top:4px}
 .legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12.5px;color:var(--muted);margin-top:8px}.legend span{display:flex;align-items:center;gap:5px}.legend i{width:14px;height:6px;border-radius:3px;display:inline-block}
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border:none;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;margin-top:8px;min-height:48px}
 .btn.p{background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff}.btn.g{background:#fff;border:1.5px solid var(--border);color:var(--text)}
@@ -45,36 +59,33 @@ svg.i{width:20px;height:20px;flex-shrink:0}
 .lbl{font:800 18px Inter,sans-serif;color:#0f172a;text-shadow:0 0 4px #fff,0 0 4px #fff,0 0 4px #fff;pointer-events:none}.lbl.r{color:#e11d48}.lbl.g{color:#15803d}.lbl.x{font-size:15px;color:#475569}
 .dlbl{font:900 16px Inter,sans-serif;color:#fff;background:#16a34a;padding:3px 9px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.18);pointer-events:none;white-space:nowrap}
 .hide{display:none!important}
-@media(max-width:820px){.lab{flex-direction:column;height:auto}#view{height:62vh}.side{width:auto;border-left:none}body{overflow:auto}#tip{font-size:13px}}
+@media(max-width:820px){#board{left:8px;top:8px;max-width:calc(100% - 120px);padding:8px 10px;border-radius:12px}#board .bh,#bf,#board .legend{display:none}#bq{font-size:13.5px}#bans{font-size:18px;margin-top:4px}.lab{flex-direction:column;height:auto}#view{height:62vh}.side{width:auto;border-left:none}body{overflow:auto}#tip{font-size:13px}}
 </style>
 </head>
 <body class="teacher-app">
 <script src="gotab-loader.js?v=20261112"></script>
 <nav class="top-nav"><img src="gotab_logo_anim.webp" onerror="this.onerror=null;this.src='gotab_logo.png'" alt="GoTAB"><div class="nav-user"><a href="labs.html" style="font-weight:700;color:var(--primary);text-decoration:none">← Зертханалар</a></div></nav>
 <div class="lab">
-  <div id="view"><div id="tip"></div></div>
+  <div id="view"><div id="board"><div class="bh"><span id="bnum"></span><span id="bgrp"></span></div><div id="bq"></div><div id="bf"></div><div class="legend" id="legend"></div><div id="bans"></div></div><div id="tip"></div></div>
   <div class="side">
     <h2>Кеңістіктегі арақашықтықтар</h2><div class="sub">Геометрия · 10–11-сынып · нүктеден жазықтыққа және айқас түзулер арасындағы қашықтық</div>
     <div class="modes"><button id="mTask" class="on">Сабақ есептері</button><button id="mFree">Өзің зертте</button></div>
 
     <div id="taskPane">
-      <div class="st"><b>1. Есепті таңда</b><div id="tasks"></div></div>
-      <div class="st"><b>2. Сызбадан тап</b>
-        <div id="q"></div>
-        <div class="legend" id="legend"></div>
-        <button class="btn p" id="perp"><i data-ic="ruler"></i>Перпендикулярды көрсет</button>
-        <div id="seg"></div>
-        <button class="btn g" id="show"><i data-ic="eye"></i>Жауабын көрсет</button>
-        <div id="ans"></div>
-        <div class="bar"><button class="btn g" id="prev"><i data-ic="left"></i>Алдыңғы</button><button class="btn g" id="next">Келесі<i data-ic="right"></i></button></div>
-      </div>
+      <div class="nav"><button class="btn g" id="prev" aria-label="Алдыңғы есеп">‹</button><div class="cnt"><b id="num"></b><span>есеп</span></div><button class="btn g" id="next" aria-label="Келесі есеп">›</button></div>
+      <div class="note" style="margin-top:0">Есептің шарты сызбаның үстінде үлкен әріппен жазылып тұр. Алдымен оқушылар ізделінді кесіндіні сызбадан өздері тапсын.</div>
+      <button class="step" id="perp"><span class="sn">1</span><span id="perpT">Перпендикулярды көрсет</span></button>
+      <div id="seg"></div>
+      <button class="step" id="show"><span class="sn">2</span><span id="showT">Жауабы мен шешімін көрсет</span></button>
+      <div id="ans"></div>
+      <details class="list" open><summary>Барлық есептер (ҚМЖ бойынша)</summary><div id="tasks"></div></details>
     </div>
 
     <div id="freePane" class="hide">
       <div class="st"><b>1. Фигураны таңда</b><div class="chips" id="figs"></div></div>
       <div class="st"><b>2. Не табамыз?</b>
-        <div class="chips"><button class="chip on" id="fPP">Нүкте → жазықтық</button><button class="chip" id="fLL">Түзу ↔ түзу</button></div>
-        <div class="note" id="fhow"></div>
+        <div class="chips"><button class="chip on" id="fPP">Нүктеден жазықтыққа дейін</button><button class="chip" id="fLL">Екі түзудің арасы</button></div>
+        <div class="note" id="fhow"></div><div class="slots" id="slots"></div>
         <div id="finfo"></div>
         <div class="bar"><button class="btn g" id="undo"><i data-ic="undo"></i>Артқа</button><button class="btn g" id="clear"><i data-ic="eraser"></i>Өшіру</button></div>
       </div>
@@ -101,7 +112,7 @@ view.addEventListener('wheel', e => { const mouse = e.deltaMode !== 0 || (e.whee
   if (e.ctrlKey || mouse) return; e.preventDefault(); e.stopPropagation(); if (!fly) orbit(e.deltaX * .006, e.deltaY * .006); }, { capture: true, passive: false });
 scene.add(new THREE.HemisphereLight(0xffffff, 0xb8c6e0, 1.1)); const dl = new THREE.DirectionalLight(0xffffff, 1.2); dl.position.set(4, 8, 5); scene.add(dl);
 scene.add(new THREE.GridHelper(9, 18, 0x9fb3d8, 0xd3ddef));
-function resize() { const w = view.clientWidth, h = view.clientHeight; renderer.setSize(w, h); labels.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+function resize() { const w = view.clientWidth, h = view.clientHeight; renderer.setSize(w, h); labels.setSize(w, h); camera.aspect = w / h; if (w > 700) camera.setViewOffset(w, h, -w * .09, -h * .08, w, h); else camera.setViewOffset(w, h, 0, -h * .1, w, h); camera.updateProjectionMatrix(); }
 addEventListener('resize', resize); resize();
 
 const IC = { undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>', eraser: '<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>',
@@ -243,24 +254,30 @@ const segName = r => r.fromN + r.toN;
 function legend(pr) { return pr.p ? `<span><i style="background:#e11d48"></i>${pr.p} нүктесі</span><span><i style="background:#f97316"></i>(${pr.pl}) жазықтығы</span><span><i style="background:#16a34a"></i>перпендикуляр</span>`
   : `<span><i style="background:#7c3aed"></i>${pr.l1}</span><span><i style="background:#ea580c"></i>${pr.l2}</span><span><i style="background:#16a34a"></i>ортақ перпендикуляр</span>`; }
 let built = false;
+const phrase = t => t.p ? `${t.p} нүктесінен (${t.pl}) жазықтығына дейін` : `${t.l1} және ${t.l2} түзулерінің арасы`;
 function buildTasks() { let h = '', g = ''; T.forEach((t, i) => { if (t.g !== g) { h += (g ? '</div>' : '') + `<div class="gh">${t.g}</div><div class="tasks">`; g = t.g; }
-  h += `<button class="task" data-i="${i}"><b>${t.lv ? t.lv + '. ' : ''}${short(t)}</b><small>${FIG[t.f].s}</small></button>`; }); $('tasks').innerHTML = h + '</div>'; built = true; }
+  h += `<button class="task" data-i="${i}"><span class="tn">${i + 1}</span><span><b>${phrase(t)}</b><small>${FIG[t.f].s}${t.lv ? ' · ' + t.lv + ' деңгей' : ''}</small></span></button>`; }); $('tasks').innerHTML = h + '</div>'; built = true; }
 function ui() { const r = RES && !RES.bad ? RES : null;
   if (S.mode === 'task') { const t = T[S.task];
     document.querySelectorAll('.task').forEach(b => { b.classList.toggle('on', +b.dataset.i === S.task); b.classList.toggle('ok', S.done.has(+b.dataset.i)); });
-    $('q').innerHTML = `${t.lv ? `<b>${t.lv} деңгей.</b> ` : ''}${t.q}<span class="fg">${FIG[t.f].n}</span>`; $('legend').innerHTML = legend(t);
-    $('perp').disabled = S.step >= 1;
+    $('board').classList.remove('hide'); $('bnum').textContent = `№${S.task + 1}`; $('bgrp').textContent = t.g + (t.lv ? ` · ${t.lv} деңгей` : '');
+    $('bq').textContent = t.q; $('bf').textContent = FIG[t.f].n; $('legend').innerHTML = legend(t); $('num').textContent = `${S.task + 1} / ${T.length}`;
+    $('bans').classList.toggle('on', S.step >= 2); $('bans').textContent = r ? `${segName(r)} = ${exact(r.d)}${t.u ? ' ' + t.u : ''}` : '';
+    $('perp').classList.toggle('done', S.step >= 1); $('perpT').textContent = S.step >= 1 ? 'Перпендикулярды жасыру' : 'Перпендикулярды көрсет';
+    $('show').classList.toggle('done', S.step >= 2); $('showT').textContent = S.step >= 2 ? 'Жауабын жасыру' : 'Жауабы мен шешімін көрсет';
     $('seg').classList.toggle('on', S.step >= 1); $('seg').innerHTML = r ? (r.pp ? `Жасыл кесінді <b>${segName(r)}</b> — ${t.p} нүктесінен жазықтыққа түсірілген перпендикуляр: ${segName(r)} ⊥ (${t.pl}). Оның ұзындығы — ізделінді қашықтық.`
       : `Жасыл кесінді <b>${segName(r)}</b> — ${t.l1} мен ${t.l2} түзулерінің ортақ перпендикуляры: ол екі түзуге де перпендикуляр. Оның ұзындығы — ізделінді қашықтық.`) : '';
     $('ans').classList.toggle('on', S.step >= 2); $('ans').innerHTML = r ? `<span class="big">${segName(r)} = ${exact(r.d)}${t.u ? ' ' + t.u : ''} ${/√/.test(exact(r.d)) ? `<small style="font-size:14px;font-weight:700;color:#047857">≈ ${approx(r.d)}</small>` : ''}</span>${t.why}` : '';
-    $('prev').disabled = S.task === 0; $('next').disabled = S.task === T.length - 1;
-    $('tip').innerHTML = S.step === 0 ? `${ic('pointer')}Ізделінді кесіндіні сызбадан тап, сосын «Перпендикулярды көрсет»` : S.step === 1 ? `${ic('pointer')}Ұзындығын есепте, сосын «Жауабын көрсет»` : `${ic('check')}${segName(r)} = ${exact(r.d)}${t.u ? ' ' + t.u : ''}`;
+    $('tip').innerHTML = S.step === 0 ? `${ic('pointer')}Фигураны бұрап қара: ізделінді кесінді қайда? Сосын 1-батырма` : S.step === 1 ? `${ic('pointer')}Жасыл кесіндінің ұзындығын есепте, сосын 2-батырма` : `${ic('check')}${segName(r)} = ${exact(r.d)}${t.u ? ' ' + t.u : ''}`;
     return; }
+  $('board').classList.add('hide');
   document.querySelectorAll('#figs .chip').forEach(b => b.classList.toggle('on', b.dataset.f === S.fig));
   $('fPP').classList.toggle('on', S.fm === 'pp'); $('fLL').classList.toggle('on', S.fm === 'll');
-  $('fhow').textContent = S.fm === 'pp' ? 'Алдымен нүктені, сосын жазықтықтың 3 нүктесін бас (төбелер немесе O, E нүктелері).' : 'Бірінші түзудің 2 нүктесін, сосын екінші түзудің 2 нүктесін бас.';
+  $('fhow').textContent = S.fm === 'pp' ? 'Фигураның төбелерін (әріптерін) бас: алдымен 1 нүкте, сосын жазықтық өтетін 3 нүкте. Сызба мен жауап өзі шығады.' : 'Фигураның төбелерін (әріптерін) бас: бірінші түзудің 2 нүктесі, сосын екінші түзудің 2 нүктесі. Сызба мен жауап өзі шығады.';
   const n = S.sel.length, need = S.fm === 'pp' ? ['нүктені', 'жазықтықтың 1-нүктесін', 'жазықтықтың 2-нүктесін', 'жазықтықтың 3-нүктесін'] : ['1-түзудің бірінші нүктесін', '1-түзудің екінші нүктесін', '2-түзудің бірінші нүктесін', '2-түзудің екінші нүктесін'];
   $('undo').disabled = !n; $('clear').disabled = !n;
+  const SL = S.fm === 'pp' ? [['Нүкте', 'r'], ['Жазықтық', 'o'], ['Жазықтық', 'o'], ['Жазықтық', 'o']] : [['1-түзу', 'a'], ['1-түзу', 'a'], ['2-түзу', 'b'], ['2-түзу', 'b']];
+  $('slots').innerHTML = SL.map(([t, c], i) => `<div class="slot ${c}${S.sel[i] ? ' fill' : ''}${i === n ? ' cur' : ''}"><small>${t}</small><b>${S.sel[i] || (i === n ? '?' : '')}</b></div>`).join('');
   let info = '', tip = '';
   if (n < 4) { const s = S.fm === 'pp' ? (n ? `Нүкте: <b>${S.sel[0]}</b>${n > 1 ? ` · жазықтық: ${S.sel.slice(1).join('')}…` : ''}` : '') : (n ? `Түзулер: <b>${S.sel.slice(0, 2).join('')}</b>${n > 2 ? ' ↔ ' + S.sel.slice(2).join('') + '…' : ''}` : '');
     info = (s ? s + '<br>' : '') + `<span style="color:var(--muted)">Енді ${need[n]} бас.</span>`; tip = `${ic('pointer')}${need[n][0].toUpperCase() + need[n].slice(1)} бас`; }
@@ -273,16 +290,17 @@ function ui() { const r = RES && !RES.bad ? RES : null;
 
 // ---------- actions ----------
 let fly = null; function flyTo(to, tg) { fly = { from: camera.position.clone(), to, t0: controls.target.clone(), t1: tg, t: 0 }; }
-const home = () => { const tg = V(0, Y0, 0); flyTo(tg.clone().add(OFF), tg); };
+const camOff = () => OFF.clone().multiplyScalar(camera.aspect < 1 ? 1.6 : 1);
+const home = () => { const tg = V(0, Y0, 0); flyTo(tg.clone().add(camOff()), tg); };
 const snd = k => window.labSound?.[k]?.();
 function openTask(i) { S.task = i; S.step = 0; S.grow = 1; const k = T[i].f; if (k !== S.fig || !built) { S.fig = k; setFig(k); home(); } draw(); }
 function setMode(m) { S.mode = m; $('mTask').classList.toggle('on', m === 'task'); $('mFree').classList.toggle('on', m === 'free'); $('taskPane').classList.toggle('hide', m !== 'task'); $('freePane').classList.toggle('hide', m !== 'free');
   if (m === 'task') openTask(S.task); else { S.sel = []; S.step = 0; draw(); } }
 $('mTask').onclick = () => setMode('task'); $('mFree').onclick = () => setMode('free');
-$('tasks').onclick = e => { const b = e.target.closest('.task'); if (b) { openTask(+b.dataset.i); snd('tap'); } };
-$('perp').onclick = () => { S.step = 1; S.grow = 0; drawPerp(); ui(); snd('tap'); };
-$('show').onclick = () => { if (S.step < 1) S.grow = 0; S.step = 2; S.done.add(S.task); drawPerp(); ui(); snd('done'); };
-$('prev').onclick = () => S.task > 0 && openTask(S.task - 1); $('next').onclick = () => S.task < T.length - 1 && openTask(S.task + 1);
+$('tasks').onclick = e => { const b = e.target.closest('.task'); if (b) { openTask(+b.dataset.i); snd('tap'); $('taskPane').scrollIntoView({ block: 'start', behavior: 'smooth' }); } };
+$('perp').onclick = () => { if (S.step >= 1) S.step = 0; else { S.step = 1; S.grow = 0; snd('tap'); } drawPerp(); ui(); };
+$('show').onclick = () => { if (S.step >= 2) S.step = 1; else { if (S.step < 1) S.grow = 0; S.step = 2; S.done.add(S.task); snd('done'); $('ans').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } drawPerp(); ui(); };
+$('prev').onclick = () => openTask((S.task + T.length - 1) % T.length); $('next').onclick = () => openTask((S.task + 1) % T.length);
 $('figs').innerHTML = Object.entries(FIG).map(([k, f]) => `<button class="chip" data-f="${k}">${f.s}</button>`).join('');
 $('figs').onclick = e => { const b = e.target.closest('.chip'); if (!b) return; S.fig = b.dataset.f; setFig(S.fig); S.sel = []; home(); draw(); };
 $('fPP').onclick = () => { S.fm = 'pp'; S.sel = []; draw(); }; $('fLL').onclick = () => { S.fm = 'll'; S.sel = []; draw(); };
@@ -305,7 +323,7 @@ renderer.domElement.addEventListener('pointerup', e => { const st = down; down =
   if (dupe) { snd('no'); $('tip').innerHTML = ic('warn') + 'Бұл нүкте таңдалып қойған — басқасын бас'; return; }
   S.sel.push(n); S.hover = null; if (S.sel.length === 4) { S.step = 2; S.grow = 0; snd('done'); } else snd('tap'); draw(); });
 
-setFig(S.fig); { const tg = V(0, Y0, 0); controls.target.copy(tg); camera.position.copy(tg.clone().add(OFF)); }
+setFig(S.fig); { const tg = V(0, Y0, 0); controls.target.copy(tg); camera.position.copy(tg.clone().add(camOff())); }
 buildTasks(); openTask(0);
 (function loop() { requestAnimationFrame(loop);
   if (fly) { fly.t = Math.min(1, fly.t + 1 / 50); const k = fly.t < .5 ? 2 * fly.t * fly.t : 1 - Math.pow(-2 * fly.t + 2, 2) / 2; camera.position.lerpVectors(fly.from, fly.to, k); controls.target.lerpVectors(fly.t0, fly.t1, k); if (fly.t >= 1) fly = null; }
@@ -313,7 +331,7 @@ buildTasks(); openTask(0);
   controls.update(); renderer.render(scene, camera); labels.render(scene, camera); })();
 </script>
 <script src="lab-sound.js?v=20261112"></script>
-<script src="supabase.js"></script><script src="supabase-client.js?v=20261112-polyhedra"></script><script src="lab-paywall.js?v=20261114-blue"></script>
+<script src="supabase.js"></script><script src="supabase-client.js?v=20261115-distance"></script><script src="lab-paywall.js?v=20261114-blue"></script>
 <script>labGate();</script>
 </body>
 </html>
