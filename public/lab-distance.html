@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoTAB — Зертхана: Кеңістіктегі арақашықтықтар</title>
+<link rel="stylesheet" href="gotab.css">
+<link rel="stylesheet" href="teacher-theme.css?v=20261102">
+<style>
+body{overflow:hidden}
+.lab{display:flex;height:calc(100vh - 64px)}
+#view{flex:1;position:relative;background:var(--bg);touch-action:none}
+#view canvas{display:block}
+.side{width:400px;flex-shrink:0;background:#fff;border-left:1px solid var(--border);padding:22px;overflow-y:auto}
+.side h2{font-size:20px;font-weight:900;margin-bottom:4px}.side .sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border-radius:14px;background:var(--surface2,#f1f5fb);margin-bottom:12px}
+.modes button{min-height:46px;border:none;border-radius:10px;background:transparent;font:800 14px Inter,sans-serif;color:var(--muted);cursor:pointer}
+.modes button.on{background:#fff;color:var(--primary);box-shadow:0 2px 10px rgba(26,86,219,.14)}
+.st{padding:12px 14px;border:1.5px solid var(--border);border-radius:14px;margin-bottom:10px;background:#fff}
+.st>b{display:block;font-size:15px;margin-bottom:6px}
+.gh{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:12px 0 6px}.gh:first-of-type{margin-top:2px}
+.tasks{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.task{padding:8px 9px;min-height:52px;border-radius:12px;border:1.5px solid var(--border);background:#fff;font-family:inherit;color:var(--text);cursor:pointer;text-align:left;line-height:1.2}
+.task b{display:block;font-size:14px;font-weight:800}.task small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.task.on{border-color:var(--primary);background:rgba(26,86,219,.08)}.task.on b{color:var(--primary)}
+.task.ok b::after{content:' ✓';color:var(--success)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{min-height:42px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:#fff;font:700 13px Inter,sans-serif;color:var(--text);cursor:pointer}
+.chip.on{border-color:var(--primary);background:rgba(26,86,219,.08);color:var(--primary)}
+#q{font-size:15px;line-height:1.5;padding:12px 14px;border-radius:12px;background:rgba(26,86,219,.06);margin-bottom:4px}
+#q .fg{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12.5px;color:var(--muted);margin-top:8px}.legend span{display:flex;align-items:center;gap:5px}.legend i{width:14px;height:6px;border-radius:3px;display:inline-block}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border:none;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;margin-top:8px;min-height:48px}
+.btn.p{background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff}.btn.g{background:#fff;border:1.5px solid var(--border);color:var(--text)}
+.btn:disabled{opacity:.4;cursor:default}
+.bar{display:flex;gap:8px}.bar .btn{margin-top:8px}
+#ans{display:none;margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(16,185,129,.1);color:#065f46;font-size:14px;line-height:1.55}
+#ans.on{display:block}#ans .big{display:block;font-size:22px;font-weight:900;color:#047857;margin-bottom:6px}
+#seg{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;border:1.5px dashed #16a34a;font-size:14px;line-height:1.45;color:#14532d}#seg.on{display:block}
+#finfo{margin-top:10px;padding:10px 12px;border-radius:10px;border:1.5px dashed var(--border);font-size:14px;line-height:1.5}
+#finfo .big{display:block;font-size:22px;font-weight:900;color:#047857}
+.note{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:8px}
+svg.i{width:20px;height:20px;flex-shrink:0}
+#tip{display:flex;align-items:center;gap:8px;position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(15,23,42,.88);color:#fff;border-radius:12px;padding:10px 18px;font-size:15px;font-weight:700;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+.lbl{font:800 18px Inter,sans-serif;color:#0f172a;text-shadow:0 0 4px #fff,0 0 4px #fff,0 0 4px #fff;pointer-events:none}.lbl.r{color:#e11d48}.lbl.g{color:#15803d}.lbl.x{font-size:15px;color:#475569}
+.dlbl{font:900 16px Inter,sans-serif;color:#fff;background:#16a34a;padding:3px 9px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.18);pointer-events:none;white-space:nowrap}
+.hide{display:none!important}
+@media(max-width:820px){.lab{flex-direction:column;height:auto}#view{height:62vh}.side{width:auto;border-left:none}body{overflow:auto}#tip{font-size:13px}}
+</style>
+</head>
+<body class="teacher-app">
+<script src="gotab-loader.js?v=20261112"></script>
+<nav class="top-nav"><img src="gotab_logo_anim.webp" onerror="this.onerror=null;this.src='gotab_logo.png'" alt="GoTAB"><div class="nav-user"><a href="labs.html" style="font-weight:700;color:var(--primary);text-decoration:none">← Зертханалар</a></div></nav>
+<div class="lab">
+  <div id="view"><div id="tip"></div></div>
+  <div class="side">
+    <h2>Кеңістіктегі арақашықтықтар</h2><div class="sub">Геометрия · 10–11-сынып · нүктеден жазықтыққа және айқас түзулер арасындағы қашықтық</div>
+    <div class="modes"><button id="mTask" class="on">Сабақ есептері</button><button id="mFree">Өзің зертте</button></div>
+
+    <div id="taskPane">
+      <div class="st"><b>1. Есепті таңда</b><div id="tasks"></div></div>
+      <div class="st"><b>2. Сызбадан тап</b>
+        <div id="q"></div>
+        <div class="legend" id="legend"></div>
+        <button class="btn p" id="perp"><i data-ic="ruler"></i>Перпендикулярды көрсет</button>
+        <div id="seg"></div>
+        <button class="btn g" id="show"><i data-ic="eye"></i>Жауабын көрсет</button>
+        <div id="ans"></div>
+        <div class="bar"><button class="btn g" id="prev"><i data-ic="left"></i>Алдыңғы</button><button class="btn g" id="next">Келесі<i data-ic="right"></i></button></div>
+      </div>
+    </div>
+
+    <div id="freePane" class="hide">
+      <div class="st"><b>1. Фигураны таңда</b><div class="chips" id="figs"></div></div>
+      <div class="st"><b>2. Не табамыз?</b>
+        <div class="chips"><button class="chip on" id="fPP">Нүкте → жазықтық</button><button class="chip" id="fLL">Түзу ↔ түзу</button></div>
+        <div class="note" id="fhow"></div>
+        <div id="finfo"></div>
+        <div class="bar"><button class="btn g" id="undo"><i data-ic="undo"></i>Артқа</button><button class="btn g" id="clear"><i data-ic="eraser"></i>Өшіру</button></div>
+      </div>
+    </div>
+    <div class="bar" style="margin-top:6px"><button class="btn g" id="cam"><i data-ic="focus"></i>Көріністі қайтару</button><button class="btn g" id="spin"><i data-ic="rotate"></i>Айналдыру</button></div>
+    <div class="note">Фигураны саусақпен немесе тінтуірмен бұрап, жан-жағынан қара. Екі саусақпен үлкейт.</div>
+  </div>
+</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
+const $ = id => document.getElementById(id), view = $('view'), V = (x, y, z) => new THREE.Vector3(x, y, z);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); view.appendChild(renderer.domElement);
+const labels = new CSS2DRenderer(); labels.domElement.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none'; view.appendChild(labels.domElement);
+const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100), OFF = V(5.6, 3.9, 8.4);
+const controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.minDistance = 4; controls.maxDistance = 20;
+const sph = new THREE.Spherical();
+function orbit(dAz, dPol) { const off = camera.position.clone().sub(controls.target); sph.setFromVector3(off); sph.theta += dAz; sph.phi = Math.min(Math.PI - .05, Math.max(.05, sph.phi + dPol)); off.setFromSpherical(sph); camera.position.copy(controls.target).add(off); camera.lookAt(controls.target); }
+// trackpad: two-finger swipe orbits, pinch zooms; a real mouse wheel zooms
+view.addEventListener('wheel', e => { const mouse = e.deltaMode !== 0 || (e.wheelDeltaY && Math.abs(e.wheelDeltaY) % 120 === 0 && !e.deltaX);
+  if (e.ctrlKey || mouse) return; e.preventDefault(); e.stopPropagation(); if (!fly) orbit(e.deltaX * .006, e.deltaY * .006); }, { capture: true, passive: false });
+scene.add(new THREE.HemisphereLight(0xffffff, 0xb8c6e0, 1.1)); const dl = new THREE.DirectionalLight(0xffffff, 1.2); dl.position.set(4, 8, 5); scene.add(dl);
+scene.add(new THREE.GridHelper(9, 18, 0x9fb3d8, 0xd3ddef));
+function resize() { const w = view.clientWidth, h = view.clientHeight; renderer.setSize(w, h); labels.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+
+const IC = { undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>', eraser: '<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>',
+  eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>', focus: '<circle cx="12" cy="12" r="3"/><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>',
+  ruler: '<path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/>',
+  left: '<path d="m15 18-6-6 6-6"/>', right: '<path d="m9 18 6-6-6-6"/>', rotate: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>', pointer: '<path d="M22 14a8 8 0 0 1-8 8"/><path d="M18 11v-1a2 2 0 0 0-4 0"/><path d="M14 10V9a2 2 0 0 0-4 0v1"/><path d="M10 9.5V4a2 2 0 0 0-4 0v10"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>', warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>' };
+const ic = k => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</svg>`;
+document.querySelectorAll('[data-ic]').forEach(el => el.outerHTML = ic(el.dataset.ic));
+
+// ---------- figures from the lesson (real sizes; the picture is scaled to fit) ----------
+const L = 'ABCDEF', sub = s => s + '₁';
+function ngon(n, side) { const R = side / (2 * Math.sin(Math.PI / n)); return [...Array(n)].map((_, k) => { const f = Math.PI / 2 + Math.PI / n - 2 * Math.PI * k / n; return [R * Math.cos(f), R * Math.sin(f)]; }); }
+function prism(base, h) { const n = base.length, P = {}, E = [];
+  base.forEach(([x, z], i) => { P[L[i]] = V(x, 0, z); P[sub(L[i])] = V(x, h, z); });
+  for (let i = 0; i < n; i++) { const a = L[i], b = L[(i + 1) % n]; E.push([a, b], [sub(a), sub(b)], [a, sub(a)]); }
+  return { P, E, extra: [] }; }
+function pyramid(n, side, h) { const P = { S: V(0, h, 0) }, E = []; ngon(n, side).forEach(([x, z], i) => { P[L[i]] = V(x, 0, z); });
+  for (let i = 0; i < n; i++) E.push([L[i], L[(i + 1) % n]], ['S', L[i]]); P.O = V(0, 0, 0); return { P, E, extra: ['O'] }; }
+const FIG = {
+  cube: { s: 'Куб', n: 'ABCDA₁B₁C₁D₁ бірлік кубы', ...prism(ngon(4, 1), 1) },
+  tri: { s: 'Үшбұрышты призма', n: 'ABCA₁B₁C₁ дұрыс үшбұрышты призма, барлық қырлары 1', ...prism(ngon(3, 1), 1) },
+  hex: { s: 'Алтыбұрышты призма', n: 'ABCDEFA₁B₁C₁D₁E₁F₁ дұрыс алтыбұрышты призма, барлық қырлары 1', ...prism(ngon(6, 1), 1) },
+  box: { s: 'Параллелепипед', n: 'ABCDA₁B₁C₁D₁ тікбұрышты параллелепипед: AB = 3, AD = 2, AA₁ = 1', ...prism([[-1.5, 1], [1.5, 1], [1.5, -1], [-1.5, -1]], 1) },
+  pyr1: { s: 'Төртбұрышты пирамида', n: 'SABCD дұрыс пирамида, барлық қырлары 1', ...pyramid(4, 1, Math.SQRT1_2) },
+  pyr44: { s: 'Пирамида 4 × 4', n: 'SABCD дұрыс пирамида: табанының қабырғасы 4, биіктігі 4; E — SA-ның ортасы', ...pyramid(4, 4, 4) },
+  pyr21: { s: 'Пирамида 2 × 1', n: 'SABCD дұрыс пирамида: табанының қабырғасы 2, биіктігі 1; O — табанның центрі', ...pyramid(4, 2, 1) },
+  hexpyr: { s: 'Алтыбұрышты пирамида', n: 'SABCDEF дұрыс пирамида: табанының қабырғасы 1, бүйір қыры 2', ...pyramid(6, 1, Math.sqrt(3)) } };
+FIG.pyr44.P.E = FIG.pyr44.P.S.clone().lerp(FIG.pyr44.P.A, .5); FIG.pyr44.extra.push('E');
+
+// ---------- tasks of the lesson plan (ҚМЖ «Кеңістіктегі арақашықтықтар») ----------
+const T = [
+  { g: 'Сызбадан тап', f: 'cube', p: 'A', pl: 'BDD₁', q: 'A нүктесінен BDD₁ жазықтығына дейінгі қашықтықты табыңдар.', why: 'AC ⊥ BD (шаршының диагональдары) және AC ⊥ DD₁, сондықтан AC ⊥ (BDD₁). Перпендикулярдың табаны H — AC мен BD-ның қиылысу нүктесі. AH = AC : 2 = √2/2.' },
+  { g: 'Сызбадан тап', f: 'cube', l1: 'AB', l2: 'CC₁', q: 'AB және CC₁ түзулерінің арақашықтығын табыңдар.', why: 'BC ⊥ AB және BC ⊥ CC₁, яғни BC — ортақ перпендикуляр. BC = 1.' },
+  { g: 'Сызбадан тап', f: 'cube', l1: 'AB₁', l2: 'CD', q: 'AB₁ және CD түзулерінің арақашықтығын табыңдар.', why: 'CD ∥ AB, сондықтан CD ∥ (ABB₁). AD ⊥ (ABB₁) (BC де солай), демек ізделінді қашықтық AD = BC = 1.' },
+  { g: 'Сызбадан тап', f: 'pyr1', p: 'S', pl: 'ABC', q: 'S нүктесінен ABC жазықтығына дейінгі қашықтықты табыңдар.', why: 'SO — пирамиданың биіктігі. AO = AC : 2 = √2/2, SA = 1, сондықтан SO = √(1 − 1/2) = √2/2.' },
+  { g: 'Жұптық жұмыс', f: 'tri', p: 'A', pl: 'BCC₁', u: 'см', q: 'A нүктесінен BCC₁ жазықтығына дейінгі қашықтықты табыңдар.', why: 'BCC₁ жазықтығы табанға перпендикуляр, сондықтан ізделінді қашықтық — ABC үшбұрышының AH биіктігі: AH = √3/2 см.' },
+  { g: 'Топтық жұмыс · 1-топ', f: 'hex', p: 'A', pl: 'BDD₁', u: 'см', q: 'A нүктесінен BDD₁ жазықтығына дейінгі қашықтықты табыңдар.', why: 'Дұрыс алтыбұрышта ∠ABD = 90°, яғни AB ⊥ BD; сонымен бірге AB ⊥ DD₁. Сондықтан AB ⊥ (BDD₁) және қашықтық AB = 1 см.' },
+  { g: 'Топтық жұмыс · 1-топ', f: 'tri', l1: 'AA₁', l2: 'BC₁', u: 'см', q: 'AA₁ және BC₁ түзулерінің арақашықтығын табыңдар.', why: 'AA₁ ∥ BB₁, демек AA₁ ∥ (BCC₁). Қашықтық A нүктесінен BC-ға түсірілген биіктікке тең: √3/2 см.' },
+  { g: 'Топтық жұмыс · 2-топ', f: 'hex', p: 'A', pl: 'BCC₁', u: 'см', q: 'A нүктесінен BCC₁ жазықтығына дейінгі қашықтықты табыңдар.', why: 'BCC₁ жазықтығы табанға перпендикуляр. Перпендикулярдың табаны BC түзуінің созындысында жатыр. AH = AB · sin 60° = √3/2 см.' },
+  { g: 'Топтық жұмыс · 2-топ', f: 'cube', l1: 'AA₁', l2: 'BD₁', q: 'AA₁ және BD₁ түзулерінің арақашықтығын табыңдар.', why: 'AA₁ ∥ (BDD₁), сондықтан қашықтық A нүктесінен BD-ға дейінгі қашықтыққа тең: AC : 2 = √2/2.' },
+  { g: 'Топтық жұмыс · 3-топ', f: 'box', p: 'A₁', pl: 'ABC₁', q: 'A₁ нүктесінен ABC₁ жазықтығына дейінгі қашықтықты табыңдар.', why: 'A(0; 0; 0), B(3; 0; 0), C₁(3; 2; 1). ABC₁ жазықтығы: −y + 2z = 0. A₁(0; 0; 1): h = |2| / √(1 + 4) = 2/√5 = 2√5/5.' },
+  { g: 'Топтық жұмыс · 3-топ', f: 'hex', l1: 'AB', l2: 'C₁D₁', u: 'см', q: 'AB және C₁D₁ түзулерінің арақашықтығын табыңдар.', why: 'AB мен C₁D₁ параллель жазықтықтарда (табандарда) жатыр және өзара параллель емес. Сондықтан арақашықтық призманың биіктігіне тең: 1 см. Ортақ перпендикуляр фигураның сыртында, түзулердің созындыларында жатыр.' },
+  { g: 'Деңгейлік тапсырма', lv: 'A', f: 'hexpyr', p: 'S', pl: 'ABC', u: 'см', q: 'S нүктесінен ABC жазықтығына дейінгі қашықтықты табыңдар.', why: 'Дұрыс алтыбұрышта O центрінен төбесіне дейінгі қашықтық қабырғаға тең: OA = 1 см. SO = √(SA² − OA²) = √(4 − 1) = √3 см.' },
+  { g: 'Деңгейлік тапсырма', lv: 'B', f: 'pyr44', p: 'E', pl: 'SBC', u: 'см', q: 'E нүктесінен SBC жазықтығына дейінгі қашықтықты табыңдар (11.4-сурет).', why: 'O — координаталар басы: S(0; 0; 4), B(2; −2; 0), C(2; 2; 0). SBC жазықтығы: 2x + z = 4. E(−1; −1; 2): h = |−2 + 2 − 4| / √5 = 4/√5 = 4√5/5 см.' },
+  { g: 'Деңгейлік тапсырма', lv: 'C', f: 'cube', l1: 'BA₁', l2: 'DB₁', q: 'BA₁ және DB₁ түзулерінің арақашықтығын табыңдар.', why: 'DB₁ ⊥ (A₁BC₁) және оны қабырғасы √2 болатын тең қабырғалы A₁BC₁ үшбұрышының центрінде қияды. Ізделінді қашықтық — осы үшбұрышқа іштей сызылған шеңбердің радиусы: r = √2 / (2√3) = √6/6.' },
+  { g: 'Үй тапсырмасы', f: 'cube', p: 'A', pl: 'BDC₁', q: 'A нүктесінен BDC₁ жазықтығына дейінгі қашықтықты табыңдар.', why: 'A — координаталар басы. BDC₁ жазықтығы: x + y − z = 1. A(0; 0; 0): h = 1/√3 = √3/3.' },
+  { g: 'Үй тапсырмасы', f: 'pyr1', l1: 'SB', l2: 'AC', u: 'см', q: 'SB және AC түзулерінің арақашықтығын табыңдар.', why: 'AC ⊥ (SBD) және оны O нүктесінде қияды. SBD үшбұрышы тікбұрышты (SB = SD = 1, BD = √2). O нүктесінен SB-ға дейінгі қашықтық: 1/2 см.' },
+  { g: 'Үй тапсырмасы', f: 'pyr21', p: 'O', pl: 'SBC', u: 'см', q: 'Табанның O центрінен SBC жазықтығына дейінгі қашықтықты табыңдар.', why: 'O — координаталар басы. SBC жазықтығы: x + z = 1. O(0; 0; 0): h = 1/√2 = √2/2 см.' },
+  { g: 'Үй тапсырмасы', f: 'hex', l1: 'BB₁', l2: 'EF₁', u: 'см', q: 'BB₁ және EF₁ түзулерінің арақашықтығын табыңдар.', why: 'BB₁ ∥ (EFF₁), сондықтан қашықтық B нүктесінен EF түзуіне дейінгі қашықтыққа тең: √3 см.' }];
+const names = s => s.match(/[A-Z]₁?/g);
+const short = t => t.p ? `${t.p} → (${t.pl})` : `${t.l1} ↔ ${t.l2}`;
+
+// ---------- geometry ----------
+function solve(F, pr) { const P = n => F.P[n];
+  if (pr.p) { const [a, b, c] = names(pr.pl).map(P), x = P(pr.p), nr = b.clone().sub(a).cross(c.clone().sub(a)); if (nr.length() < 1e-9) return { bad: 'col' };
+    nr.normalize(); const d = nr.dot(x.clone().sub(a)), H = x.clone().addScaledVector(nr, -d);
+    return { pp: true, d: Math.abs(d), from: x, to: H, nr, plane: [a, b, c], fromN: pr.p, toN: nameAt(F, H) || 'H' }; }
+  const [p1, p2] = names(pr.l1).map(P), [q1, q2] = names(pr.l2).map(P), u = p2.clone().sub(p1), v = q2.clone().sub(q1), w = p1.clone().sub(q1);
+  if (u.length() < 1e-9 || v.length() < 1e-9) return { bad: 'pt' };
+  const a = u.dot(u), b = u.dot(v), c = v.dot(v), dd = u.dot(w), e = v.dot(w), den = a * c - b * b; let M, N, par = false;
+  if (den < 1e-9 * a * c) { par = true; N = q1.clone(); M = p1.clone().addScaledVector(u, -w.dot(u) / a); if (M.distanceTo(N) < 1e-6) return { bad: 'same' }; }
+  else { M = p1.clone().addScaledVector(u, (b * e - c * dd) / den); N = q1.clone().addScaledVector(v, (a * e - b * dd) / den); }
+  const d = M.distanceTo(N);
+  return { ll: true, d, from: M, to: N, par, cross: !par && d < 1e-6, lines: [[p1, p2], [q1, q2]], fromN: nameAt(F, M) || 'M', toN: nameAt(F, N) || 'N' }; }
+function nameAt(F, v) { for (const k in F.P) if (F.P[k].distanceTo(v) < 1e-6) return k; return null; }
+// exact value like √2/2, 4√5/5, √3, 1/2
+function exact(d) { const d2 = d * d; if (d < 1e-9) return '0';
+  for (let q = 1; q <= 600; q++) { const p = d2 * q; if (Math.abs(p - Math.round(p)) < 1e-7 * Math.max(1, p)) { let P = Math.round(p), r = P * q, k = 1;
+    for (let f = 2; f * f <= r; f++) while (r % (f * f) === 0) { r /= f * f; k *= f; }
+    const gcd = (x, y) => y ? gcd(y, x % y) : x, g = gcd(k, q), K = k / g, Q = q / g;
+    return r === 1 ? (Q === 1 ? '' + K : `${K}/${Q}`) : `${K === 1 ? '' : K}√${r}${Q === 1 ? '' : '/' + Q}`; } }
+  return null; }
+const approx = d => d.toFixed(2).replace('.', ',');
+function sectionPoly(F, a, nr) { const hits = []; const s = p => nr.dot(p.clone().sub(a));
+  F.E.forEach(([i, j]) => { const p = F.P[i], q = F.P[j], sp = s(p), sq = s(q); if (Math.abs(sp) < 1e-7) hits.push(p.clone()); if (Math.abs(sq) < 1e-7) hits.push(q.clone()); if (sp * sq < 0 && Math.abs(sp) > 1e-7 && Math.abs(sq) > 1e-7) hits.push(p.clone().lerp(q, sp / (sp - sq))); });
+  const u = []; hits.forEach(p => { if (!u.some(x => x.distanceTo(p) < 1e-6)) u.push(p); }); if (u.length < 3) return null;
+  const c = u.reduce((t, p) => t.add(p), V(0, 0, 0)).multiplyScalar(1 / u.length), e1 = u[0].clone().sub(c).normalize(), e2 = nr.clone().cross(e1), ang = p => Math.atan2(e2.dot(p.clone().sub(c)), e1.dot(p.clone().sub(c)));
+  return u.sort((p, q) => ang(p) - ang(q)); }
+
+// ---------- drawing ----------
+let F, SC = 1, CEN = V(), Y0 = 0; const W = v => v.clone().sub(CEN).multiplyScalar(SC).add(V(0, Y0, 0));
+function setFig(k) { F = FIG[k]; const vs = Object.entries(F.P).filter(([n]) => !F.extra.includes(n)).map(([, v]) => v), H = Math.max(...vs.map(v => v.y));
+  CEN = V(0, H / 2, 0); const R = Math.max(...vs.map(v => v.distanceTo(CEN))); SC = 2.5 / R; Y0 = H / 2 * SC; }
+const M = { edge: new THREE.MeshStandardMaterial({ color: 0x1a56db, roughness: .4 }), dot: new THREE.MeshStandardMaterial({ color: 0x0f172a }), red: new THREE.MeshStandardMaterial({ color: 0xe11d48 }),
+  green: new THREE.MeshStandardMaterial({ color: 0x16a34a, emissive: 0x16a34a, emissiveIntensity: .25 }), la: new THREE.MeshStandardMaterial({ color: 0x7c3aed }), lb: new THREE.MeshStandardMaterial({ color: 0xea580c }),
+  orange: new THREE.MeshStandardMaterial({ color: 0xf59e0b }), ghost: new THREE.MeshBasicMaterial({ color: 0xe11d48, transparent: true, opacity: .4 }), grey: new THREE.MeshStandardMaterial({ color: 0x64748b }) };
+function rod(p, q, mat, r = .028) { const d = q.clone().sub(p), Ln = d.length(); const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, Math.max(Ln, 1e-4), 12), mat); m.position.copy(p).addScaledVector(d, .5); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.clone().normalize()); return m; }
+function ball(p, mat, r = .07) { const s = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 16), mat); s.position.copy(p); return s; }
+function label(text, pos, cls = '') { const el = document.createElement('div'); el.className = cls.startsWith('d') ? cls : 'lbl ' + cls; el.textContent = text; const o = new CSS2DObject(el); o.position.copy(pos); return o; }
+const out = (v, k = .34) => { const w = W(v), c = V(0, Y0, 0), d = w.clone().sub(c); if (d.length() < 1e-6) d.set(0, -1, 0); return w.add(d.setLength(k)); };
+const clearGroup = g => { g.traverse(o => { if (o.isCSS2DObject) o.element.remove(); }); scene.remove(g); };
+let grp = new THREE.Group(), pg = new THREE.Group(); scene.add(grp, pg);
+
+const S = { mode: 'task', task: 0, fig: 'cube', fm: 'pp', sel: [], step: 0, grow: 1, hover: null, done: new Set() };
+const prob = () => { if (S.mode === 'task') return T[S.task];
+  const s = S.sel; return S.fm === 'pp' ? (s.length === 4 ? { p: s[0], pl: s.slice(1).join('') } : null) : (s.length === 4 ? { l1: s[0] + s[1], l2: s[2] + s[3] } : null); };
+let RES = null;
+
+function draw() { clearGroup(grp); grp = new THREE.Group(); scene.add(grp);
+  const pr = prob(); RES = pr ? solve(F, pr) : null; const r = RES && !RES.bad ? RES : null;
+  F.E.forEach(([i, j]) => grp.add(rod(W(F.P[i]), W(F.P[j]), M.edge)));
+  const body = new THREE.Mesh(new ConvexGeometry(Object.entries(F.P).filter(([n]) => !F.extra.includes(n)).map(([, v]) => W(v))), new THREE.MeshStandardMaterial({ color: 0x5aa9ff, transparent: true, opacity: .13, side: THREE.DoubleSide, depthWrite: false })); grp.add(body);
+  const role = {}; // colour of chosen points
+  if (r?.pp) { role[pr.p] = 'r'; names(pr.pl).forEach(n => role[n] = role[n] || 'o'); }
+  if (r?.ll) { names(pr.l1).forEach(n => role[n] = 'a'); names(pr.l2).forEach(n => role[n] = role[n] || 'b'); }
+  if (S.mode === 'free' && !r) S.sel.forEach((n, i) => role[n] = S.fm === 'pp' ? (i ? 'o' : 'r') : (i < 2 ? 'a' : 'b'));
+  for (const [n, v] of Object.entries(F.P)) { const ex = F.extra.includes(n), rl = role[n], mat = { r: M.red, o: M.orange, a: M.la, b: M.lb }[rl];
+    grp.add(ball(W(v), mat || (ex ? M.grey : M.dot), mat ? .1 : ex ? .055 : .07)); grp.add(label(n, out(v), rl === 'r' ? 'r' : ex ? 'x' : '')); }
+  if (S.mode === 'free' && S.hover) grp.add(ball(W(F.P[S.hover]), M.ghost, .15));
+  if (r?.pp) { const [a, , ] = r.plane, poly = sectionPoly(F, a, r.nr);
+    if (poly) { const w = poly.map(W), c = w.reduce((t, p) => t.add(p), V(0, 0, 0)).multiplyScalar(1 / w.length), pos = [];
+      for (let i = 0; i < w.length; i++) pos.push(...c.toArray(), ...w[i].toArray(), ...w[(i + 1) % w.length].toArray());
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      grp.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: .42, side: THREE.DoubleSide, depthWrite: false })));
+      for (let i = 0; i < w.length; i++) grp.add(rod(w[i], w[(i + 1) % w.length], M.orange, .02)); }
+    // the whole plane, large enough to hold the foot of the perpendicular
+    const c = W(poly ? poly.reduce((t, p) => t.add(p), V(0, 0, 0)).multiplyScalar(1 / poly.length) : a), Rr = Math.max(...(poly || [a]).map(p => W(p).distanceTo(c)), W(r.to).distanceTo(c)) + .7;
+    const pl = new THREE.Mesh(new THREE.PlaneGeometry(2 * Rr, 2 * Rr), new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: .1, side: THREE.DoubleSide, depthWrite: false })); pl.position.copy(c); pl.lookAt(c.clone().add(r.nr)); grp.add(pl); }
+  if (r?.ll) r.lines.forEach(([p, q], i) => { const mat = i ? M.lb : M.la, foot = i ? r.to : r.from, u = q.clone().sub(p), tt = [0, 1, u.dot(foot.clone().sub(p)) / u.lengthSq()], ext = .9 / (u.length() * SC);
+    grp.add(rod(W(p.clone().addScaledVector(u, Math.min(...tt) - ext)), W(p.clone().addScaledVector(u, Math.max(...tt) + ext)), mat, .016)); grp.add(rod(W(p), W(q), mat, .045)); });
+  drawPerp(); ui(); }
+
+// the perpendicular grows from the point to its foot, with right-angle marks
+function drawPerp() { clearGroup(pg); pg = new THREE.Group(); scene.add(pg); const r = RES && !RES.bad ? RES : null;
+  if (!r || S.step < 1 || r.d < 1e-6) return; const a = W(r.from), b = W(r.to), k = S.grow, e = a.clone().lerp(b, k);
+  pg.add(rod(a, e, M.green, .05)); pg.add(ball(e, M.green, .1)); if (k < 1) return;
+  const ab = b.clone().sub(a).normalize(), m = .26;
+  const mark = (at, dirAway, along) => { const p1 = at.clone().addScaledVector(along, m), p2 = p1.clone().addScaledVector(dirAway, m), p3 = at.clone().addScaledVector(dirAway, m); pg.add(rod(p1, p2, M.green, .018), rod(p2, p3, M.green, .018)); };
+  const inPlane = (n, dir) => { let t = dir.clone().addScaledVector(n, -dir.dot(n)); if (t.length() < 1e-6) t = V(1, 0, 0).addScaledVector(n, -n.x); if (t.length() < 1e-6) t = V(0, 0, 1).addScaledVector(n, -n.z); return t.normalize(); };
+  if (r.pp) { const n = ab, ref = r.plane.map(W).find(p => p.distanceTo(b) > 1e-3) || V(1, 0, 0); mark(b, n.clone().negate(), inPlane(n, ref.clone().sub(b))); }
+  else { const [l1, l2] = r.lines.map(([p, q]) => W(q).sub(W(p)).normalize()); mark(a, ab, l1.clone().multiplyScalar(-Math.sign(l1.dot(V(0, Y0, 0).sub(a))) || 1)); mark(b, ab.clone().negate(), l2.clone().multiplyScalar(-Math.sign(l2.dot(V(0, Y0, 0).sub(b))) || 1)); }
+  if (!nameAt(F, r.to)) pg.add(label(r.toN, b.clone().add(V(.18, -.28, 0)), 'g'));
+  if (r.ll && !nameAt(F, r.from)) pg.add(label(r.fromN, a.clone().add(V(.18, .28, 0)), 'g'));
+  if (S.step >= 2) pg.add(label(`${exact(r.d) || approx(r.d)}`, a.clone().lerp(b, .5).add(V(.3, .1, 0)), 'dlbl')); }
+
+// ---------- panel ----------
+const segName = r => r.fromN + r.toN;
+function legend(pr) { return pr.p ? `<span><i style="background:#e11d48"></i>${pr.p} нүктесі</span><span><i style="background:#f97316"></i>(${pr.pl}) жазықтығы</span><span><i style="background:#16a34a"></i>перпендикуляр</span>`
+  : `<span><i style="background:#7c3aed"></i>${pr.l1}</span><span><i style="background:#ea580c"></i>${pr.l2}</span><span><i style="background:#16a34a"></i>ортақ перпендикуляр</span>`; }
+let built = false;
+function buildTasks() { let h = '', g = ''; T.forEach((t, i) => { if (t.g !== g) { h += (g ? '</div>' : '') + `<div class="gh">${t.g}</div><div class="tasks">`; g = t.g; }
+  h += `<button class="task" data-i="${i}"><b>${t.lv ? t.lv + '. ' : ''}${short(t)}</b><small>${FIG[t.f].s}</small></button>`; }); $('tasks').innerHTML = h + '</div>'; built = true; }
+function ui() { const r = RES && !RES.bad ? RES : null;
+  if (S.mode === 'task') { const t = T[S.task];
+    document.querySelectorAll('.task').forEach(b => { b.classList.toggle('on', +b.dataset.i === S.task); b.classList.toggle('ok', S.done.has(+b.dataset.i)); });
+    $('q').innerHTML = `${t.lv ? `<b>${t.lv} деңгей.</b> ` : ''}${t.q}<span class="fg">${FIG[t.f].n}</span>`; $('legend').innerHTML = legend(t);
+    $('perp').disabled = S.step >= 1;
+    $('seg').classList.toggle('on', S.step >= 1); $('seg').innerHTML = r ? (r.pp ? `Жасыл кесінді <b>${segName(r)}</b> — ${t.p} нүктесінен жазықтыққа түсірілген перпендикуляр: ${segName(r)} ⊥ (${t.pl}). Оның ұзындығы — ізделінді қашықтық.`
+      : `Жасыл кесінді <b>${segName(r)}</b> — ${t.l1} мен ${t.l2} түзулерінің ортақ перпендикуляры: ол екі түзуге де перпендикуляр. Оның ұзындығы — ізделінді қашықтық.`) : '';
+    $('ans').classList.toggle('on', S.step >= 2); $('ans').innerHTML = r ? `<span class="big">${segName(r)} = ${exact(r.d)}${t.u ? ' ' + t.u : ''} ${/√/.test(exact(r.d)) ? `<small style="font-size:14px;font-weight:700;color:#047857">≈ ${approx(r.d)}</small>` : ''}</span>${t.why}` : '';
+    $('prev').disabled = S.task === 0; $('next').disabled = S.task === T.length - 1;
+    $('tip').innerHTML = S.step === 0 ? `${ic('pointer')}Ізделінді кесіндіні сызбадан тап, сосын «Перпендикулярды көрсет»` : S.step === 1 ? `${ic('pointer')}Ұзындығын есепте, сосын «Жауабын көрсет»` : `${ic('check')}${segName(r)} = ${exact(r.d)}${t.u ? ' ' + t.u : ''}`;
+    return; }
+  document.querySelectorAll('#figs .chip').forEach(b => b.classList.toggle('on', b.dataset.f === S.fig));
+  $('fPP').classList.toggle('on', S.fm === 'pp'); $('fLL').classList.toggle('on', S.fm === 'll');
+  $('fhow').textContent = S.fm === 'pp' ? 'Алдымен нүктені, сосын жазықтықтың 3 нүктесін бас (төбелер немесе O, E нүктелері).' : 'Бірінші түзудің 2 нүктесін, сосын екінші түзудің 2 нүктесін бас.';
+  const n = S.sel.length, need = S.fm === 'pp' ? ['нүктені', 'жазықтықтың 1-нүктесін', 'жазықтықтың 2-нүктесін', 'жазықтықтың 3-нүктесін'] : ['1-түзудің бірінші нүктесін', '1-түзудің екінші нүктесін', '2-түзудің бірінші нүктесін', '2-түзудің екінші нүктесін'];
+  $('undo').disabled = !n; $('clear').disabled = !n;
+  let info = '', tip = '';
+  if (n < 4) { const s = S.fm === 'pp' ? (n ? `Нүкте: <b>${S.sel[0]}</b>${n > 1 ? ` · жазықтық: ${S.sel.slice(1).join('')}…` : ''}` : '') : (n ? `Түзулер: <b>${S.sel.slice(0, 2).join('')}</b>${n > 2 ? ' ↔ ' + S.sel.slice(2).join('') + '…' : ''}` : '');
+    info = (s ? s + '<br>' : '') + `<span style="color:var(--muted)">Енді ${need[n]} бас.</span>`; tip = `${ic('pointer')}${need[n][0].toUpperCase() + need[n].slice(1)} бас`; }
+  else if (RES?.bad) { info = ic('warn') + ({ col: 'Үш нүкте бір түзудің бойында жатыр — олар жазықтықты анықтамайды.', pt: 'Түзу екі түрлі нүкте арқылы өтуі керек.', same: 'Бұл — бір ғана түзу.' }[RES.bad]) + ' «Артқа» бас.'; tip = ic('warn') + 'Басқа нүкте таңда'; }
+  else { const pr = prob(), ex = exact(r.d) || '≈ ' + approx(r.d);
+    if (r.pp) info = r.d < 1e-6 ? `<b>${pr.p}</b> нүктесі (${pr.pl}) жазықтығында жатыр — қашықтық 0.` : `${pr.p} нүктесінен (${pr.pl}) жазықтығына дейінгі қашықтық:<span class="big">${segName(r)} = ${ex}</span>${/√/.test(ex) ? '≈ ' + approx(r.d) : ''}`;
+    else info = r.cross ? `${pr.l1} мен ${pr.l2} қиылысады — арақашықтық 0.` : `${pr.l1} мен ${pr.l2} — ${r.par ? 'параллель' : 'айқас'} түзулер. Арақашықтық:<span class="big">${segName(r)} = ${ex}</span>${/√/.test(ex) ? '≈ ' + approx(r.d) : ''}`;
+    tip = `${ic('check')}${r.d < 1e-6 ? 'Қашықтық 0' : segName(r) + ' = ' + ex} · жаңадан бастау үшін нүктені бас`; }
+  $('finfo').innerHTML = info; $('tip').innerHTML = tip; }
+
+// ---------- actions ----------
+let fly = null; function flyTo(to, tg) { fly = { from: camera.position.clone(), to, t0: controls.target.clone(), t1: tg, t: 0 }; }
+const home = () => { const tg = V(0, Y0, 0); flyTo(tg.clone().add(OFF), tg); };
+const snd = k => window.labSound?.[k]?.();
+function openTask(i) { S.task = i; S.step = 0; S.grow = 1; const k = T[i].f; if (k !== S.fig || !built) { S.fig = k; setFig(k); home(); } draw(); }
+function setMode(m) { S.mode = m; $('mTask').classList.toggle('on', m === 'task'); $('mFree').classList.toggle('on', m === 'free'); $('taskPane').classList.toggle('hide', m !== 'task'); $('freePane').classList.toggle('hide', m !== 'free');
+  if (m === 'task') openTask(S.task); else { S.sel = []; S.step = 0; draw(); } }
+$('mTask').onclick = () => setMode('task'); $('mFree').onclick = () => setMode('free');
+$('tasks').onclick = e => { const b = e.target.closest('.task'); if (b) { openTask(+b.dataset.i); snd('tap'); } };
+$('perp').onclick = () => { S.step = 1; S.grow = 0; drawPerp(); ui(); snd('tap'); };
+$('show').onclick = () => { if (S.step < 1) S.grow = 0; S.step = 2; S.done.add(S.task); drawPerp(); ui(); snd('done'); };
+$('prev').onclick = () => S.task > 0 && openTask(S.task - 1); $('next').onclick = () => S.task < T.length - 1 && openTask(S.task + 1);
+$('figs').innerHTML = Object.entries(FIG).map(([k, f]) => `<button class="chip" data-f="${k}">${f.s}</button>`).join('');
+$('figs').onclick = e => { const b = e.target.closest('.chip'); if (!b) return; S.fig = b.dataset.f; setFig(S.fig); S.sel = []; home(); draw(); };
+$('fPP').onclick = () => { S.fm = 'pp'; S.sel = []; draw(); }; $('fLL').onclick = () => { S.fm = 'll'; S.sel = []; draw(); };
+$('undo').onclick = () => { S.sel.pop(); S.step = 0; draw(); }; $('clear').onclick = () => { S.sel = []; S.step = 0; draw(); };
+$('cam').onclick = home;
+let spin = false; $('spin').onclick = () => { spin = !spin; controls.autoRotate = spin; controls.autoRotateSpeed = 1.6; $('spin').classList.toggle('p', spin); $('spin').classList.toggle('g', !spin); };
+
+// free mode: tap a vertex (or O, E) — nearest labelled point on screen
+function scr(v) { const rc = renderer.domElement.getBoundingClientRect(), p = W(v).project(camera); return [(p.x + 1) / 2 * rc.width + rc.left, (1 - p.y) / 2 * rc.height + rc.top]; }
+function pick(e) { let best = null; const R = e.pointerType === 'touch' ? 44 : 30;
+  for (const [n, v] of Object.entries(F.P)) { const [x, y] = scr(v), d = Math.hypot(x - e.clientX, y - e.clientY); if (d < R && (!best || d < best.d)) best = { n, d }; } return best?.n || null; }
+const act = new Set(); let down = null, multi = false;
+renderer.domElement.addEventListener('pointerdown', e => { act.add(e.pointerId); if (act.size > 1) { multi = true; down = null; } else { multi = false; down = { id: e.pointerId, x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' }; } }, { capture: true });
+renderer.domElement.addEventListener('pointercancel', e => { act.delete(e.pointerId); down = null; if (!act.size) multi = false; });
+renderer.domElement.addEventListener('pointermove', e => { if (S.mode !== 'free' || e.buttons || e.pointerType === 'touch') return; const h = pick(e); if (h !== S.hover) { S.hover = h; draw(); } });
+renderer.domElement.addEventListener('pointerup', e => { const st = down; down = null; act.delete(e.pointerId); if (multi) { if (!act.size) multi = false; return; }
+  if (S.mode !== 'free' || !st || st.id !== e.pointerId || Math.hypot(e.clientX - st.x, e.clientY - st.y) > (st.touch ? 14 : 6)) return;
+  const n = pick(e); if (!n) return; if (S.sel.length >= 4) { S.sel = []; S.step = 0; }
+  const dupe = S.fm === 'pp' ? S.sel.includes(n) : (S.sel.length % 2 === 1 && S.sel[S.sel.length - 1] === n);
+  if (dupe) { snd('no'); $('tip').innerHTML = ic('warn') + 'Бұл нүкте таңдалып қойған — басқасын бас'; return; }
+  S.sel.push(n); S.hover = null; if (S.sel.length === 4) { S.step = 2; S.grow = 0; snd('done'); } else snd('tap'); draw(); });
+
+setFig(S.fig); { const tg = V(0, Y0, 0); controls.target.copy(tg); camera.position.copy(tg.clone().add(OFF)); }
+buildTasks(); openTask(0);
+(function loop() { requestAnimationFrame(loop);
+  if (fly) { fly.t = Math.min(1, fly.t + 1 / 50); const k = fly.t < .5 ? 2 * fly.t * fly.t : 1 - Math.pow(-2 * fly.t + 2, 2) / 2; camera.position.lerpVectors(fly.from, fly.to, k); controls.target.lerpVectors(fly.t0, fly.t1, k); if (fly.t >= 1) fly = null; }
+  if (S.grow < 1) { S.grow = Math.min(1, S.grow + 1 / 45); drawPerp(); }
+  controls.update(); renderer.render(scene, camera); labels.render(scene, camera); })();
+</script>
+<script src="lab-sound.js?v=20261112"></script>
+<script src="supabase.js"></script><script src="supabase-client.js?v=20261112-polyhedra"></script><script src="lab-paywall.js?v=20261114-blue"></script>
+<script>labGate();</script>
+</body>
+</html>
