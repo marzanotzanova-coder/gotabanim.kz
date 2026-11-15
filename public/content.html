@@ -674,6 +674,7 @@ document.title = `GoTAB — ${GRADES_LABEL[grade]} ${SUBJECT_LABEL[subject]}`;
 // ЖМБ = жаратылыстану-математика бағыты; its subjects end with _emn and keep their own lessons
 const EMN = subject.endsWith('_emn') ? '_emn' : '';
 function initSwitcher() {
+  if (EMN) document.querySelectorAll('#gradeSel option').forEach(o => { if (+o.value < 10) o.remove(); });
   document.getElementById('gradeSel').value = grade;
   if (subject === 'informatics') {
     document.getElementById('subjectSel').innerHTML = '<option value="informatics">Информатика</option>';

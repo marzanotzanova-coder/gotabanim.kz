@@ -289,7 +289,7 @@ const ICON_MATH = '<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5
   ICON_ALG = '<path d="M4 7V4h16v3M9 20h6M12 4v16"/>', ICON_GEO = '<path d="M12 3 3 20h18z"/>';
 const TRACKS = {
   qgb: [['math', 'Математика', '#1a56db', ICON_MATH, [5, 6]], ['algebra', 'Алгебра', '#7c3aed', ICON_ALG, [7, 8, 9, 10, 11]], ['geometry', 'Геометрия', '#0891b2', ICON_GEO, [7, 8, 9, 10, 11]]],
-  emb: [['math_emn', 'Математика', '#0d9488', ICON_MATH, [5, 6]], ['algebra_emn', 'Алгебра', '#16a34a', ICON_ALG, [7, 8, 9, 10, 11]], ['geometry_emn', 'Геометрия', '#0284c7', ICON_GEO, [7, 8, 9, 10, 11]]]};
+  emb: [['algebra_emn', 'Алгебра', '#16a34a', ICON_ALG, [10, 11]], ['geometry_emn', 'Геометрия', '#0284c7', ICON_GEO, [10, 11]]]};
 const store = { get: k => { try { return localStorage.getItem(k); } catch (_) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (_) {} } };
 let track = store.get('gotabTrack') === 'emb' ? 'emb' : 'qgb', mineCache = [];
 function renderPicker(mine = mineCache) {
