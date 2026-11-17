@@ -502,7 +502,7 @@
 
 <script src="supabase.js"></script>
 <script src="material-previews.js?v=20261103-fast-visuals"></script>
-<script src="supabase-client.js?v=20261103-previews"></script>
+<script src="supabase-client.js?v=20261117-paid"></script>
 <script>
 let userIsPaid = false;
 let currentUser = null;
@@ -532,6 +532,7 @@ let currentUser = null;
     } catch(__) { userIsPaid = false; }
   }
 
+  if (!userIsPaid && await GoTABRecheckPaid()) userIsPaid = true;
   if (!userIsPaid) {
     document.getElementById('payBar').style.display = 'flex';
   }
@@ -543,7 +544,7 @@ function initDownloads() {
   // Single sticker download
   document.querySelectorAll('.sticker-item').forEach(item => {
     item.addEventListener('click', () => {
-      if (!userIsPaid) { openModal(); return; }
+      if (!userIsPaid) { GoTABPayGate(); return; }
       const src = item.dataset.src;
       if (!src) return;
       const a = document.createElement('a');
@@ -554,7 +555,7 @@ function initDownloads() {
   // Download all in a card
   document.querySelectorAll('.btn-dl-set').forEach(btn => {
     btn.addEventListener('click', () => {
-      if (!userIsPaid) { openModal(); return; }
+      if (!userIsPaid) { GoTABPayGate(); return; }
       const card = btn.closest('.sticker-card');
       const items = card.querySelectorAll('.sticker-item[data-src]');
       items.forEach((item, n) => {

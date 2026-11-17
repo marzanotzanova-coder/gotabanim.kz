@@ -659,7 +659,7 @@ body.lesson-open .lesson-unit:not(.is-open){display:none}
 <script src="content-load.js?v=20261104-fast"></script>
 <script src="supabase.js"></script>
 <script src="qmj-preview.js?v=20261112-free"></script>
-<script src="supabase-client.js?v=20261104-fast"></script>
+<script src="supabase-client.js?v=20261117-paid"></script>
 <script src="lesson-extras.js?v=20261114-emn"></script>
 <script>
 const GRADES_LABEL = {5:'5-сынып',6:'6-сынып',7:'7-сынып',8:'8-сынып',9:'9-сынып',10:'10-сынып',11:'11-сынып'};
@@ -737,6 +737,8 @@ async function checkContentAccess(user) {
       } catch (_) {}
     }
   }
+  // a failed check on a slow connection must not lock a paid teacher: ask the server again
+  if (!userIsPaid && await GoTABRecheckPaid()) userIsPaid = true;
   document.getElementById('payBar').style.display = userIsPaid ? 'none' : 'flex';
   document.body.classList.toggle('is-paid', userIsPaid);
 }
@@ -1038,7 +1040,7 @@ function render(overrideLessons) {
   GoTABLoad.visibleVideos(grid);
 
   async function dlFile(url, btn, label, videoTitle) {
-    if (!userIsPaid) { openModal(); return; }
+    if (!userIsPaid) { GoTABPayGate(); return; }
     if (videoTitle) {
       btn.disabled = true;
       try { await GoTABVideoDownload.save(url, videoTitle); }
@@ -1075,7 +1077,7 @@ function render(overrideLessons) {
   // Watch the animation with sound: subscribers in every lesson, everyone in the free lesson
   grid.querySelectorAll('[data-watch]').forEach(el => el.addEventListener('click', () => {
     const lesson = lessons[parseInt(el.dataset.watch)];
-    if (!userIsPaid && !isFreeLesson(lesson)) { openModal(); return; }
+    if (!userIsPaid && !isFreeLesson(lesson)) { GoTABPayGate(); return; }
     openVideoPlayer(lesson.video.src, lesson.title);
   }));
 
@@ -1089,14 +1091,14 @@ function render(overrideLessons) {
     });
   });
 
-  GoTABExtras.bind(grid, lessons, () => userIsPaid, openModal);
+  GoTABExtras.bind(grid, lessons, () => userIsPaid, () => GoTABPayGate());
 
   // Download ALL (жалпы жүктеу)
   grid.querySelectorAll('[data-dl-all]').forEach(el => {
     el.addEventListener('click', async function(e) {
       e.preventDefault();
       if (this.classList.contains('done')) return;
-      if (!userIsPaid) { openModal(); return; }
+      if (!userIsPaid) { GoTABPayGate(); return; }
       const lesson = lessons[parseInt(this.dataset.dlAll)];
       const files = [
         lesson.ppt  && lesson.ppt.src,

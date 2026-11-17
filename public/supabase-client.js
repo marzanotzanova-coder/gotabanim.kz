@@ -27,6 +27,24 @@ async function redirectIfLoggedIn() {
   }
 }
 
+// A paid teacher must never get the pay window because of a slow or broken connection.
+// GoTABMarkPaid unlocks the page; GoTABPayGate re-checks the server (with retries) before showing the pay window.
+window.GoTABMarkPaid=function(){try{userIsPaid=true;}catch(_){}document.body.classList.add('is-paid');const pb=document.getElementById('payBar');if(pb)pb.style.display='none';};
+window.GoTABRecheckPaid=async function(){
+  try{const {data:{session}}=await sb.auth.getSession();if(!session)return false;if(session.user.email===ADMIN_EMAIL){GoTABMarkPaid();return true;}
+    for(let i=0;i<4;i++){try{const r=await sb.rpc('check_paid_user',{check_id:session.user.id});if(!r.error){if(r.data===true)GoTABMarkPaid();return r.data===true;}}catch(_){}await new Promise(ok=>setTimeout(ok,1000+i*1000));}
+  }catch(_){}
+  return null;
+};
+window.GoTABPayGate=async function(){
+  const t=document.createElement('div');t.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:10001;background:#0f172ae6;color:#fff;padding:12px 18px;border-radius:12px;font:700 14px Inter,sans-serif;box-shadow:0 8px 24px #0003;max-width:92vw;text-align:center';
+  t.textContent='Жазылым тексерілуде…';document.body.append(t);
+  const ok=await GoTABRecheckPaid();
+  if(ok===true){t.textContent='✓ Жазылымыңыз белсенді. Батырманы қайта басыңыз.';t.style.background='#047857f2';setTimeout(()=>t.remove(),3500);return;}
+  if(ok===null){t.textContent='Интернет байланысы әлсіз — жазылымды тексеру мүмкін болмады. Біраздан кейін қайта басыңыз.';t.style.background='#b45309f2';setTimeout(()=>t.remove(),5000);return;}
+  t.remove();if(typeof openModal==='function')openModal();
+};
+
 // Server-clock subscription deadline, including tabs left open overnight.
 (async function watchSubscription(){
   const page=location.pathname.split('/').pop();
@@ -34,7 +52,7 @@ async function redirectIfLoggedIn() {
   const {data:{session}}=await sb.auth.getSession();
   if(!session || session.user.email===ADMIN_EMAIL)return;
   const catalogPage=['content.html','games.html','labs.html'].includes(page);
-  let deadline=0,timer,pending=false;
+  let deadline=0,timer,pending=false,known=null,current=null,retry=null;
   const info=new URLSearchParams(location.search).get('subject')==='informatics';
   const gate=document.createElement('div');gate.id='subscriptionGate';
   gate.style.cssText='position:fixed;inset:68px 0 0;z-index:9000;background:#f4f7fbf5;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center';
@@ -50,11 +68,11 @@ async function redirectIfLoggedIn() {
     const preview=document.createElement('button');preview.type='button';preview.textContent='Алдын ала қарау';preview.className='btn-preview material-preview-button';preview.onclick=()=>window.openMaterialPreviewPicker?.();card.insertBefore(preview,button);
   }
   function closeAccess(message){deadline=0;clearTimeout(timer);if(page==='games.html')document.body.classList.add('games-locked');if(page==='labs.html')document.body.classList.add('labs-locked');if(catalogPage){gate.remove();const payBar=document.getElementById('payBar');if(payBar)payBar.style.display='flex';return;}document.body.append(gate);title.textContent='Материалдарға доступ жабық';text.textContent=message;button.hidden=false;document.querySelectorAll('video').forEach(v=>v.pause());}
-  async function refresh(){
-    if(pending)return;pending=true;
+  function refresh(){if(pending)return current;pending=true;current=check();return current;}
+  async function check(){
     try{
       const {data:paid,error:paidError}=await sb.rpc(info?'check_paid_informatics':'check_paid_user',{check_id:session.user.id});
-      if(paidError)throw Error('Қолжетімділікті тексеру уақытша істемеді. Автоматты қайта тексеріледі.');
+      if(paidError)throw paidError;
       const active=paid===true;
       let data=null;
       try{const result=await sb.rpc('get_my_access');if(!result.error){data=Array.isArray(result.data)?result.data[0]:result.data;if(typeof data==='string')data=JSON.parse(data);}}catch(_){}
@@ -63,16 +81,24 @@ async function redirectIfLoggedIn() {
       const parsed=serverRemaining!=null?Number(serverRemaining):new Date(until)-new Date(data?.server_now);
       const validDeadline=Number.isFinite(parsed)&&parsed>0;
       const remaining=active?(validDeadline?parsed:15000):0;
-      if(!active||!(remaining>0)){closeAccess(data?.is_banned?'Аккаунт блокталған. Әкімшіге хабарласыңыз.':'Жазылым белсенді емес немесе мерзімі аяқталған. Келесі айға төлем расталғаннан кейін материалдар қайта ашылады.');return;}
-      deadline=performance.now()+remaining;if(page==='games.html')document.body.classList.remove('games-locked');if(page==='labs.html')document.body.classList.remove('labs-locked');gate.remove();clearTimeout(timer);timer=setTimeout(()=>{if(remaining>2147483647||!validDeadline)refresh();else closeAccess('Жазылым мерзімі аяқталды. Келесі айға төлем расталғаннан кейін материалдар қайта ашылады.');},Math.min(remaining,2147483647));
-    }catch(e){closeAccess(e.message);}finally{pending=false;}
+      if(!active||!(remaining>0)){known=false;closeAccess(data?.is_banned?'Аккаунт блокталған. Әкімшіге хабарласыңыз.':'Жазылым белсенді емес немесе мерзімі аяқталған. Келесі айға төлем расталғаннан кейін материалдар қайта ашылады.');return;}
+      known=true;clearTimeout(retry);window.GoTABMarkPaid();deadline=performance.now()+remaining;if(page==='games.html')document.body.classList.remove('games-locked');if(page==='labs.html')document.body.classList.remove('labs-locked');gate.remove();clearTimeout(timer);timer=setTimeout(()=>{if(remaining>2147483647||!validDeadline)refresh();else closeAccess('Жазылым мерзімі аяқталды. Келесі айға төлем расталғаннан кейін материалдар қайта ашылады.');},Math.min(remaining,2147483647));
+    }catch(e){
+      // connection problem: keep whatever access the teacher already has and quietly try again
+      clearTimeout(retry);retry=setTimeout(refresh,5000);
+      if(known===null&&!catalogPage){title.textContent='Қолжетімділікті тексеру';text.textContent='Интернет байланысы әлсіз — қайта тексерілуде…';}
+    }finally{pending=false;}
   }
   function guardAction(e){
     if(e.target.closest('#subscriptionGate,.top-nav,.pay-modal-overlay,.modal-overlay'))return;
     const action=e.target.closest('[data-dl-ppt],[data-dl-qmj],[data-dl-vid],[data-dl-all],[data-extra-file],.sticker-item,.btn-dl-set');
     const gameAction=page==='games.html'&&e.target.closest('.btn-fgplay,.btn-qgplay,.qgcard,.gtype-mini,.btn-create-big');
     const labAction=page==='labs.html'&&e.target.closest('.btn-lab-use');
-    if((action||gameAction||labAction) && (!deadline||performance.now()>=deadline)){
+    if((action||gameAction||labAction) && known===null){
+      // the check has not answered yet: wait for it, then repeat the click
+      e.preventDefault();e.stopImmediatePropagation();const el=e.target;refresh()?.then(()=>{if(known===true)el.click();else if(known===false&&catalogPage&&typeof openModal==='function')openModal();});return;
+    }
+    if((action||gameAction||labAction) && (known===false||!deadline||performance.now()>=deadline)){
       e.preventDefault();e.stopImmediatePropagation();closeAccess('Жазылым мерзімі аяқталған. Төлем расталғаннан кейін қайта ашылады.');if(catalogPage&&typeof openModal==='function')openModal();
     }
   }
