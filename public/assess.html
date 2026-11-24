@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoTAB — Бағалау</title>
+<link rel="stylesheet" href="gotab.css">
+<link rel="stylesheet" href="teacher-theme.css?v=20261102">
+<script src="teacher-ui.js?v=20261102" defer></script>
+<style>
+.as{max-width:1120px;margin:0 auto;padding:28px 20px 70px}
+.as-hero{position:relative;overflow:hidden;border-radius:28px;padding:30px 34px;color:#fff;background:linear-gradient(120deg,#0b1f5c,#1a56db,#6d28d9,#0891b2,#0b1f5c);background-size:300% 300%;animation:as-shift 18s ease-in-out infinite;box-shadow:0 22px 50px rgba(26,86,219,.28)}
+@keyframes as-shift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.as-hero::after{content:'';position:absolute;width:280px;height:280px;border-radius:50%;background:#22d3ee;filter:blur(60px);opacity:.35;right:-70px;top:-110px;pointer-events:none}
+.as-hero h1{font-size:30px;font-weight:900;letter-spacing:-.6px;margin:0}
+.as-hero p{margin:8px 0 0;max-width:640px;opacity:.92;font-size:15px;line-height:1.55}
+.as-stats{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.as-stat{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(6px);border-radius:14px;padding:10px 16px;min-width:130px}
+.as-stat b{display:block;font-size:22px;font-weight:900}
+.as-stat span{font-size:12.5px;opacity:.9}
+.as-tabs{display:flex;gap:8px;margin:22px 0 18px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:6px;position:sticky;top:112px;z-index:50;box-shadow:0 6px 20px rgba(15,23,42,.05)}
+.as-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;border:none;background:none;padding:12px 10px;border-radius:12px;font:700 14.5px Inter,sans-serif;color:var(--muted);cursor:pointer;transition:.2s}
+.as-tab svg{width:19px;height:19px}
+.as-tab:hover{color:var(--primary);background:#f4f7ff}
+.as-tab.on{background:linear-gradient(135deg,#1a56db,#6d28d9);color:#fff;box-shadow:0 6px 16px rgba(26,86,219,.3)}
+.pane[hidden]{display:none}
+.card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:22px;box-shadow:0 8px 28px rgba(15,23,42,.04);margin-bottom:18px}
+.card h2{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;margin:0 0 4px}
+.card h2 i{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card h2 i svg{width:18px;height:18px}
+.card .sub{color:var(--muted);font-size:13.5px;margin:0 0 16px;line-height:1.5}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:2fr 1fr 1.2fr 2fr;gap:12px}
+.fld{display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.fld input,.fld select,.fld textarea,.inp{border:1.5px solid var(--border);border-radius:11px;padding:10px 12px;font:500 14.5px Inter,sans-serif;color:var(--text);background:#fbfcff;outline:none;transition:.15s;width:100%;box-sizing:border-box}
+.fld input:focus,.fld select:focus,.fld textarea:focus,.inp:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(26,86,219,.08)}
+textarea{resize:vertical;min-height:44px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:none;border-radius:12px;padding:11px 18px;font:800 14px Inter,sans-serif;cursor:pointer;transition:.15s;text-decoration:none;white-space:nowrap}
+.btn svg{width:17px;height:17px}
+.btn-p{background:linear-gradient(135deg,#1a56db,#6d28d9);color:#fff;box-shadow:0 6px 16px rgba(26,86,219,.25)}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(26,86,219,.32)}
+.btn-ai{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;box-shadow:0 6px 16px rgba(124,58,237,.28)}
+.btn-ai:hover{transform:translateY(-1px)}
+.btn-g{background:#f4f7ff;color:#244f91;border:1px solid #d6e2f5}
+.btn-g:hover{background:#e8f0ff}
+.btn-d{background:none;color:#94a3b8;padding:8px}
+.btn-d:hover{color:#dc2626;background:#fef2f2}
+.btn[disabled]{opacity:.55;pointer-events:none}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.spacer{flex:1}
+.ai-box{margin:16px 0;padding:16px;border-radius:16px;background:linear-gradient(135deg,#f5f3ff,#fdf2f8);border:1px solid #e9d5ff}
+.ai-box .row{align-items:flex-end}
+.ai-tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;color:#7c3aed;background:#ede9fe;border-radius:100px;padding:3px 9px}
+.msg{font-size:13.5px;margin-top:10px;font-weight:600}
+.msg.err{color:#dc2626}.msg.ok{color:#059669}
+.qlist{display:flex;flex-direction:column;gap:12px;margin:14px 0}
+.qcard{border:1px solid var(--border);border-radius:16px;padding:14px;background:#fbfcff}
+.qcard .qh{display:flex;gap:10px;align-items:flex-start}
+.qnum{width:30px;height:30px;border-radius:9px;background:#e0ecff;color:#1a56db;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 0 40px}
+.opt{display:flex;align-items:center;gap:8px;border:1.5px solid var(--border);border-radius:11px;padding:4px 4px 4px 10px;background:#fff}
+.opt.right{border-color:#10b981;background:#ecfdf5}
+.opt input[type=radio]{accent-color:#10b981;width:17px;height:17px;flex-shrink:0;cursor:pointer}
+.opt input[type=text]{border:none;outline:none;font:500 14px Inter,sans-serif;padding:7px 4px;width:100%;background:none}
+.skill{margin-left:40px;margin-top:6px;font-size:12px;color:#7c3aed;font-weight:700}
+.empty{color:var(--muted);font-size:14px;text-align:center;padding:26px 10px;border:1.5px dashed var(--border);border-radius:16px}
+.tests{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+.tcard{border:1px solid var(--border);border-radius:18px;padding:16px;background:#fff;display:flex;flex-direction:column;gap:10px;transition:.2s}
+.tcard:hover{box-shadow:0 12px 28px rgba(15,23,42,.08);transform:translateY(-2px)}
+.tcard h3{margin:0;font-size:16px;font-weight:800;line-height:1.35}
+.meta{font-size:12.5px;color:var(--muted)}
+.code{font:900 15px ui-monospace,Menlo,monospace;letter-spacing:2px;background:#0f172a;color:#fff;border-radius:9px;padding:5px 10px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;border-radius:100px;padding:4px 10px}
+.pill.open{background:#dcfce7;color:#15803d}.pill.closed{background:#f1f5f9;color:#64748b}
+.switch{position:relative;width:40px;height:23px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:#cbd5e1;border-radius:100px;cursor:pointer;transition:.2s}
+.switch span::before{content:'';position:absolute;width:17px;height:17px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px #0003}
+.switch input:checked+span{background:#10b981}
+.switch input:checked+span::before{transform:translateX(17px)}
+/* QR */
+dialog.qr{margin:auto;border:none;border-radius:28px;padding:0;width:min(560px,94vw);box-shadow:0 30px 80px rgba(15,23,42,.35)}
+dialog.qr::backdrop{background:rgba(11,31,92,.6);backdrop-filter:blur(4px)}
+.qr-in{padding:28px;text-align:center}
+.qr-in h3{margin:0 0 4px;font-size:20px;font-weight:900}
+.qr-svg{display:inline-block;padding:14px;border-radius:22px;background:#fff;box-shadow:0 0 0 1px var(--border),0 12px 30px rgba(26,86,219,.12);margin:16px 0}
+.qr-svg svg{display:block;width:min(300px,62vw);height:auto}
+.qr-code{font:900 40px ui-monospace,Menlo,monospace;letter-spacing:8px;color:#1a56db}
+.qr-url{font-size:13.5px;color:var(--muted);margin:4px 0 14px;word-break:break-all}
+.qr-live{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:#059669;background:#ecfdf5;border-radius:100px;padding:7px 14px;font-size:14px;margin-bottom:16px}
+.qr-live i{width:9px;height:9px;border-radius:50%;background:#10b981;animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+dialog.qr.big{width:100vw;max-width:100vw;height:100vh;max-height:100vh;border-radius:0}
+dialog.qr.big .qr-in{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+dialog.qr.big .qr-svg svg{width:min(52vh,70vw)}
+dialog.qr.big .qr-code{font-size:64px}
+/* diagnostics */
+.trend{display:flex;flex-direction:column;gap:8px}
+.trow{display:grid;grid-template-columns:92px 1fr 54px;align-items:center;gap:12px;font-size:13.5px;cursor:pointer;padding:6px 8px;border-radius:10px}
+.trow:hover{background:#f4f7ff}
+.trow .lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-size:12.5px}
+.bar{height:26px;border-radius:8px;background:#eef2f9;overflow:hidden;position:relative}
+.bar>b{position:absolute;inset:0 auto 0 0;border-radius:8px;transition:width .6s}
+.bar>span{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12.5px;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 20px)}
+.pct{font-weight:900;text-align:right}
+.g{background:#34d399}.a{background:#fbbf24}.r{background:#f87171}
+.tg{color:#059669}.ta{color:#d97706}.tr{color:#dc2626}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
+.tile{border:1px solid var(--border);border-radius:16px;padding:14px 16px;background:#fbfcff}
+.tile b{display:block;font-size:24px;font-weight:900}
+.tile span{font-size:12.5px;color:var(--muted);font-weight:600}
+.qstat{border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.qstat .qt{font-weight:700;font-size:14px;margin-bottom:8px;line-height:1.4}
+.qstat .qw{font-size:12.5px;color:var(--muted);margin-top:6px}
+table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
+.tb th{text-align:left;font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:10px;border-bottom:1px solid var(--border)}
+.tb td{padding:11px 10px;border-bottom:1px solid #eef2f9;vertical-align:top}
+.tb tr:last-child td{border-bottom:none}
+.badge{display:inline-block;font-size:12px;font-weight:800;border-radius:100px;padding:4px 10px;white-space:nowrap}
+.bg-g{background:#dcfce7;color:#15803d}.bg-a{background:#fef3c7;color:#b45309}.bg-r{background:#fee2e2;color:#b91c1c}
+.ai-out{margin-top:14px;padding:18px;border-radius:16px;background:linear-gradient(135deg,#f5f3ff,#eff6ff);border:1px solid #ddd6fe;font-size:14.5px;line-height:1.6}
+.ai-out h4{margin:10px 0 4px;font-size:14px;font-weight:800;color:#5b21b6}
+.ai-out ul{margin:4px 0 0;padding-left:20px}
+/* BZhB */
+.steps{display:flex;gap:8px;margin-bottom:14px}
+.step-dot{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--muted)}
+.step-dot i{width:26px;height:26px;border-radius:50%;background:#eef2f9;display:flex;align-items:center;justify-content:center;font-style:normal}
+.step-dot.on i{background:#1a56db;color:#fff}
+.drop{border:2px dashed #c7d5ee;border-radius:18px;padding:22px;text-align:center;background:#f8fbff;cursor:pointer;transition:.2s;color:var(--muted);font-size:14px}
+.drop:hover,.drop.over{border-color:var(--primary);background:#eef4ff;color:var(--primary)}
+.drop svg{width:30px;height:30px;display:block;margin:0 auto 8px}
+.drop b{color:var(--text)}
+.thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.thumb{position:relative;width:92px;height:120px;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:none;background:#0f172acc;color:#fff;cursor:pointer;font-size:14px;line-height:1}
+.rub td input,.rub td textarea{border:1.5px solid var(--border);border-radius:9px;padding:7px 9px;font:500 13.5px Inter,sans-serif;width:100%;box-sizing:border-box;background:#fbfcff}
+.rub td input:focus,.rub td textarea:focus{outline:none;border-color:var(--primary);background:#fff}
+.res{border-radius:22px;background:#0f172a;color:#e2e8f0;padding:24px;margin-bottom:18px}
+.res h2{color:#fff;font-size:20px;font-weight:900;margin:0 0 14px}
+.res .tot{display:flex;align-items:center;justify-content:space-between;color:#94a3b8;font-size:15px}
+.res .tot b{font-size:38px;font-weight:900;color:#22c55e}
+.res .pbar{height:12px;background:#1e293b;border-radius:100px;overflow:hidden;margin:10px 0 18px}
+.res .pbar i{display:block;height:100%;border-radius:100px;background:#22c55e;transition:width .5s}
+.res table{width:100%;border-collapse:collapse}
+.res th{text-align:left;color:#fff;font-size:14px;padding:10px 6px;border-bottom:1px solid #334155}
+.res td{padding:12px 6px;border-bottom:1px solid #1e293b;vertical-align:top;font-size:14px}
+.res tr.low td{background:rgba(250,204,21,.08)}
+.res .sc{display:flex;align-items:center;gap:4px;justify-content:flex-end;font-weight:800;white-space:nowrap}
+.res .sc input{width:52px;background:#1e293b;border:1px solid #334155;color:#fff;border-radius:8px;padding:6px;font:800 15px Inter,sans-serif;text-align:center}
+.res .why{color:#94a3b8;font-size:13px;margin-top:4px;line-height:1.45}
+.res .warn{display:inline-block;margin-top:5px;font-size:11.5px;font-weight:800;color:#fde047;background:rgba(250,204,21,.12);border-radius:100px;padding:2px 8px}
+.res .concl h3{color:#fff;font-size:17px;font-weight:900;margin:18px 0 8px}
+.res textarea{width:100%;box-sizing:border-box;background:#1e293b;border:1px solid #334155;color:#e2e8f0;border-radius:12px;padding:12px;font:500 14.5px/1.55 Inter,sans-serif;min-height:90px}
+.res .rbadge{display:inline-block;margin-top:14px;font-size:13px;font-weight:800;border-radius:100px;padding:6px 14px}
+.rb-g{background:rgba(34,197,94,.15);color:#4ade80}.rb-a{background:rgba(249,115,22,.15);color:#fb923c}.rb-r{background:rgba(239,68,68,.15);color:#f87171}
+.loading{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.note{font-size:12.5px;color:var(--muted);margin-top:8px;display:flex;gap:6px;align-items:flex-start}
+.note svg{width:15px;height:15px;flex-shrink:0;margin-top:1px}
+@media(max-width:820px){.grid2,.grid4{grid-template-columns:1fr}.opts{grid-template-columns:1fr;margin-left:0}.skill{margin-left:0}.tiles{grid-template-columns:1fr 1fr}.as-tab span{display:none}.as-tabs{top:104px}.as-hero{padding:24px 22px}.as-hero h1{font-size:24px}.trow{grid-template-columns:70px 1fr 46px}.rub thead{display:none}.rub tr{display:grid;grid-template-columns:50px 1fr 70px;gap:6px;padding:8px 0;border-bottom:1px solid var(--border)}.rub td{padding:0;border:none}.rub td.crit{grid-column:1/-1}}
+</style>
+</head>
+<body class="teacher-app">
+<script src="gotab-loader.js?v=20261112"></script>
+<nav class="top-nav">
+  <a href="dashboard.html"><img src="gotab_logo_anim.webp" onerror="this.onerror=null;this.src='gotab_logo.png'" alt="GoTAB"></a>
+  <div class="nav-user">
+    <span class="nav-user-name" id="userName"></span>
+    <button class="btn-logout" onclick="gotabLogout()">Шығу</button>
+  </div>
+</nav>
+<div class="sub-nav">
+  <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Материалдар</a>
+  <a href="visuals.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Көрнекіліктер</a>
+  <a href="games.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><path d="M6 20h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg>Ойындар</a>
+  <a href="labs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 3h6M10 3v6L4 20a1 1 0 0 0 .9 1.5h14.2A1 1 0 0 0 20 20l-6-11V3"/></svg>Зертхана</a>
+  <a href="animations.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4zM9 8l7 4-7 4z"/></svg>Анимациялар</a>
+  <a href="assess.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Бағалау</a>
+</div>
+
+<main class="as">
+  <section class="as-hero">
+    <h1>Бағалау орталығы</h1>
+    <p>Сабақ соңында QR арқылы қысқа тест, әр сабақтың диагностикасы және AI көмегімен БЖБ/ТЖБ тексеру — бәрі бір жерде. AI тек ұсынады, соңғы шешім әрқашан сізде.</p>
+    <div class="as-stats">
+      <div class="as-stat"><b id="stTests">–</b><span>сабақтық тест</span></div>
+      <div class="as-stat"><b id="stAnswers">–</b><span>оқушы жауабы</span></div>
+      <div class="as-stat"><b id="stAvg">–</b><span>орташа меңгеру</span></div>
+      <div class="as-stat"><b id="stBzhb">–</b><span>тексерілген БЖБ/ТЖБ</span></div>
+    </div>
+  </section>
+
+  <nav class="as-tabs" role="tablist">
+    <button class="as-tab on" data-tab="tests" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg><span>Сабақтық тест</span></button>
+    <button class="as-tab" data-tab="diag" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span>Диагностика</span></button>
+    <button class="as-tab" data-tab="bzhb" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg><span>БЖБ/ТЖБ тексеру</span></button>
+  </nav>
+
+  <!-- ═════════ 1. Сабақтық тест ═════════ -->
+  <section class="pane" id="pane-tests">
+    <div class="card">
+      <h2><i style="background:#e0ecff;color:#1a56db"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></i>Жаңа сабақтық тест</h2>
+      <p class="sub">Сабақтың соңына 5–10 сұрақ. Оқушылар QR кодты телефонмен оқып, тіркелусіз, тек атын жазып тапсырады.</p>
+      <div class="grid4">
+        <label class="fld">Тест атауы<input id="tTitle" maxlength="200" placeholder="Мысалы: Бөлшектерді салыстыру — 5А"></label>
+        <label class="fld">Сынып<select id="tGrade"><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option></select></label>
+        <label class="fld">Пән<select id="tSubject"><option value="math">Математика</option><option value="algebra">Алгебра</option><option value="geometry">Геометрия</option><option value="algebra_emn">Алгебра (ЖМБ)</option><option value="geometry_emn">Геометрия (ЖМБ)</option><option value="informatics">Информатика</option></select></label>
+        <label class="fld">Сабақ тақырыбы<input id="tTopic" maxlength="300" placeholder="Мысалы: Ортақ бөлімге келтіру"></label>
+      </div>
+      <div class="ai-box">
+        <div class="row" style="margin-bottom:10px"><span class="ai-tag">✦ AI</span><b style="font-size:14.5px">Сұрақтарды тақырыптан автоматты құрастыру</b><span class="meta" id="aiPaidNote"></span></div>
+        <div class="row">
+          <label class="fld" style="width:120px">Сұрақ саны<select id="aiCount"><option>5</option><option selected>7</option><option>10</option></select></label>
+          <label class="fld" style="width:170px">Деңгейі<select id="aiLevel"><option value="mixed">Аралас</option><option value="easy">Жеңіл</option><option value="hard">Қиындау</option></select></label>
+          <label class="fld" style="flex:1;min-width:200px">Қосымша (міндетті емес)<input id="aiNotes" maxlength="600" placeholder="Мысалы: мәтіндік есеп те болсын"></label>
+          <button class="btn btn-ai" id="aiGen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>Құрастыру</button>
+        </div>
+        <div class="msg" id="aiMsg"></div>
+      </div>
+      <div class="qlist" id="qList"></div>
+      <div class="row">
+        <button class="btn btn-g" id="addQ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Сұрақ қосу</button>
+        <span class="spacer"></span>
+        <button class="btn btn-p" id="saveTest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h7v7h-7z"/></svg>Сақтап, QR алу</button>
+      </div>
+      <div class="msg" id="saveMsg"></div>
+    </div>
+
+    <div class="card">
+      <h2><i style="background:#fef3c7;color:#d97706"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></i>Менің тесттерім</h2>
+      <p class="sub">Тестті сабақта ашып, QR-ды тақтаға шығарыңыз. Жауаптар жиналған соң тестті жабуға болады.</p>
+      <div class="tests" id="testList"><div class="empty">Жүктелуде…</div></div>
+    </div>
+  </section>
+
+  <!-- ═════════ 2. Диагностика ═════════ -->
+  <section class="pane" id="pane-diag" hidden>
+    <div class="card">
+      <h2><i style="background:#dcfce7;color:#16a34a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></i>Сабақтар бойынша динамика</h2>
+      <p class="sub">Әр сабақтық тесттің орташа нәтижесі. Жолды бассаңыз, толық талдау ашылады.</p>
+      <div class="trend" id="trend"></div>
+    </div>
+    <div class="card" id="diagCard">
+      <div class="row">
+        <h2 style="margin:0"><i style="background:#ede9fe;color:#7c3aed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></i>Сабақ диагностикасы</h2>
+        <span class="spacer"></span>
+        <select class="inp" id="diagSel" style="width:auto;max-width:100%"></select>
+      </div>
+      <div id="diagBody"><div class="empty" style="margin-top:14px">Тест таңдаңыз.</div></div>
+    </div>
+  </section>
+
+  <!-- ═════════ 3. БЖБ/ТЖБ ═════════ -->
+  <section class="pane" id="pane-bzhb" hidden>
+    <div class="card">
+      <h2><i style="background:#e0ecff;color:#1a56db">1</i>Тапсырма және дескрипторлар</h2>
+      <p class="sub">БЖБ/ТЖБ файлын (PDF, Word немесе фото) жүктеңіз — AI тапсырмалар мен балдар кестесін толтырады. Кестені тексеріп, қажет болса түзетіңіз: ол бүкіл сыныпқа «кілт» болады.</p>
+      <div class="grid2">
+        <label class="fld">Жұмыс атауы<input id="bTitle" maxlength="200" placeholder="Мысалы: Алгебра 7-сынып, 2-тоқсан БЖБ №1"></label>
+        <label class="fld">Сынып<input id="bClass" maxlength="20" placeholder="Мысалы: 7А"></label>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <label class="btn btn-g" style="cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m-5 5 5-5 5 5M4 16v5h16v-5"/></svg>Файл таңдау<input type="file" id="bSpec" accept=".pdf,.docx,image/*" hidden></label>
+        <span class="meta" id="bSpecName">PDF, DOCX немесе фото</span>
+        <span class="spacer"></span>
+        <button class="btn btn-ai" id="bExtract" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>AI кестені толтырсын</button>
+      </div>
+      <div class="msg" id="bExMsg"></div>
+      <table class="tb rub" style="margin-top:14px">
+        <thead><tr><th style="width:60px">№</th><th>Тапсырма</th><th style="width:90px">Макс балл</th><th>Дескриптор / дұрыс жауап</th><th style="width:40px"></th></tr></thead>
+        <tbody id="rubBody"></tbody>
+      </table>
+      <div class="row" style="margin-top:10px">
+        <button class="btn btn-g" id="addTask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Тапсырма қосу</button>
+        <span class="spacer"></span><b id="rubTotal" class="meta"></b>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><i style="background:#fce7f3;color:#db2777">2</i>Оқушы жұмысы</h2>
+      <p class="sub">Оқушының жауап парағын суретке түсіріп жүктеңіз (бірнеше бет болса — бәрін). Оқушының аты AI-ға жіберілмейді.</p>
+      <div class="grid2">
+        <label class="fld">Оқушы (аты немесе нөмірі)<input id="bStudent" maxlength="80" placeholder="Мысалы: Әлихан С. немесе №12"></label>
+        <label class="fld">Қосымша кілт (міндетті емес)<input id="bKey" maxlength="4000" placeholder="Мысалы: №3 жауабы x=4; жуықтауды қабылдау"></label>
+      </div>
+      <div class="drop" id="drop" style="margin-top:14px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
+        <b>Фото қосу</b> — басыңыз немесе осында сүйреп әкеліңіз<br><span style="font-size:12.5px">6 бетке дейін · телефоннан бірден түсіруге болады</span>
+        <input type="file" id="bPhotos" accept="image/*" multiple hidden>
+      </div>
+      <div class="thumbs" id="thumbs"></div>
+      <div class="row" style="margin-top:14px">
+        <span class="meta" id="checkPaidNote"></span><span class="spacer"></span>
+        <button class="btn btn-ai" id="bCheck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>AI-мен тексеру</button>
+      </div>
+      <div class="msg" id="bCheckMsg"></div>
+    </div>
+
+    <div id="resultBox"></div>
+
+    <div class="card">
+      <div class="row">
+        <h2 style="margin:0"><i style="background:#dcfce7;color:#16a34a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/></svg></i>Бекітілген нәтижелер</h2>
+        <span class="spacer"></span>
+        <select class="inp" id="bFilter" style="width:auto"></select>
+        <button class="btn btn-g" id="bCsv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg>Excel</button>
+      </div>
+      <div id="bList" style="margin-top:12px"></div>
+    </div>
+  </section>
+</main>
+
+<dialog class="qr" id="qrDlg">
+  <div class="qr-in">
+    <h3 id="qrTitle"></h3>
+    <div class="meta">Телефон камерасымен QR кодты оқыңыз немесе сайтқа кіріп кодты жазыңыз</div>
+    <div class="qr-svg" id="qrSvg"></div>
+    <div class="qr-code" id="qrCode"></div>
+    <div class="qr-url" id="qrUrl"></div>
+    <div class="qr-live"><i></i><span id="qrCount">0</span>&nbsp;оқушы жауап берді</div>
+    <div class="row" style="justify-content:center">
+      <button class="btn btn-g" id="qrCopy">Сілтемені көшіру</button>
+      <button class="btn btn-g" id="qrBig">Толық экран</button>
+      <button class="btn btn-p" id="qrClose">Жабу</button>
+    </div>
+  </div>
+</dialog>
+
+<script src="supabase.js"></script>
+<script src="supabase-client.js?v=20261117-paid"></script>
+<script src="gotab-qr.js"></script>
+<script src="vendor/jszip-3.10.1.min.js"></script>
+<script>
+const SUBJ = {math:'Математика', algebra:'Алгебра', geometry:'Геометрия', algebra_emn:'Алгебра (ЖМБ)', geometry_emn:'Геометрия (ЖМБ)', informatics:'Информатика'};
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pctClass = p => p >= 85 ? 'g' : p >= 50 ? 'a' : 'r';
+const MON = ['қаң', 'ақп', 'нау', 'сәу', 'мам', 'мау', 'шіл', 'там', 'қыр', 'қаз', 'қар', 'жел'];
+const fmtDate = d => { d = new Date(d); return d.getDate() + ' ' + MON[d.getMonth()]; };
+const store = {get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (_) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} }};
+let USER = null, TESTS = [], RESULTS = {}, CHECKS = [];
+async function gotabLogout() { try { localStorage.removeItem('gotab_last_page'); } catch (_) {} await sb.auth.signOut(); location.href = 'index.html'; }
+
+// ── API helper: AI маршруттарына мұғалімнің токенімен сұраныс ──
+async function api(path, body) {
+  const {data:{session}} = await sb.auth.getSession();
+  const r = await fetch('/api/ai/' + path, {method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer ' + (session?.access_token || '')}, body: JSON.stringify(body)});
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || (r.status === 413 ? 'Файл тым үлкен' : 'Сервер қатесі (' + r.status + ')'));
+  return d;
+}
+function busy(btn, on, text) {
+  if (on) { btn.dataset.html = btn.innerHTML; btn.innerHTML = '<span class="loading"></span>' + text; btn.disabled = true; }
+  else { btn.innerHTML = btn.dataset.html || btn.innerHTML; btn.disabled = false; }
+}
+function say(el, text, kind) { el.textContent = text || ''; el.className = 'msg' + (kind ? ' ' + kind : ''); }
+
+// ── Tabs ──
+function showTab(t) {
+  document.querySelectorAll('.as-tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  document.querySelectorAll('.pane').forEach(p => p.hidden = p.id !== 'pane-' + t);
+  try { history.replaceState(null, '', '#' + t); } catch (_) {}
+  if (t === 'diag') renderTrend();
+}
+document.querySelectorAll('.as-tab').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+
+/* ═════════ 1. Сабақтық тест ═════════ */
+let draft = store.get('gotab_test_draft', []);
+function blankQ() { return {q:'', options:['', '', '', ''], answer:0, skill:''}; }
+function saveDraft() { store.set('gotab_test_draft', draft); }
+function renderQs() {
+  const box = $('#qList');
+  if (!draft.length) { box.innerHTML = '<div class="empty">Сұрақтар әлі жоқ. AI-мен құрастырыңыз немесе «Сұрақ қосу» батырмасын басыңыз.</div>'; return; }
+  box.innerHTML = draft.map((q, i) => `<div class="qcard" data-i="${i}">
+    <div class="qh"><span class="qnum">${i + 1}</span><textarea class="inp" data-f="q" rows="2" placeholder="Сұрақ мәтіні">${esc(q.q)}</textarea>
+      <button class="btn btn-d" data-del title="Өшіру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></div>
+    <div class="opts">${q.options.map((o, j) => `<label class="opt${q.answer === j ? ' right' : ''}"><input type="radio" name="r${i}" data-ans="${j}" ${q.answer === j ? 'checked' : ''} title="Дұрыс жауап"><input type="text" data-opt="${j}" value="${esc(o)}" placeholder="${String.fromCharCode(65 + j)} нұсқасы"></label>`).join('')}</div>
+    ${q.skill ? `<div class="skill">Дағды: ${esc(q.skill)}</div>` : ''}</div>`).join('');
+}
+$('#qList').addEventListener('input', e => {
+  const c = e.target.closest('.qcard'); if (!c) return; const q = draft[+c.dataset.i];
+  if (e.target.dataset.f === 'q') q.q = e.target.value;
+  if (e.target.dataset.opt != null) q.options[+e.target.dataset.opt] = e.target.value;
+  saveDraft();
+});
+$('#qList').addEventListener('change', e => {
+  const c = e.target.closest('.qcard'); if (!c || e.target.dataset.ans == null) return;
+  draft[+c.dataset.i].answer = +e.target.dataset.ans; saveDraft();
+  c.querySelectorAll('.opt').forEach((o, j) => o.classList.toggle('right', j === +e.target.dataset.ans));
+});
+$('#qList').addEventListener('click', e => {
+  if (!e.target.closest('[data-del]')) return;
+  draft.splice(+e.target.closest('.qcard').dataset.i, 1); saveDraft(); renderQs();
+});
+$('#addQ').onclick = () => { draft.push(blankQ()); saveDraft(); renderQs(); $('#qList .qcard:last-child textarea')?.focus(); };
+$('#aiGen').onclick = async () => {
+  const topic = $('#tTopic').value.trim();
+  if (!topic) { say($('#aiMsg'), 'Алдымен сабақ тақырыбын жазыңыз.', 'err'); $('#tTopic').focus(); return; }
+  if (draft.some(q => q.q.trim()) && !confirm('AI жаңа сұрақтар құрастырады. Қазіргі сұрақтардың орнына қойылсын ба?')) return;
+  busy($('#aiGen'), true, 'Құрастырып жатыр…'); say($('#aiMsg'), 'AI сұрақтарды дайындап жатыр, 10–30 секунд…');
+  try {
+    const d = await api('test-generate', {topic, grade: +$('#tGrade').value, subject: $('#tSubject').value, count: +$('#aiCount').value, level: $('#aiLevel').value, notes: $('#aiNotes').value});
+    draft = d.questions.map(q => ({q: q.q, options: [...q.options, '', '', '', ''].slice(0, Math.max(4, q.options.length)), answer: q.answer, skill: q.skill}));
+    saveDraft(); renderQs();
+    if (!$('#tTitle').value.trim()) $('#tTitle').value = topic;
+    say($('#aiMsg'), `${draft.length} сұрақ дайын. Тексеріп, қажет болса түзетіңіз — жасыл белгі дұрыс жауапты көрсетеді.`, 'ok');
+  } catch (e) { say($('#aiMsg'), e.message, 'err'); }
+  busy($('#aiGen'), false);
+};
+$('#saveTest').onclick = async () => {
+  const title = $('#tTitle').value.trim() || $('#tTopic').value.trim();
+  const qs = draft.map(q => ({q: q.q.trim(), options: q.options.map(o => o.trim()), answer: q.answer, skill: q.skill || ''}))
+    .map(q => { const keep = q.options.map((o, j) => [o, j]).filter(([o]) => o); return {...q, options: keep.map(([o]) => o), answer: keep.findIndex(([, j]) => j === q.answer)}; })
+    .filter(q => q.q && q.options.length >= 2);
+  if (!title) return say($('#saveMsg'), 'Тест атауын жазыңыз.', 'err');
+  if (!qs.length) return say($('#saveMsg'), 'Кемінде бір толық сұрақ керек (сұрақ және 2 нұсқа).', 'err');
+  if (qs.some(q => q.answer < 0)) return say($('#saveMsg'), 'Әр сұрақта дұрыс жауап белгіленіп, оның мәтіні толтырылуы керек.', 'err');
+  busy($('#saveTest'), true, 'Сақталуда…');
+  const {data, error} = await sb.from('lesson_tests').insert({title, grade: +$('#tGrade').value, subject: $('#tSubject').value, topic: $('#tTopic').value.trim() || null, questions: qs}).select().single();
+  busy($('#saveTest'), false);
+  if (error) return say($('#saveMsg'), 'Сақталмады: ' + error.message, 'err');
+  draft = []; saveDraft(); renderQs(); $('#tTitle').value = ''; say($('#saveMsg'), 'Тест сақталды!', 'ok');
+  TESTS.unshift(data); RESULTS[data.id] = []; renderTests(); renderStats(); openQR(data);
+};
+async function loadTests() {
+  const {data, error} = await sb.from('lesson_tests').select('*').order('created_at', {ascending:false});
+  if (error) { $('#testList').innerHTML = `<div class="empty">Жүктелмеді: ${esc(error.message)}</div>`; return; }
+  TESTS = data || [];
+  const ids = TESTS.map(t => t.id); RESULTS = Object.fromEntries(ids.map(id => [id, []]));
+  if (ids.length) {
+    const {data: rs} = await sb.from('lesson_test_results').select('*').in('test_id', ids).order('created_at');
+    (rs || []).forEach(r => RESULTS[r.test_id]?.push(r));
+  }
+  renderTests(); renderStats(); fillDiagSel();
+}
+function avgPct(rs) { return rs.length ? Math.round(rs.reduce((s, r) => s + (r.max_score ? r.score / r.max_score : 0), 0) / rs.length * 100) : null; }
+function renderTests() {
+  const box = $('#testList');
+  if (!TESTS.length) { box.innerHTML = '<div class="empty" style="grid-column:1/-1">Әзірге тест жоқ. Жоғарыда алғашқы тестіңізді жасаңыз.</div>'; return; }
+  box.innerHTML = TESTS.map(t => { const rs = RESULTS[t.id] || [], a = avgPct(rs);
+    return `<div class="tcard" data-id="${t.id}">
+      <div class="row"><span class="code">${esc(t.code)}</span><span class="pill ${t.is_open ? 'open' : 'closed'}">${t.is_open ? 'Ашық' : 'Жабық'}</span><span class="spacer"></span>
+        <label class="switch" title="Тестті ашу/жабу"><input type="checkbox" data-toggle ${t.is_open ? 'checked' : ''}><span></span></label></div>
+      <h3>${esc(t.title)}</h3>
+      <div class="meta">${t.grade ? t.grade + '-сынып · ' : ''}${esc(SUBJ[t.subject] || '')} · ${t.questions.length} сұрақ · ${fmtDate(t.created_at)}</div>
+      <div class="meta"><b style="color:var(--text)">${rs.length}</b> жауап${a != null ? ` · орташа <b class="t${pctClass(a)}">${a}%</b>` : ''}</div>
+      <div class="row"><button class="btn btn-p" data-qr>QR көрсету</button><button class="btn btn-g" data-res>Нәтиже</button><span class="spacer"></span>
+        <button class="btn btn-d" data-rm title="Өшіру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></div></div>`; }).join('');
+}
+$('#testList').addEventListener('click', async e => {
+  const card = e.target.closest('.tcard'); if (!card) return; const t = TESTS.find(x => x.id === card.dataset.id);
+  if (e.target.closest('[data-qr]')) openQR(t);
+  if (e.target.closest('[data-res]')) { showTab('diag'); $('#diagSel').value = t.id; renderDiag(t.id); }
+  if (e.target.closest('[data-rm]')) {
+    if (!confirm(`«${t.title}» тесті мен оның барлық нәтижесі өшіріледі. Жалғастырасыз ба?`)) return;
+    const {error} = await sb.from('lesson_tests').delete().eq('id', t.id);
+    if (error) return alert('Өшірілмеді: ' + error.message);
+    TESTS = TESTS.filter(x => x.id !== t.id); delete RESULTS[t.id]; renderTests(); renderStats(); fillDiagSel();
+  }
+});
+$('#testList').addEventListener('change', async e => {
+  if (!e.target.matches('[data-toggle]')) return;
+  const t = TESTS.find(x => x.id === e.target.closest('.tcard').dataset.id);
+  const {error} = await sb.from('lesson_tests').update({is_open: e.target.checked}).eq('id', t.id);
+  if (error) { e.target.checked = !e.target.checked; return alert(error.message); }
+  t.is_open = e.target.checked; renderTests();
+});
+
+// QR терезесі: жауап берген оқушылар саны 5 секунд сайын жаңарады
+let qrTimer = null, qrTest = null;
+function testUrl(code) { return location.origin + '/test.html?c=' + code; }
+function openQR(t) {
+  qrTest = t; const url = testUrl(t.code);
+  $('#qrTitle').textContent = t.title; $('#qrCode').textContent = t.code; $('#qrUrl').textContent = location.host + '/test.html  ·  код: ' + t.code;
+  $('#qrSvg').innerHTML = GoTABQR.svg(url, 300);
+  $('#qrCount').textContent = (RESULTS[t.id] || []).length;
+  $('#qrDlg').classList.remove('big'); $('#qrBig').textContent = 'Толық экран'; $('#qrDlg').showModal();
+  clearInterval(qrTimer);
+  qrTimer = setInterval(async () => {
+    const {count} = await sb.from('lesson_test_results').select('id', {count:'exact', head:true}).eq('test_id', t.id);
+    if (count != null) $('#qrCount').textContent = count;
+  }, 5000);
+}
+$('#qrClose').onclick = () => $('#qrDlg').close();
+$('#qrDlg').addEventListener('close', () => { clearInterval(qrTimer); if (qrTest) loadTests(); });
+$('#qrBig').onclick = () => { const b = $('#qrDlg').classList.toggle('big'); $('#qrBig').textContent = b ? 'Кішірейту' : 'Толық экран'; };
+$('#qrCopy').onclick = async () => { try { await navigator.clipboard.writeText(testUrl(qrTest.code)); $('#qrCopy').textContent = 'Көшірілді ✓'; setTimeout(() => $('#qrCopy').textContent = 'Сілтемені көшіру', 1500); } catch (_) { prompt('Сілтеме:', testUrl(qrTest.code)); } };
+
+/* ═════════ 2. Диагностика ═════════ */
+function renderTrend() {
+  const box = $('#trend'); const list = TESTS.filter(t => (RESULTS[t.id] || []).length).slice().reverse();
+  if (!list.length) { box.innerHTML = '<div class="empty">Оқушылар тест тапсырған соң, мұнда әр сабақтың нәтижесі шығады.</div>'; return; }
+  box.innerHTML = list.map(t => { const a = avgPct(RESULTS[t.id]);
+    return `<div class="trow" data-id="${t.id}"><span class="lab">${fmtDate(t.created_at)}</span><div class="bar"><b class="${pctClass(a)}" style="width:${Math.max(a, 3)}%"></b><span>${esc(t.title)} · ${RESULTS[t.id].length} оқушы</span></div><span class="pct t${pctClass(a)}">${a}%</span></div>`; }).join('');
+}
+$('#trend').addEventListener('click', e => { const r = e.target.closest('.trow'); if (!r) return; $('#diagSel').value = r.dataset.id; renderDiag(r.dataset.id); $('#diagCard').scrollIntoView({behavior:'smooth', block:'start'}); });
+function fillDiagSel() {
+  const sel = $('#diagSel'), cur = sel.value;
+  sel.innerHTML = '<option value="">— Тест таңдаңыз —</option>' + TESTS.map(t => `<option value="${t.id}">${esc(t.title)} (${(RESULTS[t.id] || []).length})</option>`).join('');
+  if (TESTS.some(t => t.id === cur)) sel.value = cur;
+}
+$('#diagSel').onchange = () => renderDiag($('#diagSel').value);
+function diagData(t) {
+  const rs = RESULTS[t.id] || [];
+  const qs = t.questions.map((q, i) => {
+    const answered = rs.filter(r => r.answers[i] != null);
+    const right = rs.filter(r => r.correct[i] === true).length;
+    const wrongCounts = {}; rs.forEach(r => { const a = r.answers[i]; if (a != null && a !== q.answer) wrongCounts[a] = (wrongCounts[a] || 0) + 1; });
+    const [wi, wc] = Object.entries(wrongCounts).sort((a, b) => b[1] - a[1])[0] || [];
+    return {i, q: q.q, skill: q.skill, right: q.options[q.answer], pct: rs.length ? Math.round(right / rs.length * 100) : 0, wrong: wi != null ? q.options[wi] : '', wrongPct: rs.length && wc ? Math.round(wc / rs.length * 100) : 0, answered: answered.length};
+  });
+  return {rs, qs, avg: avgPct(rs)};
+}
+function renderDiag(id) {
+  const body = $('#diagBody'); const t = TESTS.find(x => x.id === id);
+  if (!t) { body.innerHTML = '<div class="empty" style="margin-top:14px">Тест таңдаңыз.</div>'; return; }
+  const {rs, qs, avg} = diagData(t);
+  if (!rs.length) { body.innerHTML = `<div class="empty" style="margin-top:14px">«${esc(t.title)}» тестіне әлі ешкім жауап бермеген. QR кодты оқушыларға көрсетіңіз.</div>`; return; }
+  const hard = qs.slice().sort((a, b) => a.pct - b.pct)[0];
+  const need = rs.filter(r => r.score / r.max_score < .5).length;
+  const sorted = rs.slice().sort((a, b) => b.score / b.max_score - a.score / a.max_score);
+  body.innerHTML = `<div class="tiles">
+      <div class="tile"><b>${rs.length}</b><span>оқушы қатысты</span></div>
+      <div class="tile"><b class="t${pctClass(avg)}">${avg}%</b><span>орташа меңгеру</span></div>
+      <div class="tile"><b>№${hard.i + 1}</b><span>ең қиын сұрақ (${hard.pct}%)</span></div>
+      <div class="tile"><b class="${need ? 'tr' : 'tg'}">${need}</b><span>оқушыға қолдау қажет</span></div></div>
+    <div class="row" style="margin:6px 0 12px"><b>Сұрақтар бойынша</b><span class="spacer"></span>
+      <button class="btn btn-ai" id="diagAi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>AI талдау және келесі сабаққа кеңес</button>
+      <button class="btn btn-g" id="diagCsv">Excel</button></div>
+    <div id="diagAiOut"></div>
+    ${qs.map(q => `<div class="qstat"><div class="qt">${q.i + 1}. ${esc(q.q)}</div>
+      <div class="bar"><b class="${pctClass(q.pct)}" style="width:${Math.max(q.pct, 3)}%"></b><span>${q.pct}% дұрыс · дұрыс жауап: ${esc(q.right)}</span></div>
+      ${q.wrong ? `<div class="qw">Ең жиі қате: <b>${esc(q.wrong)}</b> — ${q.wrongPct}% оқушы${q.skill ? ' · дағды: ' + esc(q.skill) : ''}</div>` : ''}</div>`).join('')}
+    <b style="display:block;margin:18px 0 6px">Оқушылар</b>
+    <div style="overflow-x:auto"><table class="tb"><thead><tr><th>Оқушы</th><th>Балл</th><th>Деңгей</th><th>Қате сұрақтар</th></tr></thead><tbody>
+    ${sorted.map(r => { const p = Math.round(r.score / r.max_score * 100), c = pctClass(p), wrong = r.correct.map((ok, i) => ok ? null : i + 1).filter(Boolean);
+      return `<tr><td><b>${esc(r.student_name)}</b><div class="meta">${new Date(r.created_at).toLocaleTimeString('kk-KZ', {hour:'2-digit', minute:'2-digit'})}</div></td><td><b>${r.score}/${r.max_score}</b> <span class="meta">${p}%</span></td>
+      <td><span class="badge bg-${c}">${c === 'g' ? 'Меңгерді' : c === 'a' ? 'Жартылай' : 'Қолдау қажет'}</span></td><td>${wrong.length ? wrong.map(n => '№' + n).join(', ') : '—'}</td></tr>`; }).join('')}
+    </tbody></table></div>`;
+  $('#diagCsv').onclick = () => csv(`${t.title}.csv`, [['Оқушы', 'Балл', 'Максимум', '%', ...t.questions.map((_, i) => '№' + (i + 1))],
+    ...sorted.map(r => [r.student_name, r.score, r.max_score, Math.round(r.score / r.max_score * 100), ...r.correct.map(ok => ok ? 1 : 0)])]);
+  $('#diagAi').onclick = async () => {
+    const btn = $('#diagAi'); busy(btn, true, 'Талдап жатыр…');
+    try {
+      const d = await api('diagnose', {title: t.title, topic: t.topic, grade: t.grade, participants: rs.length, avg, questions: qs.map(q => ({q: q.q, right: q.right, pct: q.pct, wrong: q.wrong, wrongPct: q.wrongPct, skill: q.skill}))});
+      $('#diagAiOut').innerHTML = `<div class="ai-out" style="margin-bottom:14px"><span class="ai-tag">✦ AI талдауы</span><p style="margin:8px 0 0">${esc(d.summary)}</p>
+        ${d.gaps.length ? `<h4>Не түсінілмеді</h4><ul>${d.gaps.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+        ${d.next_lesson.length ? `<h4>Келесі сабақта</h4><ul>${d.next_lesson.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+        ${d.support ? `<h4>Қолдау қажет оқушылармен</h4><p style="margin:0">${esc(d.support)}</p>` : ''}</div>`;
+    } catch (e) { $('#diagAiOut').innerHTML = `<div class="msg err" style="margin-bottom:12px">${esc(e.message)}</div>`; }
+    busy(btn, false);
+  };
+}
+
+/* ═════════ 3. БЖБ/ТЖБ ═════════ */
+let rubric = store.get('gotab_bzhb_rubric', {title:'', cls:'', tasks:[]});
+let specFile = null, photos = [], lastCheck = null;
+$('#bTitle').value = rubric.title; $('#bClass').value = rubric.cls;
+function saveRub() { rubric.title = $('#bTitle').value; rubric.cls = $('#bClass').value; store.set('gotab_bzhb_rubric', rubric); }
+['#bTitle', '#bClass'].forEach(s => $(s).addEventListener('input', () => { saveRub(); renderChecks(); }));
+function renderRub() {
+  if (!rubric.tasks.length) rubric.tasks = [{n:'1', title:'', max:'', criteria:''}];
+  $('#rubBody').innerHTML = rubric.tasks.map((t, i) => `<tr data-i="${i}"><td><input data-k="n" value="${esc(t.n)}"></td><td><input data-k="title" value="${esc(t.title)}" placeholder="Мысалы: Теңдеу"></td>
+    <td><input data-k="max" type="number" min="0" max="100" value="${esc(t.max ?? '')}"></td><td class="crit"><textarea data-k="criteria" rows="2" placeholder="Дескриптор, дұрыс жауап, әр қадамның балы">${esc(t.criteria)}</textarea></td>
+    <td><button class="btn btn-d" data-del title="Өшіру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></td></tr>`).join('');
+  rubTotal();
+}
+function rubTotal() { const s = rubric.tasks.reduce((a, t) => a + (+t.max || 0), 0); $('#rubTotal').textContent = s ? `Барлығы: ${s} балл` : ''; }
+$('#rubBody').addEventListener('input', e => { const i = +e.target.closest('tr').dataset.i; rubric.tasks[i][e.target.dataset.k] = e.target.value; saveRub(); rubTotal(); });
+$('#rubBody').addEventListener('click', e => { if (!e.target.closest('[data-del]')) return; rubric.tasks.splice(+e.target.closest('tr').dataset.i, 1); saveRub(); renderRub(); });
+$('#addTask').onclick = () => { rubric.tasks.push({n: String(rubric.tasks.length + 1), title:'', max:'', criteria:''}); saveRub(); renderRub(); };
+$('#bSpec').onchange = () => { specFile = $('#bSpec').files[0] || null; $('#bSpecName').textContent = specFile ? specFile.name : 'PDF, DOCX немесе фото'; $('#bExtract').disabled = !specFile; };
+const readDataUrl = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsDataURL(f); });
+// Фотоны сығу: ұзын жағы 1600px, JPEG — Vercel-дің сұраныс шегіне сыяды
+function shrink(file, side = 1600, q = .78) {
+  return new Promise((ok, no) => { const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => { const k = Math.min(1, side / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); ok(c.toDataURL('image/jpeg', q)); };
+    img.onerror = () => { URL.revokeObjectURL(url); no(new Error('Суретті ашу мүмкін болмады: ' + file.name)); }; img.src = url; });
+}
+async function docxText(file) {
+  const zip = await JSZip.loadAsync(file); const xml = await zip.file('word/document.xml').async('string');
+  const doc = new DOMParser().parseFromString(xml.replace(/<\/w:p>/g, '</w:p>\n').replace(/<w:tab\/>/g, '\t'), 'text/xml');
+  return doc.documentElement.textContent.replace(/\n{3,}/g, '\n\n').trim();
+}
+$('#bExtract').onclick = async () => {
+  const btn = $('#bExtract'), f = specFile; if (!f) return;
+  busy(btn, true, 'Оқып жатыр…'); say($('#bExMsg'), 'AI құжатты оқып жатыр, 20–60 секунд…');
+  try {
+    let body;
+    if (/\.docx$/i.test(f.name)) body = {text: await docxText(f)};
+    else if (f.type === 'application/pdf') { if (f.size > 3.2e6) throw new Error('PDF 3 МБ-тан аспауы керек. Үлкен болса, тапсырмалар бетін фото етіп жүктеңіз.'); body = {file: await readDataUrl(f), filename: f.name}; }
+    else if (f.type.startsWith('image/')) body = {file: await shrink(f, 2000, .8)};
+    else throw new Error('Бұл файл түрі қолдау көрсетілмейді');
+    const d = await api('bzhb-extract', body);
+    if (!d.tasks.length) throw new Error('Құжаттан тапсырмалар табылмады — кестені қолмен толтырыңыз.');
+    rubric.tasks = d.tasks.map(t => ({n: t.n, title: t.title, max: t.max ?? '', criteria: t.criteria}));
+    if (!$('#bTitle').value.trim() && d.title) $('#bTitle').value = d.title;
+    saveRub(); renderRub(); renderChecks();
+    const miss = rubric.tasks.filter(t => t.max === '').length;
+    say($('#bExMsg'), `${d.tasks.length} тапсырма табылды.` + (miss ? ` ${miss} тапсырманың балы құжатта көрсетілмеген — толтырыңыз.` : ' Кестені тексеріп шығыңыз.'), miss ? 'err' : 'ok');
+  } catch (e) { say($('#bExMsg'), e.message, 'err'); }
+  busy(btn, false);
+};
+// оқушы фотолары
+const drop = $('#drop');
+drop.onclick = () => $('#bPhotos').click();
+drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+drop.ondragleave = () => drop.classList.remove('over');
+drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); addPhotos(e.dataTransfer.files); };
+$('#bPhotos').onchange = () => { addPhotos($('#bPhotos').files); $('#bPhotos').value = ''; };
+async function addPhotos(files) {
+  for (const f of [...files].filter(f => f.type.startsWith('image/') || /\.hei[cf]$/i.test(f.name))) {
+    if (photos.length >= 6) { say($('#bCheckMsg'), 'Ең көбі 6 бет.', 'err'); break; }
+    try { photos.push(await shrink(f)); } catch (e) { say($('#bCheckMsg'), e.message, 'err'); }
+  }
+  renderThumbs();
+}
+function renderThumbs() { $('#thumbs').innerHTML = photos.map((p, i) => `<div class="thumb"><img src="${p}" alt="${i + 1}-бет"><button data-i="${i}" title="Алып тастау">×</button></div>`).join(''); }
+$('#thumbs').onclick = e => { const b = e.target.closest('button'); if (!b) return; photos.splice(+b.dataset.i, 1); renderThumbs(); };
+$('#bCheck').onclick = async () => {
+  const tasks = rubric.tasks.map(t => ({n: String(t.n).trim(), title: t.title.trim(), max: +t.max || 0, criteria: t.criteria.trim()})).filter(t => t.n && t.max > 0);
+  if (!$('#bTitle').value.trim()) return say($('#bCheckMsg'), 'Жұмыс атауын жазыңыз (1-қадам).', 'err');
+  if (!tasks.length) return say($('#bCheckMsg'), 'Тапсырмалар кестесін балдарымен толтырыңыз (1-қадам).', 'err');
+  if (!$('#bStudent').value.trim()) return say($('#bCheckMsg'), 'Оқушының аты немесе нөмірін жазыңыз.', 'err');
+  if (!photos.length) return say($('#bCheckMsg'), 'Оқушы жұмысының фотосын қосыңыз.', 'err');
+  const btn = $('#bCheck'); busy(btn, true, 'Тексеріп жатыр…'); say($('#bCheckMsg'), 'AI жұмысты тексеріп жатыр, 30–90 секунд. Бетті жаппаңыз.');
+  try {
+    const d = await api('bzhb-check', {title: $('#bTitle').value.trim(), tasks, key: $('#bKey').value, images: photos});
+    lastCheck = {student: $('#bStudent').value.trim(), tasks: d.tasks, summary: [d.summary, d.advice && ('Ұсыныс: ' + d.advice)].filter(Boolean).join('\n\n'), rubric: tasks};
+    say($('#bCheckMsg'), ''); renderResult();
+    $('#resultBox').scrollIntoView({behavior:'smooth', block:'start'});
+  } catch (e) { say($('#bCheckMsg'), e.message, 'err'); }
+  busy(btn, false);
+};
+function level(p) { return p >= 85 ? ['g', 'Жақсы меңгерген'] : p >= 50 ? ['a', 'Қосымша жұмыс қажет'] : ['r', 'Қолдау қажет']; }
+function renderResult() {
+  const c = lastCheck, box = $('#resultBox'); if (!c) { box.innerHTML = ''; return; }
+  const tot = c.tasks.reduce((s, t) => s + t.score, 0), max = c.tasks.reduce((s, t) => s + t.max, 0), p = max ? Math.round(tot / max * 100) : 0, [lc, lt] = level(p);
+  const low = c.tasks.filter(t => t.confidence === 'low').length;
+  box.innerHTML = `<section class="res">
+    <h2>${esc(c.student)} · ${esc($('#bTitle').value)}</h2>
+    <div class="tot"><span>Жалпы нәтиже${low ? ` · <span style="color:#fde047">${low} тапсырманы қолмен тексеріңіз</span>` : ''}</span><b id="rTot">${tot}/${max}</b></div>
+    <div class="pbar"><i id="rBar" style="width:${p}%"></i></div>
+    <table><thead><tr><th>Тапсырма</th><th style="text-align:right">Балл</th></tr></thead><tbody>
+    ${c.tasks.map((t, i) => `<tr class="${t.confidence === 'low' ? 'low' : ''}"><td><b style="color:#fff">№${esc(t.n)}. ${esc(t.title)}</b>
+      <div class="why">${esc(t.explanation)}</div>${t.seen ? `<div class="why"><i>Оқушы жазғаны:</i> ${esc(t.seen)}</div>` : ''}${t.confidence === 'low' ? '<span class="warn">AI сенімсіз — қолмен тексеріңіз</span>' : ''}</td>
+      <td><div class="sc"><input type="number" min="0" max="${t.max}" value="${t.score}" data-i="${i}">/${t.max}</div></td></tr>`).join('')}
+    </tbody></table>
+    <span class="rbadge rb-${lc}" id="rBadge">${lt}</span>
+    <div class="concl"><h3>AI қорытындысы (өңдеуге болады):</h3><textarea id="rSum">${esc(c.summary)}</textarea></div>
+    <div class="row" style="margin-top:14px"><span class="meta" style="color:#94a3b8">Балдарды өзгерте аласыз. «Бекіту» баспайынша нәтиже сақталмайды.</span><span class="spacer"></span>
+      <button class="btn btn-g" id="rDrop">Бас тарту</button><button class="btn btn-p" id="rOk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Бекіту және сақтау</button></div>
+  </section>`;
+  box.querySelectorAll('.sc input').forEach(inp => inp.oninput = () => {
+    const t = c.tasks[+inp.dataset.i]; t.score = Math.max(0, Math.min(t.max, Math.round(+inp.value || 0)));
+    const tot = c.tasks.reduce((s, t) => s + t.score, 0), p = max ? Math.round(tot / max * 100) : 0, [lc, lt] = level(p);
+    $('#rTot').textContent = `${tot}/${max}`; $('#rBar').style.width = p + '%'; $('#rBadge').className = 'rbadge rb-' + lc; $('#rBadge').textContent = lt;
+  });
+  $('#rDrop').onclick = () => { lastCheck = null; renderResult(); };
+  $('#rOk').onclick = async () => {
+    const btn = $('#rOk'); busy(btn, true, 'Сақталуда…');
+    const tot = c.tasks.reduce((s, t) => s + t.score, 0);
+    const {data, error} = await sb.from('bzhb_checks').insert({title: $('#bTitle').value.trim(), class_label: $('#bClass').value.trim() || null, student_label: c.student, rubric: c.rubric,
+      result: {tasks: c.tasks, summary: $('#rSum').value}, total: tot, max_total: max, approved: true}).select().single();
+    if (error) { busy(btn, false); return alert('Сақталмады: ' + error.message); }
+    CHECKS.unshift(data); lastCheck = null; renderResult(); photos = []; renderThumbs(); $('#bStudent').value = ''; renderChecks(); renderStats();
+    say($('#bCheckMsg'), `${data.student_label} — ${tot}/${max} бекітілді. Келесі оқушының жұмысын жүктей беріңіз.`, 'ok');
+    $('#bStudent').focus();
+  };
+}
+async function loadChecks() {
+  const {data} = await sb.from('bzhb_checks').select('*').order('created_at', {ascending:false}).limit(500);
+  CHECKS = data || []; renderChecks(); renderStats();
+}
+function renderChecks() {
+  const titles = [...new Set(CHECKS.map(c => c.title))], sel = $('#bFilter'), cur = sel.value || $('#bTitle').value.trim();
+  sel.innerHTML = '<option value="">Барлық жұмыстар</option>' + titles.map(t => `<option ${t === cur ? 'selected' : ''}>${esc(t)}</option>`).join('');
+  const list = CHECKS.filter(c => !sel.value || c.title === sel.value), box = $('#bList');
+  if (!list.length) { box.innerHTML = '<div class="empty">Бекітілген жұмыс әлі жоқ.</div>'; return; }
+  // жұмыс бойынша тапсырмалардың орташа меңгерілуі
+  let summary = '';
+  if (sel.value) {
+    const tasks = list[0].rubric || [];
+    summary = `<div class="ai-out" style="margin:0 0 14px;background:#f8fbff;border-color:var(--border)"><b>Сынып бойынша тапсырмалар</b>` + tasks.map(t => {
+      const sc = list.map(c => (c.result.tasks || []).find(x => String(x.n) === String(t.n))).filter(Boolean);
+      const p = sc.length ? Math.round(sc.reduce((s, x) => s + x.score / (x.max || 1), 0) / sc.length * 100) : 0;
+      return `<div class="trow" style="cursor:default"><span class="lab">№${esc(t.n)}</span><div class="bar"><b class="${pctClass(p)}" style="width:${Math.max(p, 3)}%"></b><span>${esc(t.title)}</span></div><span class="pct t${pctClass(p)}">${p}%</span></div>`; }).join('') + '</div>';
+  }
+  box.innerHTML = summary + `<div style="overflow-x:auto"><table class="tb"><thead><tr><th>Оқушы</th><th>Жұмыс</th><th>Балл</th><th>Деңгей</th><th></th></tr></thead><tbody>${list.map(c => {
+    const p = c.max_total ? Math.round(c.total / c.max_total * 100) : 0, [lc, lt] = level(p);
+    return `<tr><td><b>${esc(c.student_label)}</b><div class="meta">${fmtDate(c.created_at)}</div></td><td>${esc(c.title)}${c.class_label ? ` <span class="meta">· ${esc(c.class_label)}</span>` : ''}</td>
+      <td><b>${+c.total}/${+c.max_total}</b></td><td><span class="badge bg-${lc}">${lt}</span></td>
+      <td><button class="btn btn-d" data-rmc="${c.id}" title="Өшіру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></td></tr>`; }).join('')}</tbody></table></div>`;
+}
+$('#bFilter').onchange = renderChecks;
+$('#bList').addEventListener('click', async e => {
+  const b = e.target.closest('[data-rmc]'); if (!b || !confirm('Бұл нәтиже өшірілсін бе?')) return;
+  const {error} = await sb.from('bzhb_checks').delete().eq('id', b.dataset.rmc); if (error) return alert(error.message);
+  CHECKS = CHECKS.filter(c => c.id !== b.dataset.rmc); renderChecks(); renderStats();
+});
+$('#bCsv').onclick = () => {
+  const list = CHECKS.filter(c => !$('#bFilter').value || c.title === $('#bFilter').value);
+  const tasks = $('#bFilter').value && list[0] ? (list[0].rubric || []) : [];
+  csv(($('#bFilter').value || 'БЖБ нәтижелері') + '.csv', [['Оқушы', 'Сынып', 'Жұмыс', 'Күні', ...tasks.map(t => '№' + t.n), 'Жалпы', 'Максимум', '%'],
+    ...list.map(c => [c.student_label, c.class_label || '', c.title, fmtDate(c.created_at) + ' ' + new Date(c.created_at).getFullYear(),
+      ...tasks.map(t => ((c.result.tasks || []).find(x => String(x.n) === String(t.n)) || {}).score ?? ''), +c.total, +c.max_total, c.max_total ? Math.round(c.total / c.max_total * 100) : 0])]);
+};
+
+// ── ортақ ──
+function csv(name, rows) {
+  const s = '﻿' + rows.map(r => r.map(v => { v = String(v ?? ''); return /[";\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(';')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([s], {type:'text/csv;charset=utf-8'})); a.download = name.replace(/[\\/:*?"<>|]/g, '_'); a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function renderStats() {
+  const all = Object.values(RESULTS).flat();
+  $('#stTests').textContent = TESTS.length; $('#stAnswers').textContent = all.length;
+  const a = avgPct(all); $('#stAvg').textContent = a == null ? '–' : a + '%'; $('#stBzhb').textContent = CHECKS.length;
+}
+
+(async () => {
+  USER = await requireAuth(); if (!USER) return;
+  $('#userName').textContent = USER.user_metadata?.name || USER.email;
+  renderQs(); renderRub();
+  const tab = location.hash.slice(1); if (['tests', 'diag', 'bzhb'].includes(tab)) showTab(tab);
+  await Promise.all([loadTests(), loadChecks()]);
+  if (tab === 'diag') renderTrend();
+  if (USER.email !== ADMIN_EMAIL) {
+    try { const {data} = await sb.rpc('check_my_subscription'); const r = Array.isArray(data) ? data[0] : data;
+      if (!(r?.is_paid && r.paid_until && new Date(r.paid_until) > new Date())) {
+        const n = 'AI мүмкіндіктері жазылымы бар мұғалімдерге ашық. Тестті қолмен құрып, QR арқылы өткізе бересіз.';
+        $('#aiPaidNote').textContent = '· жазылыммен'; $('#checkPaidNote').textContent = 'AI тексеру жазылыммен қолжетімді'; $('#aiPaidNote').title = n;
+      } } catch (_) {}
+  }
+})();
+</script>
+</body>
+</html>

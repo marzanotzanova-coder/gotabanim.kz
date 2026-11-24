@@ -71,11 +71,14 @@
 .hero-btn.ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35);box-shadow:none}
 .hero-btn svg,.hm-ic{width:18px;height:18px;flex-shrink:0}
 .teacher-app .sub-nav{display:none} /* on the home page the sections live inside the banner */
-.hero-nav{position:relative;z-index:1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:24px}
+.hero-nav{position:relative;z-index:1;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:24px}
 .hero-nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px 8px;min-height:92px;border-radius:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;text-decoration:none;font-weight:800;font-size:14px;text-align:center;transition:background .2s,transform .2s;backdrop-filter:blur(6px)}
 .hero-nav a:hover{background:rgba(255,255,255,.24);transform:translateY(-2px)}
 .hero-nav svg{width:26px;height:26px;flex-shrink:0}
-@media(max-width:760px){.hero-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.hero-nav a{flex-direction:row;justify-content:flex-start;gap:8px;min-height:56px;font-size:13px;padding:10px 10px}.hero-nav a:last-child{grid-column:1/-1}.hero-nav svg{width:22px;height:22px}}
+.hero-nav a small{display:block;font-size:10.5px;font-weight:600;opacity:.8;margin-top:-4px}
+.hero-nav a.hero-assess{background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,.12));border-color:rgba(255,255,255,.5);box-shadow:0 0 24px rgba(34,211,238,.35)}
+@media(max-width:1000px){.hero-nav{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.hero-nav a small{display:none}.hero-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.hero-nav a{flex-direction:row;justify-content:flex-start;gap:8px;min-height:56px;font-size:13px;padding:10px 10px}.hero-nav svg{width:22px;height:22px}}
 .hero-sub{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:99px;background:rgba(16,185,129,.25);border:1px solid rgba(110,231,183,.5);font-size:12px;font-weight:800}
 /* quick start: one row per subject, a small chip per grade opens the lessons straight away */
 .hm-block{margin-top:26px}
@@ -207,6 +210,7 @@
   </a>
   <a href="labs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 3h6M10 3v6L4 20a1 1 0 0 0 .9 1.5h14.2A1 1 0 0 0 20 20l-6-11V3"/></svg>Зертхана</a>
   <a href="animations.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4zM9 8l7 4-7 4z"/></svg>Анимациялар</a>
+  <a href="assess.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Бағалау</a>
 </div>
 
 <div class="home">
@@ -234,6 +238,7 @@
       <a href="games.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/></svg>Ойындар</a>
       <a href="labs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4 20a1 1 0 0 0 .9 1.5h14.2A1 1 0 0 0 20 20l-6-11V3"/></svg>Зертхана</a>
       <a href="animations.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m10 9 5 3-5 3z"/></svg>Анимациялар</a>
+      <a href="assess.html" class="hero-assess"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Бағалау<small>тест · диагностика · БЖБ</small></a>
     </nav>
   </section>
 

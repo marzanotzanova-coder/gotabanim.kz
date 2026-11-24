@@ -3,7 +3,10 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-app.use(express.json());
+// AI routes read larger bodies (photos), so they parse JSON themselves
+const jsonSmall = express.json();
+app.use((req, res, next) => req.path.startsWith('/api/ai/') ? next() : jsonSmall(req, res, next));
+require('./ai-assess')(app, express);
 app.use(express.static(path.join(__dirname, 'public')));
 
 const DATA_FILE = path.join(__dirname, 'data', 'products.json');

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a56db">
+<title>GoTAB — Сабақтық тест</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;min-height:100dvh;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0f172a;background:linear-gradient(160deg,#0b1f5c 0%,#1a56db 45%,#6d28d9 100%);display:flex;flex-direction:column;align-items:center;padding:20px 16px calc(24px + env(safe-area-inset-bottom))}
+.logo{height:46px;margin:4px 0 18px;background:#fff;border-radius:14px;padding:6px 14px;box-shadow:0 8px 20px rgba(0,0,0,.2)}
+.box{width:100%;max-width:520px;background:#fff;border-radius:26px;padding:24px;box-shadow:0 30px 70px rgba(2,6,23,.35)}
+h1{font-size:23px;font-weight:900;margin:0 0 6px;letter-spacing:-.4px;line-height:1.25}
+.meta{color:#64748b;font-size:14px}
+label{display:block;font-size:13px;font-weight:700;color:#64748b;margin:20px 0 7px}
+input{width:100%;border:2px solid #dde5f4;border-radius:14px;padding:15px 16px;font-family:inherit;font-weight:600;font-size:18px;outline:none;background:#f8fbff}
+input:focus{border-color:#1a56db;background:#fff}
+.code-in{text-align:center;letter-spacing:8px;text-transform:uppercase;font:900 30px ui-monospace,Menlo,monospace}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:none;border-radius:16px;padding:17px;margin-top:18px;font-family:inherit;font-weight:800;font-size:17px;color:#fff;background:linear-gradient(135deg,#1a56db,#6d28d9);box-shadow:0 10px 24px rgba(26,86,219,.35);cursor:pointer;transition:transform .15s}
+.btn:active{transform:scale(.98)}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.btn.ghost{background:#f1f5ff;color:#1a56db;box-shadow:none}
+.err{color:#dc2626;font-weight:700;font-size:14px;margin-top:12px;text-align:center}
+.prog{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.prog .track{flex:1;height:10px;background:#eef2f9;border-radius:100px;overflow:hidden}
+.prog .track i{display:block;height:100%;background:linear-gradient(90deg,#22d3ee,#1a56db);border-radius:100px;transition:width .3s}
+.prog span{font-weight:800;font-size:14px;color:#64748b;white-space:nowrap}
+.q{font-size:20px;font-weight:800;line-height:1.4;margin:0 0 18px;white-space:pre-wrap}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;width:100%;border:2px solid #dde5f4;border-radius:16px;padding:14px;background:#fff;font-family:inherit;font-weight:600;font-size:16.5px;color:#0f172a;cursor:pointer;transition:.15s}
+.opt b{width:34px;height:34px;border-radius:10px;background:#eef2f9;color:#475569;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:900}
+.opt.on{border-color:#1a56db;background:#eff5ff}
+.opt.on b{background:#1a56db;color:#fff}
+.nav{display:flex;gap:10px}
+.nav .btn{margin-top:20px}
+.nav .btn.ghost{flex:0 0 34%}
+.dots{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;justify-content:center}
+.dots i{width:28px;height:28px;border-radius:8px;background:#eef2f9;font-family:inherit;font-weight:800;font-size:12px;font-style:normal;display:flex;align-items:center;justify-content:center;color:#64748b;cursor:pointer}
+.dots i.done{background:#dbeafe;color:#1a56db}
+.dots i.cur{outline:2px solid #1a56db}
+.ring{width:170px;height:170px;margin:8px auto 14px;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring div{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring b{font-size:40px;font-weight:900}
+.center{text-align:center}
+.marks{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;margin-top:18px}
+.marks span{border-radius:12px;padding:9px 0;text-align:center;font-weight:900;font-size:14px}
+.ok{background:#dcfce7;color:#15803d}.no{background:#fee2e2;color:#b91c1c}
+.foot{color:rgba(255,255,255,.75);font-size:12.5px;margin-top:16px;text-align:center}
+.foot a{color:#fff}
+.hide{display:none}
+</style>
+</head>
+<body>
+<img class="logo" src="gotab_logo.png" alt="GoTAB">
+<main class="box" id="app"><div class="center meta">Жүктелуде…</div></main>
+<div class="foot">GoTAB · сабақтық тест</div>
+
+<script src="supabase.js"></script>
+<script>
+const sb = supabase.createClient('https://eknjslyvcwtusbqvygxx.supabase.co', 'sb_publishable_4AKv-8WUdjo_ZdYvlHPC4w_v-aNINNL', {auth:{persistSession:false, autoRefreshToken:false}});
+const app = document.getElementById('app');
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const st = {get(k){try{return JSON.parse(localStorage.getItem(k))}catch(_){return null}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(_){}}, del(k){try{localStorage.removeItem(k)}catch(_){}}};
+let code = (new URLSearchParams(location.search).get('c') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+let test = null, name = '', answers = [], cur = 0;
+
+function codeScreen(err) {
+  app.innerHTML = `<h1>Сабақтық тест</h1><div class="meta">Мұғалім берген 6 таңбалы кодты жазыңыз</div>
+    <label for="c">Тест коды</label><input id="c" class="code-in" maxlength="6" autocomplete="off" autocapitalize="characters" value="${esc(code)}">
+    <button class="btn" id="go">Кіру</button>${err ? `<div class="err">${esc(err)}</div>` : ''}`;
+  const c = document.getElementById('c'); c.focus();
+  const go = () => { code = c.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (code.length === 6) { history.replaceState(null, '', '?c=' + code); load(); } };
+  document.getElementById('go').onclick = go; c.onkeydown = e => e.key === 'Enter' && go();
+}
+async function load() {
+  app.innerHTML = '<div class="center meta">Жүктелуде…</div>';
+  const {data, error} = await sb.rpc('get_lesson_test', {p_code: code});
+  if (error) return codeScreen('Байланыс қатесі. Интернетті тексеріп, қайталаңыз.');
+  if (!data) return codeScreen('Мұндай код табылмады. Кодты қайта тексеріңіз.');
+  test = data;
+  if (!test.is_open) return codeScreen('Бұл тест жабылған. Мұғаліміңізге хабарласыңыз.');
+  const done = st.get('gotab_done_' + code);
+  if (done) return result(done, true);
+  nameScreen();
+}
+function nameScreen(err) {
+  app.innerHTML = `<h1>${esc(test.title)}</h1><div class="meta">${test.grade ? test.grade + '-сынып · ' : ''}${test.questions.length} сұрақ${test.topic ? ' · ' + esc(test.topic) : ''}</div>
+    <label for="n">Аты-жөніңіз</label><input id="n" maxlength="60" autocomplete="name" placeholder="Мысалы: Айгерім Сейітова" value="${esc(name)}">
+    <button class="btn" id="start">Бастау</button>${err ? `<div class="err">${esc(err)}</div>` : ''}`;
+  const n = document.getElementById('n'); n.focus();
+  const start = () => { name = n.value.trim().replace(/\s+/g, ' '); if (name.length < 2) return nameScreen('Атыңызды жазыңыз.'); answers = new Array(test.questions.length).fill(null); cur = 0; question(); };
+  document.getElementById('start').onclick = start; n.onkeydown = e => e.key === 'Enter' && start();
+}
+function question() {
+  const q = test.questions[cur], n = test.questions.length, last = cur === n - 1, answered = answers.filter(a => a != null).length;
+  app.innerHTML = `<div class="prog"><div class="track"><i style="width:${answered / n * 100}%"></i></div><span>${cur + 1} / ${n}</span></div>
+    <p class="q">${esc(q.q)}</p>
+    <div class="opts">${q.options.map((o, j) => `<button class="opt${answers[cur] === j ? ' on' : ''}" data-j="${j}"><b>${String.fromCharCode(65 + j)}</b><span>${esc(o)}</span></button>`).join('')}</div>
+    <div class="nav">${cur ? '<button class="btn ghost" id="back">Артқа</button>' : ''}<button class="btn" id="next" ${answers[cur] == null ? 'disabled' : ''}>${last ? 'Жауапты жіберу' : 'Келесі'}</button></div>
+    <div class="dots">${test.questions.map((_, i) => `<i class="${answers[i] != null ? 'done' : ''}${i === cur ? ' cur' : ''}" data-i="${i}">${i + 1}</i>`).join('')}</div>
+    <div class="err" id="e"></div>`;
+  app.querySelectorAll('.opt').forEach(b => b.onclick = () => { answers[cur] = +b.dataset.j; if (!last) setTimeout(() => { cur++; question(); }, 220); else question(); });
+  app.querySelectorAll('.dots i').forEach(d => d.onclick = () => { cur = +d.dataset.i; question(); });
+  if (cur) document.getElementById('back').onclick = () => { cur--; question(); };
+  document.getElementById('next').onclick = () => last ? submit() : (cur++, question());
+}
+async function submit() {
+  const miss = answers.findIndex(a => a == null);
+  if (miss >= 0) { cur = miss; question(); document.getElementById('e').textContent = `${miss + 1}-сұраққа жауап беріңіз.`; return; }
+  const btn = document.getElementById('next'); btn.disabled = true; btn.textContent = 'Жіберілуде…';
+  const {data, error} = await sb.rpc('submit_lesson_test', {p_code: code, p_name: name, p_answers: answers});
+  if (error) {
+    btn.disabled = false; btn.textContent = 'Қайта жіберу';
+    const m = error.message || '';
+    document.getElementById('e').textContent = m.includes('closed') ? 'Тест жабылып қалды. Мұғаліміңізге айтыңыз.' : m.includes('full') ? 'Тестке жауап беру шегіне жетті.' : 'Жіберілмеді. Интернетті тексеріп, қайта басыңыз.';
+    return;
+  }
+  const res = {...data, name};
+  st.set('gotab_done_' + code, res);
+  result(res, false);
+}
+function result(r, again) {
+  const p = r.max ? Math.round(r.score / r.max * 100) : 0, col = p >= 85 ? '#16a34a' : p >= 50 ? '#d97706' : '#dc2626', C = 2 * Math.PI * 70;
+  const msg = p >= 85 ? 'Керемет! Тақырыпты жақсы меңгердіңіз 🎉' : p >= 50 ? 'Жақсы! Қателескен сұрақтарды қайталап шығыңыз 💪' : 'Бұл тақырыпты мұғаліммен бірге тағы қайталайық 📘';
+  app.innerHTML = `<div class="center">${again ? '<div class="meta" style="margin-bottom:6px">Сіз бұл тестті тапсырдыңыз</div>' : ''}<h1>${esc(r.name || '')}</h1>
+    <div class="ring"><svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="70" fill="none" stroke="#eef2f9" stroke-width="14"/><circle cx="80" cy="80" r="70" fill="none" stroke="${col}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - p / 100)}"/></svg>
+      <div><b style="color:${col}">${r.score}/${r.max}</b><span class="meta">${p}%</span></div></div>
+    <div style="font-weight:800;font-size:17px">${msg}</div></div>
+    <div class="marks">${(r.correct || []).map((ok, i) => `<span class="${ok ? 'ok' : 'no'}">${i + 1} ${ok ? '✓' : '✗'}</span>`).join('')}</div>
+    <div class="meta center" style="margin-top:14px">Нәтижеңіз мұғаліміңізге жіберілді.</div>
+    <button class="btn ghost" id="other">Басқа оқушы тапсырады</button>`;
+  document.getElementById('other').onclick = () => { st.del('gotab_done_' + code); name = ''; nameScreen(); };
+}
+code.length === 6 ? load() : codeScreen();
+</script>
+</body>
+</html>
