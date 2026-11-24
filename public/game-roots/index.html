@@ -45,6 +45,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#050816;color:var(--txt);
 /* panels: menu, level end */
 .panel{inset:0;display:none;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at center,rgba(5,8,22,.35),rgba(5,8,22,.85));overflow-y:auto}
 .panel.on{display:flex}
+.msnd{position:fixed;top:14px;right:14px;display:flex;gap:8px;z-index:6}
 .box{width:min(640px,100%);text-align:center;padding:28px 24px;border-radius:28px;background:var(--card);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1.5px solid var(--border);box-shadow:0 20px 70px rgba(0,0,0,.55),0 0 50px rgba(34,211,238,.18);animation:in .45s;margin:auto}
 @keyframes in{from{opacity:0;transform:scale(.9) translateY(20px)}}
 .tag{display:inline-block;padding:6px 14px;border-radius:99px;border:1px solid var(--border);font-size:11px;font-weight:900;letter-spacing:2px;color:var(--acc)}
@@ -94,7 +95,7 @@ h1{font-size:clamp(34px,8vw,58px);font-weight:900;line-height:1;margin:14px 0 6p
 <div class="ui" id="toast"></div>
 <div class="ui" id="banner"></div>
 
-<div class="ui panel on" id="menu"><div class="box">
+<div class="ui panel on" id="menu"><div class="msnd"><button class="hb" id="mMusic" title="Музыка" aria-label="Музыка">🎵</button><button class="hb" id="mFx" title="Дыбыс" aria-label="Дыбыс">🔊</button></div><div class="box">
   <span class="tag">АЛГЕБРА · 8-СЫНЫП · 2-ТОҚСАН</span>
   <h1>ТАМЫР АҢШЫСЫ</h1>
   <p class="lead">Жерге квадрат теңдеуі жазылған метеорит құлап келеді! Оны жою үшін зеңбірекпен теңдеудің <b style="color:#e8f1ff">түбірлері</b> тұрған нүктелерден ат.</p>
@@ -105,6 +106,7 @@ h1{font-size:clamp(34px,8vw,58px);font-weight:900;line-height:1;margin:14px 0 6p
 
 <div class="ui panel" id="end"><div class="box" id="endBox"></div></div>
 
+<script src="../game-audio.js?v=20261124"></script>
 <script>
 (function () {
 'use strict';
@@ -165,35 +167,17 @@ function solution(e) {
 }
 const fval = (e, x) => e.a * x * x + e.b * x + e.c;
 
-// ---------------- sound ----------------
-const AU = (() => {
-  let ctx = null, fx, mu, seq = null, step = 0, fxOn = store.get('rhFx') !== 'off', muOn = store.get('rhMusic') !== 'off', nb = null;
-  const A = () => { if (!ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ctx = new C(); fx = ctx.createGain(); fx.gain.value = .5; fx.connect(ctx.destination); mu = ctx.createGain(); mu.gain.value = 0; mu.connect(ctx.destination); } if (ctx.state === 'suspended') ctx.resume(); return ctx; };
-  function t(f, at, d, v, type = 'sine', o = fx, to = 0) { const s = ctx.currentTime + at, os = ctx.createOscillator(), g = ctx.createGain(); os.type = type; os.frequency.setValueAtTime(f, s); if (to) os.frequency.exponentialRampToValueAtTime(to, s + d * .9); g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(v, s + .01); g.gain.exponentialRampToValueAtTime(.0001, s + d); os.connect(g); g.connect(o); os.start(s); os.stop(s + d + .05); }
-  function n(at, d, v, f = 800, q = .8, o = fx) { if (!nb) { nb = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate); const c = nb.getChannelData(0); for (let i = 0; i < c.length; i++) c[i] = Math.random() * 2 - 1; } const s = ctx.currentTime + at, b = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain(); b.buffer = nb; fl.type = 'bandpass'; fl.frequency.value = f; fl.Q.value = q; g.gain.setValueAtTime(v, s); g.gain.exponentialRampToValueAtTime(.0001, s + d); b.connect(fl); fl.connect(g); g.connect(o); b.start(s); b.stop(s + d + .05); }
-  const S = {
-    laser: () => { t(1800, 0, .18, .12, 'sawtooth', fx, 300); },
-    hit: k => { n(0, .35, .55, 500); t(140, 0, .3, .3, 'sine', fx, 50); [0, 4, 7].forEach((s, i) => t(660 * Math.pow(2, (s + Math.min(k, 8)) / 12), .05 + i * .05, .18, .12, 'triangle')); },
-    boom: () => { n(0, 1.1, .8, 260, .5); t(80, 0, .9, .45, 'sine', fx, 30); [523, 659, 784, 1047].forEach((f, i) => t(f, .25 + i * .08, .3, .12, 'triangle')); },
-    miss: () => { t(240, 0, .2, .2, 'sawtooth', fx, 110); t(170, .12, .28, .15, 'square', fx, 90); },
-    shield: () => { t(300, 0, .6, .15, 'sine', fx, 1200); t(450, .05, .6, .1, 'triangle', fx, 1600); },
-    impact: () => { n(0, 1.2, .9, 150, .4); t(60, 0, 1, .5, 'sine', fx, 25); },
-    move: () => t(900, 0, .04, .05, 'square'),
-    warn: () => { t(880, 0, .12, .1, 'square'); t(660, .14, .12, .1, 'square'); },
-    win: () => { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => t(f, i * .11, i === 6 ? .9 : .3, .17, 'triangle')); },
-    lose: () => { [392, 370, 349, 262].forEach((f, i) => t(f, i * .26, .45, .17, 'triangle')); },
-    star: () => { t(988, 0, .08, .14, 'square'); t(1319, .07, .3, .14, 'square'); }
-  };
-  const CH = [[110, 164.8, 220, 261.6], [87.3, 130.8, 174.6, 220], [98, 146.8, 196, 246.9], [82.4, 123.5, 164.8, 207.7]];
-  function beat() { const c = CH[Math.floor(step / 16) % 4], s = step % 16; if (s === 0) { t(c[0], 0, 2.2, .08, 'triangle', mu); t(c[1], 0, 2.2, .04, 'sine', mu); }
-    if (s % 2 === 0) t(c[(s / 2) % 4] * 4, 0, .5, .03, 'sine', mu); if (s % 4 === 2) n(0, .04, .04, 6000, 1.2, mu); step++; }
-  return {
-    play(k, a) { if (fxOn && A()) try { S[k](a); } catch (_) {} },
-    music(on) { if (!A()) return; if (on && muOn) { if (!seq) { mu.gain.cancelScheduledValues(ctx.currentTime); mu.gain.linearRampToValueAtTime(1, ctx.currentTime + 1.5); seq = setInterval(beat, 170); } } else if (seq) { clearInterval(seq); seq = null; mu.gain.value = 0; } },
-    get fxOn() { return fxOn; }, get muOn() { return muOn; },
-    tFx() { fxOn = !fxOn; store.set('rhFx', fxOn ? 'on' : 'off'); }, tMu(p) { muOn = !muOn; store.set('rhMusic', muOn ? 'on' : 'off'); this.music(muOn && p); }
-  };
-})();
+// ---------------- sound: shared GoTAB engine (../game-audio.js), 'space' style ----------------
+const GA = window.GameAudio ? GameAudio.create('space') : null;
+const AU = {
+  play(k, a) { GA?.sfx(k, a); },
+  music(on) { if (!GA) return; GA.setIntensity(on ? 2 : 1); GA.play(); },
+  get fxOn() { return GA ? GA.fxOn : false; }, get muOn() { return GA ? GA.musicOn : false; },
+  tFx() { GA?.toggleFx(); }, tMu() { GA?.toggleMusic(); }
+};
+// browsers allow sound only after the first tap or key press: start the menu music then
+const unlock = () => { if (!GA) return; GA.unlock(); GA.setIntensity(mode === 'play' ? 2 : 1); GA.play(); removeEventListener('pointerdown', unlock, true); removeEventListener('keydown', unlock, true); };
+addEventListener('pointerdown', unlock, true); addEventListener('keydown', unlock, true);
 
 // ---------------- canvas world ----------------
 const cv = $('cv'), g = cv.getContext('2d'); let W = 0, H = 0, DPR = 1;
@@ -323,9 +307,9 @@ addEventListener('keydown', e => { if (mode !== 'play') return;
 $('bNone').onclick = noRoots;
 $('bHint').onclick = () => { if (mode !== 'play' || G.busy) return; G.hinted = true; $('hint').textContent = '💡 ' + hintFor(G.eq); $('hint').classList.add('on'); $('bHint').disabled = true; AU.play('star'); };
 $('bMenu').onclick = () => { if (mode === 'play' && !confirm('Деңгейден шығып, мәзірге ораламыз ба?')) return; menu(); };
-const sync = () => { $('bFx').textContent = AU.fxOn ? '🔊' : '🔇'; $('bFx').classList.toggle('off', !AU.fxOn); $('bMusic').classList.toggle('off', !AU.muOn); };
-$('bFx').onclick = () => { AU.tFx(); sync(); }; $('bMusic').onclick = () => { AU.tMu(mode === 'play'); sync(); }; sync();
-document.addEventListener('visibilitychange', () => { if (document.hidden) AU.music(false); else if (mode === 'play') AU.music(true); });
+const sync = () => { ['bFx', 'mFx'].forEach(id => { $(id).textContent = AU.fxOn ? '🔊' : '🔇'; $(id).classList.toggle('off', !AU.fxOn); }); ['bMusic', 'mMusic'].forEach(id => $(id).classList.toggle('off', !AU.muOn)); };
+$('bFx').onclick = () => { AU.tFx(); sync(); }; $('bMusic').onclick = () => { AU.tMu(); sync(); }; $('mFx').onclick = () => { AU.tFx(); sync(); }; $('mMusic').onclick = () => { AU.tMu(); sync(); }; sync();
+document.addEventListener('visibilitychange', () => { if (!GA) return; document.hidden ? GA.pause() : GA.resume(); });
 
 // ---------------- render loop ----------------
 let last = performance.now(), flash = 0, clock = 0;
