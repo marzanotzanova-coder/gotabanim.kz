@@ -1,0 +1,4 @@
+-- GoTAB «Бағалау» бөлімі: бұл миграция Supabase (gotabanim) жобасына 2026-11-24 қолданылды.
+-- Кестелер: lesson_tests, lesson_test_results, bzhb_checks, ai_usage
+-- Функциялар: gen_test_code, get_lesson_test, submit_lesson_test (оқушыға, тіркелусіз), bump_ai_usage (AI лимиті)
+-- Толық SQL: Supabase → Database → Migrations → assessment_tests_bzhb
