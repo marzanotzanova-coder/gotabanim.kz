@@ -343,6 +343,7 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
         <h2 style="margin:0"><i style="background:#dcfce7;color:#16a34a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/></svg></i>Бекітілген нәтижелер</h2>
         <span class="spacer"></span>
         <select class="inp" id="bFilter" style="width:auto"></select>
+        <button class="btn btn-g" id="bPdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6m-3 3 3 3 3-3"/></svg>PDF</button>
         <button class="btn btn-g" id="bCsv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg>Excel</button>
       </div>
       <div id="bList" style="margin-top:12px"></div>
@@ -369,7 +370,7 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
     <div class="row"><h4><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Тапсырған оқушылар</h4><span class="spacer"></span><span class="meta" id="slAvg"></span></div>
     <div class="meta" id="slTitle" style="margin-top:4px"></div>
     <div class="sl" id="stuList"></div>
-    <div class="row" style="margin-top:12px"><button class="btn btn-g" id="slDiag">Сынып диагностикасы</button><span class="spacer"></span><button class="btn btn-p" id="slClose" hidden>Жабу</button></div>
+    <div class="row" style="margin-top:12px"><button class="btn btn-g" id="slDiag">Сынып диагностикасы</button><button class="btn btn-g" id="slPdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6m-3 3 3 3 3-3"/></svg>PDF</button><span class="spacer"></span><button class="btn btn-p" id="slClose" hidden>Жабу</button></div>
   </aside>
  </div>
 </dialog>
@@ -379,6 +380,7 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
 <script src="supabase.js"></script>
 <script src="supabase-client.js?v=20261117-paid"></script>
 <script src="gotab-qr.js"></script>
+<script src="gotab-pdf.js"></script>
 <script src="vendor/jszip-3.10.1.min.js"></script>
 <script>
 const SUBJ = {math:'Математика', algebra:'Алгебра', geometry:'Геометрия', algebra_emn:'Алгебра (ЖМБ)', geometry_emn:'Геометрия (ЖМБ)', informatics:'Информатика'};
@@ -546,6 +548,7 @@ async function refreshResults(t) {
 $('#stuList').addEventListener('click', e => { const b = e.target.closest('[data-stu]'); if (b) openStudent(qrTest, b.dataset.stu); });
 $('#slDiag').onclick = () => { const t = qrTest; $('#qrDlg').close(); showTab('diag'); $('#diagSel').value = t.id; renderDiag(t.id); };
 $('#slClose').onclick = () => $('#qrDlg').close();
+$('#slPdf').onclick = () => runPdf($('#slPdf'), () => pdfClass(qrTest));
 function openResults(t) {
   qrTest = t; $('#qrDlg').classList.remove('big'); $('#qrDlg').classList.add('only-list'); $('#slClose').hidden = false;
   renderStuList(t); $('#qrDlg').showModal(); void refreshResults(t);
@@ -574,10 +577,11 @@ function openStudent(t, rid) {
           <div class="an">Жауабы: <b class="${ok ? 'ag' : 'ar'}">${a == null ? '—' : esc(q.options[a] ?? '—')} ${ok ? '✓' : '✗'}</b></div>
           ${ok ? '' : `<div class="an">Дұрыс жауап: <b class="ag">${esc(q.options[q.answer])}</b></div>`}
           <div class="cls">${q.skill ? 'Дағды: ' + esc(q.skill) + ' · ' : ''}сыныптың ${cls}%-ы дұрыс жауап берді</div></div>`; }).join('')}
-      <div class="row" style="margin-top:6px"><button class="btn btn-d" id="stuDel" style="font-size:13px">Нәтижені өшіру</button><span class="spacer"></span><button class="btn btn-p" id="stuOk">Жабу</button></div>
+      <div class="row" style="margin-top:6px"><button class="btn btn-d" id="stuDel" style="font-size:13px">Нәтижені өшіру</button><span class="spacer"></span><button class="btn btn-g" id="stuPdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6m-3 3 3 3 3-3"/></svg>PDF жүктеу</button><button class="btn btn-p" id="stuOk">Жабу</button></div>
     </div>`;
   const dlg = $('#stuDlg'); dlg.showModal();
   $('#stuX').onclick = $('#stuOk').onclick = () => dlg.close();
+  $('#stuPdf').onclick = () => runPdf($('#stuPdf'), () => pdfStudent(t, r));
   $('#stuDel').onclick = async () => {
     if (!confirm(`${r.student_name} нәтижесі өшірілсін бе? (мысалы, қайта тапсыру үшін)`)) return;
     const {error} = await sb.from('lesson_test_results').delete().eq('id', r.id); if (error) return alert(error.message);
@@ -639,7 +643,7 @@ function renderDiag(id) {
       <div class="tile"><b class="${need ? 'tr' : 'tg'}">${need}</b><span>оқушыға қолдау қажет</span></div></div>
     <div class="row" style="margin:6px 0 12px"><b>Сұрақтар бойынша</b><span class="spacer"></span>
       <button class="btn btn-ai" id="diagAi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>AI талдау және келесі сабаққа кеңес</button>
-      <button class="btn btn-g" id="diagCsv">Excel</button></div>
+      <button class="btn btn-g" id="diagCsv">Excel</button><button class="btn btn-g" id="diagPdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6m-3 3 3 3 3-3"/></svg>PDF</button></div>
     <div id="diagAiOut"></div>
     ${qs.map(q => `<div class="qstat"><div class="qt">${q.i + 1}. ${esc(q.q)}</div>
       <div class="bar"><b class="${pctClass(q.pct)}" style="width:${Math.max(q.pct, 3)}%"></b><span>${q.pct}% дұрыс · дұрыс жауап: ${esc(q.right)}</span></div>
@@ -650,6 +654,7 @@ function renderDiag(id) {
       return `<tr><td><b>${esc(r.student_name)}</b><div class="meta">${new Date(r.created_at).toLocaleTimeString('kk-KZ', {hour:'2-digit', minute:'2-digit'})}</div></td><td><b>${r.score}/${r.max_score}</b> <span class="meta">${p}%</span></td>
       <td><span class="badge bg-${c}">${c === 'g' ? 'Меңгерді' : c === 'a' ? 'Жартылай' : 'Қолдау қажет'}</span></td><td>${wrong.length ? wrong.map(n => '№' + n).join(', ') : '—'}</td><td style="text-align:right"><button class="btn btn-g btn-res" data-dstu="${r.id}">Нәтиже ›</button></td></tr>`; }).join('')}
     </tbody></table></div>`;
+  $('#diagPdf').onclick = () => runPdf($('#diagPdf'), () => pdfClass(t));
   body.querySelectorAll('[data-dstu]').forEach(b => b.onclick = () => openStudent(t, b.dataset.dstu));
   $('#diagCsv').onclick = () => csv(`${t.title}.csv`, [['Оқушы', 'Балл', 'Максимум', '%', ...t.questions.map((_, i) => '№' + (i + 1))],
     ...sorted.map(r => [r.student_name, r.score, r.max_score, Math.round(r.score / r.max_score * 100), ...r.correct.map(ok => ok ? 1 : 0)])]);
@@ -806,14 +811,17 @@ function renderChecks() {
     const p = c.max_total ? Math.round(c.total / c.max_total * 100) : 0, [lc, lt] = level(p);
     return `<tr><td><b>${esc(c.student_label)}</b><div class="meta">${fmtDate(c.created_at)}</div></td><td>${esc(c.title)}${c.class_label ? ` <span class="meta">· ${esc(c.class_label)}</span>` : ''}</td>
       <td><b>${+c.total}/${+c.max_total}</b></td><td><span class="badge bg-${lc}">${lt}</span></td>
-      <td><button class="btn btn-d" data-rmc="${c.id}" title="Өшіру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></td></tr>`; }).join('')}</tbody></table></div>`;
+      <td style="white-space:nowrap"><button class="btn btn-d" data-pdfc="${c.id}" title="Оқушының PDF есебі"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6m-3 3 3 3 3-3"/></svg></button><button class="btn btn-d" data-rmc="${c.id}" title="Өшіру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></td></tr>`; }).join('')}</tbody></table></div>`;
 }
 $('#bFilter').onchange = renderChecks;
 $('#bList').addEventListener('click', async e => {
+  const pc = e.target.closest('[data-pdfc]'); if (pc) { const c = CHECKS.find(x => x.id === pc.dataset.pdfc); return runPdf(pc, () => pdfBzhb([c], c.student_label + ' — ' + c.title)); }
   const b = e.target.closest('[data-rmc]'); if (!b || !confirm('Бұл нәтиже өшірілсін бе?')) return;
   const {error} = await sb.from('bzhb_checks').delete().eq('id', b.dataset.rmc); if (error) return alert(error.message);
   CHECKS = CHECKS.filter(c => c.id !== b.dataset.rmc); renderChecks(); renderStats();
 });
+$('#bPdf').onclick = () => { const f = $('#bFilter').value, list = CHECKS.filter(c => !f || c.title === f);
+  if (!list.length) return alert('Бекітілген жұмыс жоқ.'); runPdf($('#bPdf'), () => pdfBzhb(list, f || 'БЖБ/ТЖБ нәтижелері')); };
 $('#bCsv').onclick = () => {
   const list = CHECKS.filter(c => !$('#bFilter').value || c.title === $('#bFilter').value);
   const tasks = $('#bFilter').value && list[0] ? (list[0].rubric || []) : [];
@@ -821,6 +829,81 @@ $('#bCsv').onclick = () => {
     ...list.map(c => [c.student_label, c.class_label || '', c.title, fmtDate(c.created_at) + ' ' + new Date(c.created_at).getFullYear(),
       ...tasks.map(t => ((c.result.tasks || []).find(x => String(x.n) === String(t.n)) || {}).score ?? ''), +c.total, +c.max_total, c.max_total ? Math.round(c.total / c.max_total * 100) : 0])]);
 };
+
+// ── PDF есептер ──
+async function runPdf(btn, fn) {
+  const html = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="loading" style="border-color:rgba(26,86,219,.3);border-top-color:#1a56db"></span>PDF…';
+  try { await GoTABPDF.load(); await fn(); } catch (e) { console.error(e); alert('PDF жасалмады: ' + e.message); }
+  btn.disabled = false; btn.innerHTML = html;
+}
+const pctOf = r => r.max_score ? Math.round(r.score / r.max_score * 100) : 0;
+const lvl = p => p >= 85 ? ['g', 'Меңгерді'] : p >= 50 ? ['a', 'Жартылай'] : ['r', 'Қолдау қажет'];
+const testMeta = t => [t.grade ? t.grade + '-сынып' : '', SUBJ[t.subject] || '', t.topic || '', fmtDate(t.created_at) + ' ' + new Date(t.created_at).getFullYear()].filter(Boolean).join(' · ');
+function studentAdvice(t, r) {
+  const wrongN = r.correct.map((ok, i) => ok ? null : i + 1).filter(Boolean), p = pctOf(r);
+  const skills = [...new Set(t.questions.map((q, i) => r.correct[i] ? null : q.skill).filter(Boolean))];
+  if (!wrongN.length) return 'Барлық сұраққа дұрыс жауап берді. Келесі сабақта қиындау тапсырма беруге болады.';
+  return (p >= 50 ? `Негізін меңгерген, бірақ ${wrongN.map(n => '№' + n).join(', ')} сұрақтарда қателесті.` : `Тақырыпты әлі меңгермеген: ${wrongN.length} сұрақта қате.`)
+    + (skills.length ? ` Қайталау керек: ${skills.join(', ')}.` : '');
+}
+function studentSection(d, t, r) {
+  const rs = RESULTS[t.id] || [], p = pctOf(r), [ck, lt] = lvl(p);
+  d.studentHead(r.student_name, `${fmtDate(r.created_at)}, ${hhmm(r.created_at)} · ${t.questions.length} сұрақ`, p, `${r.score}/${r.max_score}`, lt);
+  d.note('Қорытынды: ' + studentAdvice(t, r), ck);
+  t.questions.forEach((q, i) => { const a = r.answers[i], ok = r.correct[i] === true, cls = rs.length ? Math.round(rs.filter(x => x.correct[i] === true).length / rs.length * 100) : 0;
+    d.qcard(ok, `${i + 1}. ${q.q}`, [[`Жауабы: ${a == null ? '—' : (q.options[a] ?? '—')} ${ok ? '✓' : '✗'}`, ok ? 'g' : 'r'],
+      ...(ok ? [] : [[`Дұрыс жауап: ${q.options[q.answer]}`, 'g']]),
+      [`${q.skill ? 'Дағды: ' + q.skill + ' · ' : ''}сыныптың ${cls}%-ы дұрыс жауап берді`]]); });
+}
+async function pdfStudent(t, r) {
+  const d = GoTABPDF.doc(r.student_name + ' — ' + t.title).header(testMeta(t));
+  studentSection(d, t, r);
+  await d.save(`${r.student_name} — ${t.title}`);
+}
+async function pdfClass(t) {
+  const {rs, qs, avg} = diagData(t);
+  if (!rs.length) return alert('Бұл тестке әлі ешкім жауап бермеген.');
+  const sorted = rs.slice().sort((a, b) => pctOf(b) - pctOf(a));
+  const need = rs.filter(r => pctOf(r) < 50).length, hard = qs.slice().sort((a, b) => a.pct - b.pct)[0];
+  const d = GoTABPDF.doc(t.title).header('Сынып нәтижесі · ' + testMeta(t));
+  d.tiles([[rs.length, 'оқушы қатысты'], [avg + '%', 'орташа меңгеру', lvl(avg)[0]], ['№' + (hard.i + 1), `ең қиын сұрақ (${hard.pct}%)`], [need, 'оқушыға қолдау қажет', need ? 'r' : 'g']]);
+  d.h2('Сұрақтар бойынша');
+  qs.forEach(q => d.bar(`${q.i + 1}. ${q.q}`, q.pct, `Дұрыс жауап: ${q.right}` + (q.wrong ? ` · ең жиі қате: ${q.wrong} (${q.wrongPct}%)` : '') + (q.skill ? ` · ${q.skill}` : '')));
+  d.h2('Оқушылар');
+  d.table([['Оқушы', .36], ['Балл', .14, 'right'], ['Деңгей', .22], ['Қате сұрақтар', .28]],
+    sorted.map(r => { const p = pctOf(r), [ck, lt] = lvl(p), wrong = r.correct.map((ok, i) => ok ? null : '№' + (i + 1)).filter(Boolean);
+      return [{t: r.student_name, bold: true}, {t: `${r.score}/${r.max_score} (${p}%)`, color: ck, bold: true}, {t: lt, pill: ck}, wrong.join(', ') || '—']; }));
+  d.pageBreak(); d.h2('Әр оқушының нәтижесі');
+  sorted.forEach((r, i) => { if (i) d.p('', {gap: 14}); studentSection(d, t, r); });
+  await d.save(`${t.title} — сынып нәтижесі`);
+}
+async function pdfBzhb(list, title) {
+  const tasks = list[0].rubric || [], same = list.every(c => c.title === list[0].title);
+  const d = GoTABPDF.doc(title).header([list[0].class_label, same ? list[0].title : '', list.length + ' оқушы'].filter(Boolean).join(' · '));
+  if (list.length > 1) {
+    const avg = Math.round(list.reduce((s, c) => s + (c.max_total ? c.total / c.max_total : 0), 0) / list.length * 100);
+    d.tiles([[list.length, 'жұмыс тексерілді'], [avg + '%', 'орташа нәтиже', lvl(avg)[0]], [list.filter(c => c.total / c.max_total < .5).length, 'оқушыға қолдау қажет', 'r']]);
+    if (same && tasks.length) { d.h2('Тапсырмалар бойынша');
+      tasks.forEach(tk => { const sc = list.map(c => (c.result.tasks || []).find(x => String(x.n) === String(tk.n))).filter(Boolean);
+        d.bar(`№${tk.n}. ${tk.title}`, sc.length ? Math.round(sc.reduce((s, x) => s + x.score / (x.max || 1), 0) / sc.length * 100) : 0); }); }
+    d.h2('Оқушылар');
+    d.table([['Оқушы', .27], ...(same ? tasks.map(tk => ['№' + tk.n, Math.min(.08, .36 / tasks.length), 'right']) : []), ['Жалпы', .12, 'right'], ['Деңгей', 1]].map((c, i, a) => i === a.length - 1 ? [c[0], 1 - a.slice(0, -1).reduce((s, x) => s + x[1], 0)] : c),
+      list.map(c => { const p = c.max_total ? Math.round(c.total / c.max_total * 100) : 0, [ck] = lvl(p);
+        return [{t: c.student_label, bold: true}, ...(same ? tasks.map(tk => String(((c.result.tasks || []).find(x => String(x.n) === String(tk.n)) || {}).score ?? '—')) : []),
+          {t: `${+c.total}/${+c.max_total}`, bold: true, color: ck}, {t: level(p)[1], pill: ck}]; }));
+    d.pageBreak();
+  }
+  list.forEach((c, i) => {
+    const p = c.max_total ? Math.round(c.total / c.max_total * 100) : 0, [ck] = lvl(p);
+    if (i) d.p('', {gap: 14});
+    d.studentHead(c.student_label, `${c.title} · ${fmtDate(c.created_at)} ${new Date(c.created_at).getFullYear()}`, p, `${+c.total}/${+c.max_total}`, level(p)[1]);
+    d.table([['Тапсырма және түсіндірме', .82], ['Балл', .18, 'right']],
+      (c.result.tasks || []).map(tk => [{t: `№${tk.n}. ${tk.title || ''}` + (tk.explanation ? `\n${tk.explanation}` : '') + (tk.confidence === 'low' ? '\n(AI сенімсіз болды — мұғалім тексерді)' : '')},
+        {t: `${tk.score}/${tk.max}`, bold: true, color: lvl(tk.max ? tk.score / tk.max * 100 : 0)[0]}]));
+    if (c.result.summary) d.note('Қорытынды: ' + c.result.summary, ck);
+  });
+  await d.save(title);
+}
 
 // ── ортақ ──
 function csv(name, rows) {
