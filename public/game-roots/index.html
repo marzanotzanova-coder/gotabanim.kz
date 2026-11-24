@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Тамыр аңшысы — GoTAB</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--acc:#22d3ee;--acc2:#a78bfa;--ok:#4ade80;--bad:#fb7185;--gold:#fbbf24;--txt:#e8f1ff;--muted:#93a4c3;--card:rgba(12,20,48,.78);--border:rgba(125,211,252,.28)}
+html,body{height:100%}
+body{font-family:Inter,system-ui,sans-serif;background:#050816;color:var(--txt);overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+.ui{position:fixed;z-index:5}
+/* HUD */
+#hud{top:0;left:0;right:0;display:none;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(180deg,rgba(5,8,22,.85),rgba(5,8,22,0))}
+#hud.on{display:flex}
+.hb{width:40px;height:40px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--txt);font-size:17px;cursor:pointer;flex-shrink:0}
+.hb.off{opacity:.4}
+.lv{font-size:12px;font-weight:900;letter-spacing:1.5px;color:var(--acc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hearts{font-size:20px;letter-spacing:1px;white-space:nowrap}.hearts .x{filter:grayscale(1) brightness(.4)}
+.sp{flex:1}
+.combo{font-weight:900;color:var(--gold);text-shadow:0 0 12px #f97316;font-size:15px;opacity:0;transition:opacity .2s}.combo.on{opacity:1}
+.score{font-size:22px;font-weight:900;min-width:70px;text-align:right;font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(34,211,238,.6)}
+.dots{display:flex;gap:5px}.dots i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.15)}.dots i.d{background:var(--ok);box-shadow:0 0 8px var(--ok)}.dots i.c{background:var(--acc);box-shadow:0 0 8px var(--acc)}
+/* equation panel */
+#eq{top:64px;left:50%;transform:translateX(-50%);display:none;flex-direction:column;align-items:center;gap:8px;width:min(620px,94vw);padding:14px 18px 12px;border-radius:20px;background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1.5px solid var(--border);box-shadow:0 10px 40px rgba(0,0,0,.45),0 0 30px rgba(34,211,238,.15)}
+#eq.on{display:flex}
+#eqText{font-size:clamp(24px,5vw,38px);font-weight:900;letter-spacing:.5px;text-shadow:0 0 20px rgba(34,211,238,.5);white-space:nowrap}
+#eqText.pop{animation:pop .45s}
+.eqrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+.found{font-size:13px;font-weight:800;color:var(--muted)}.found b{color:var(--ok)}
+.btn{border:1.5px solid var(--border);background:rgba(255,255,255,.06);color:var(--txt);font:800 14px Inter,sans-serif;padding:9px 14px;border-radius:12px;cursor:pointer;min-height:42px}
+.btn:hover{border-color:var(--acc);background:rgba(34,211,238,.12)}
+.btn.none{border-color:rgba(167,139,250,.6);color:#ddd6fe}
+.btn:disabled{opacity:.35;cursor:default}
+#hint{font-size:14px;font-weight:700;color:#fde68a;text-align:center;line-height:1.45;display:none}#hint.on{display:block}
+/* toast + banner */
+#toast{left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%);padding:10px 18px;border-radius:14px;font-weight:800;font-size:16px;background:rgba(5,8,22,.85);border:1.5px solid var(--border);opacity:0;transition:opacity .25s;pointer-events:none;text-align:center;max-width:92vw}
+#toast.on{opacity:1}#toast.bad{border-color:var(--bad);color:#fecdd3}#toast.ok{border-color:var(--ok);color:#bbf7d0}
+#banner{left:50%;top:40%;transform:translate(-50%,-50%);font:900 clamp(30px,7vw,60px)/1.05 Inter,sans-serif;color:var(--gold);text-shadow:0 4px 0 #92400e,0 0 34px #f97316;opacity:0;pointer-events:none;text-align:center;white-space:nowrap}
+#banner.show{animation:ban 1.5s forwards}
+@keyframes ban{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}30%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-75%)}}
+@keyframes pop{40%{transform:scale(1.12)}}
+/* panels: menu, level end */
+.panel{inset:0;display:none;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at center,rgba(5,8,22,.35),rgba(5,8,22,.85));overflow-y:auto}
+.panel.on{display:flex}
+.box{width:min(640px,100%);text-align:center;padding:28px 24px;border-radius:28px;background:var(--card);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1.5px solid var(--border);box-shadow:0 20px 70px rgba(0,0,0,.55),0 0 50px rgba(34,211,238,.18);animation:in .45s;margin:auto}
+@keyframes in{from{opacity:0;transform:scale(.9) translateY(20px)}}
+.tag{display:inline-block;padding:6px 14px;border-radius:99px;border:1px solid var(--border);font-size:11px;font-weight:900;letter-spacing:2px;color:var(--acc)}
+h1{font-size:clamp(34px,8vw,58px);font-weight:900;line-height:1;margin:14px 0 6px;background:linear-gradient(90deg,#67e8f9,#a78bfa,#f0abfc,#67e8f9);background-size:200%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sh 4s linear infinite;filter:drop-shadow(0 0 20px rgba(167,139,250,.4))}
+@keyframes sh{to{background-position:200% 0}}
+.lead{color:var(--muted);font-size:15px;line-height:1.55;max-width:470px;margin:0 auto}
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}
+.how div{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:14px;padding:10px 8px;font-size:12.5px;line-height:1.4;color:var(--muted)}.how b{display:block;font-size:22px;margin-bottom:4px}
+.levels{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.lvb{position:relative;text-align:left;padding:14px 14px 12px;border-radius:16px;border:1.5px solid var(--border);background:rgba(255,255,255,.05);color:var(--txt);cursor:pointer;font-family:inherit;transition:transform .15s,border-color .15s}
+.lvb:hover{transform:translateY(-3px);border-color:var(--acc);background:rgba(34,211,238,.1)}
+.lvb .n{font-size:11px;font-weight:900;letter-spacing:1.5px;color:var(--acc)}.lvb .t{font-size:15.5px;font-weight:900;margin:3px 0}.lvb .e{font-size:12.5px;color:var(--muted);font-family:Inter,monospace}
+.lvb .st{position:absolute;right:12px;top:10px;font-size:14px;letter-spacing:1px}
+@media(max-width:520px){.how{grid-template-columns:1fr}.levels{grid-template-columns:1fr}}
+.big{font-size:64px;line-height:1}
+.stars{font-size:46px;margin:10px 0;letter-spacing:6px}.stars .x{filter:grayscale(1) brightness(.35)}
+.res{font:900 46px Inter,sans-serif;color:var(--acc);text-shadow:0 0 24px rgba(34,211,238,.5)}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.go{padding:15px 32px;border:none;border-radius:16px;background:linear-gradient(135deg,#22d3ee,#a78bfa);color:#06102a;font:900 17px Inter,sans-serif;cursor:pointer;box-shadow:0 8px 26px rgba(34,211,238,.35)}
+.go:hover{filter:brightness(1.1);transform:translateY(-2px)}
+.ghost{padding:15px 22px;border-radius:16px;border:1.5px solid var(--border);background:transparent;color:var(--txt);font:800 15px Inter,sans-serif;cursor:pointer;text-decoration:none}
+.sol{margin-top:12px;text-align:left;font-size:13.5px;line-height:1.6;color:var(--muted);background:rgba(0,0,0,.25);border-radius:14px;padding:10px 14px;max-height:180px;overflow:auto}.sol b{color:var(--txt)}
+.rec{display:inline-block;margin-top:6px;padding:5px 14px;border-radius:99px;background:linear-gradient(135deg,#fde047,#f97316);color:#3b1500;font-size:13px;font-weight:900}
+@media(max-width:600px){#eq{top:58px;padding:10px 12px}.lv,.dots,.combo{display:none}#hud{gap:6px;padding:8px 10px}.hb{width:36px;height:36px}.score{font-size:19px;min-width:56px}#toast{font-size:14px}}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div class="ui" id="hud">
+  <button class="hb" id="bMenu" title="Мәзір" aria-label="Мәзір">☰</button>
+  <div class="lv" id="lvName"></div>
+  <div class="hearts" id="hearts"></div>
+  <div class="dots" id="dots"></div>
+  <div class="sp"></div>
+  <div class="combo" id="combo"></div>
+  <div class="score" id="score">0</div>
+  <button class="hb" id="bMusic" title="Музыка" aria-label="Музыка">🎵</button>
+  <button class="hb" id="bFx" title="Дыбыс" aria-label="Дыбыс">🔊</button>
+</div>
+
+<div class="ui" id="eq">
+  <div id="eqText"></div>
+  <div class="eqrow"><span class="found" id="found"></span><button class="btn none" id="bNone">∅ Түбірі жоқ</button><button class="btn" id="bHint">💡 Кеңес</button></div>
+  <div id="hint"></div>
+</div>
+<div class="ui" id="toast"></div>
+<div class="ui" id="banner"></div>
+
+<div class="ui panel on" id="menu"><div class="box">
+  <span class="tag">АЛГЕБРА · 8-СЫНЫП · 2-ТОҚСАН</span>
+  <h1>ТАМЫР АҢШЫСЫ</h1>
+  <p class="lead">Жерге квадрат теңдеуі жазылған метеорит құлап келеді! Оны жою үшін зеңбірекпен теңдеудің <b style="color:#e8f1ff">түбірлері</b> тұрған нүктелерден ат.</p>
+  <div class="how"><div><b>🎯</b>Сан осінен түбірді бас — зеңбірек сол жерден атады</div><div><b>☄️</b>Барлық түбірді тапсаң — метеорит жарылады</div><div><b>∅</b>Түбірі жоқ болса (D &lt; 0) — қалқанды қос</div></div>
+  <div class="levels" id="levels"></div>
+  <p class="lead" style="font-size:12.5px;margin-top:14px">Пернетақта: ← → жылжу, Бос орын — ату, N — түбірі жоқ, H — кеңес</p>
+</div></div>
+
+<div class="ui panel" id="end"><div class="box" id="endBox"></div></div>
+
+<script>
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+const store = { get: k => { try { return localStorage.getItem(k); } catch (_) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (_) {} } };
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const M = n => n < 0 ? '−' + (-n) : String(n);
+
+// ---------------- equations ----------------
+function fmt(a, b, c) {
+  const term = (k, v, first) => { if (!k) return ''; const s = k < 0 ? '−' : '+', m = Math.abs(k), co = (m === 1 && v) ? '' : m;
+    return first ? (k < 0 ? '−' : '') + co + v : ` ${s} ${co}${v}`; };
+  let s = term(a, 'x²', true) + term(b, 'x', false) + term(c, '', false); return s + ' = 0';
+}
+function make(a, b, c, kind) {
+  const D = b * b - 4 * a * c; let roots = [];
+  if (D > 0) { const s = Math.sqrt(D); roots = [(-b - s) / (2 * a), (-b + s) / (2 * a)].sort((x, y) => x - y); }
+  else if (D === 0) roots = [-b / (2 * a)];
+  return { a, b, c, D, kind, roots: roots.map(r => Math.round(r * 1e6) / 1e6), text: fmt(a, b, c) };
+}
+const nz = (lo, hi) => { let r; do r = rnd(lo, hi); while (!r); return r; };
+const GEN = {
+  1: i => { if (i % 2 === 0) { const k = rnd(1, 9), a = pick([1, 1, 2, 3]); return make(a, 0, -a * k * k, 'c'); }
+             const r = nz(-9, 9), a = pick([1, 1, 2, 3]); return make(a, -a * r, 0, 'b'); },
+  2: () => { let r1, r2; do { r1 = nz(-8, 8); r2 = nz(-8, 8); } while (r1 === r2); return make(1, -(r1 + r2), r1 * r2, 'v'); },
+  3: () => { const a = pick([2, 3, -1, -2, 2]); let r1, r2; do { r1 = rnd(-6, 6); r2 = rnd(-6, 6); } while (r1 === r2); return make(a, -a * (r1 + r2), a * r1 * r2, 'd'); },
+  4: (i, plan) => { const t = plan[i];
+    if (t === 'none') { const p = pick([-6, -4, -2, 0, 2, 4, 6]); return make(1, p, p * p / 4 + rnd(1, 7), 'd'); }
+    if (t === 'one') { const r = nz(-7, 7), a = pick([1, 1, 2]); return make(a, -2 * a * r, a * r * r, 'd'); }
+    let r1, r2; do { r1 = rnd(-7, 7); r2 = rnd(-7, 7); } while (r1 === r2); const a = pick([1, 1, 2, -1]); return make(a, -a * (r1 + r2), a * r1 * r2, 'd'); }
+};
+const LEVELS = [
+  { n: 1, t: 'Толымсыз теңдеулер', e: '2x² − 18 = 0 · x² + 4x = 0', T: 32 },
+  { n: 2, t: 'Келтірілген теңдеу · Виет', e: 'x² − 5x + 6 = 0', T: 30 },
+  { n: 3, t: 'Толық квадрат теңдеу', e: '2x² − 2x − 12 = 0', T: 36 },
+  { n: 4, t: 'Дискриминант: неше түбір?', e: 'x² + 2x + 5 = 0 · x² − 6x + 9 = 0', T: 30 }
+];
+const PER = 5;
+function levelSet(n) { const plan = shuffle(['none', 'one', 'two', 'two', 'none']); const out = [], seen = new Set();
+  for (let i = 0; out.length < PER && i < 200; i++) { const e = GEN[n](out.length, plan); if (!seen.has(e.text) && e.roots.every(r => Math.abs(r) <= 9 && Number.isInteger(r))) { seen.add(e.text); out.push(e); } }
+  return out; }
+function hintFor(e) {
+  if (e.kind === 'c') return `Бос мүшені оңға шығар: ${e.a === 1 ? '' : e.a + 'x² = ' + (-e.c) + ' → '}x² = ${-e.c / e.a} → x = ±√${-e.c / e.a}`;
+  if (e.kind === 'b') return `Жақша сыртына x шығар: x(${e.a === 1 ? '' : e.a}x ${e.b < 0 ? '−' : '+'} ${Math.abs(e.b)}) = 0 → x = 0 немесе ${e.a === 1 ? '' : e.a}x ${e.b < 0 ? '−' : '+'} ${Math.abs(e.b)} = 0`;
+  if (e.kind === 'v') return `Виет теоремасы: x₁ + x₂ = ${M(-e.b)}, x₁ · x₂ = ${M(e.c)}. Қосындысы ${M(-e.b)}, көбейтіндісі ${M(e.c)} болатын екі санды тап!`;
+  return `D = b² − 4ac = ${e.b < 0 ? '(' + M(e.b) + ')' : e.b}² − 4·${e.a < 0 ? '(' + M(e.a) + ')' : e.a}·${e.c < 0 ? '(' + M(e.c) + ')' : e.c} = ${M(e.D)}${e.D < 0 ? ' < 0' : e.D === 0 ? ' → бір түбір' : ' > 0 → x = (−b ± √D) / 2a'}`;
+}
+function solution(e) {
+  const r = e.roots.map(M);
+  if (!r.length) return `D = ${M(e.D)} < 0 → нақты түбірі жоқ`;
+  if (r.length === 1) return `D = 0 → бір түбір: x = ${r[0]}`;
+  if (e.kind === 'c') return `x² = ${-e.c / e.a} → x = ${r[0]}; x = ${r[1]}`;
+  if (e.kind === 'b') return `x(${e.a === 1 ? '' : e.a}x ${e.b < 0 ? '−' : '+'} ${Math.abs(e.b)}) = 0 → x = ${r[0]}; x = ${r[1]}`;
+  if (e.kind === 'v') { const p = v => v.startsWith('−') ? `(${v})` : v; return `Виет: ${r[0]} + ${p(r[1])} = ${M(-e.b)}, ${r[0]} · ${p(r[1])} = ${M(e.c)} → x₁ = ${r[0]}, x₂ = ${r[1]}`; }
+  return `D = ${M(e.D)}, √D = ${Math.sqrt(e.D)} → x₁ = ${r[0]}, x₂ = ${r[1]}`;
+}
+const fval = (e, x) => e.a * x * x + e.b * x + e.c;
+
+// ---------------- sound ----------------
+const AU = (() => {
+  let ctx = null, fx, mu, seq = null, step = 0, fxOn = store.get('rhFx') !== 'off', muOn = store.get('rhMusic') !== 'off', nb = null;
+  const A = () => { if (!ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ctx = new C(); fx = ctx.createGain(); fx.gain.value = .5; fx.connect(ctx.destination); mu = ctx.createGain(); mu.gain.value = 0; mu.connect(ctx.destination); } if (ctx.state === 'suspended') ctx.resume(); return ctx; };
+  function t(f, at, d, v, type = 'sine', o = fx, to = 0) { const s = ctx.currentTime + at, os = ctx.createOscillator(), g = ctx.createGain(); os.type = type; os.frequency.setValueAtTime(f, s); if (to) os.frequency.exponentialRampToValueAtTime(to, s + d * .9); g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(v, s + .01); g.gain.exponentialRampToValueAtTime(.0001, s + d); os.connect(g); g.connect(o); os.start(s); os.stop(s + d + .05); }
+  function n(at, d, v, f = 800, q = .8, o = fx) { if (!nb) { nb = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate); const c = nb.getChannelData(0); for (let i = 0; i < c.length; i++) c[i] = Math.random() * 2 - 1; } const s = ctx.currentTime + at, b = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain(); b.buffer = nb; fl.type = 'bandpass'; fl.frequency.value = f; fl.Q.value = q; g.gain.setValueAtTime(v, s); g.gain.exponentialRampToValueAtTime(.0001, s + d); b.connect(fl); fl.connect(g); g.connect(o); b.start(s); b.stop(s + d + .05); }
+  const S = {
+    laser: () => { t(1800, 0, .18, .12, 'sawtooth', fx, 300); },
+    hit: k => { n(0, .35, .55, 500); t(140, 0, .3, .3, 'sine', fx, 50); [0, 4, 7].forEach((s, i) => t(660 * Math.pow(2, (s + Math.min(k, 8)) / 12), .05 + i * .05, .18, .12, 'triangle')); },
+    boom: () => { n(0, 1.1, .8, 260, .5); t(80, 0, .9, .45, 'sine', fx, 30); [523, 659, 784, 1047].forEach((f, i) => t(f, .25 + i * .08, .3, .12, 'triangle')); },
+    miss: () => { t(240, 0, .2, .2, 'sawtooth', fx, 110); t(170, .12, .28, .15, 'square', fx, 90); },
+    shield: () => { t(300, 0, .6, .15, 'sine', fx, 1200); t(450, .05, .6, .1, 'triangle', fx, 1600); },
+    impact: () => { n(0, 1.2, .9, 150, .4); t(60, 0, 1, .5, 'sine', fx, 25); },
+    move: () => t(900, 0, .04, .05, 'square'),
+    warn: () => { t(880, 0, .12, .1, 'square'); t(660, .14, .12, .1, 'square'); },
+    win: () => { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => t(f, i * .11, i === 6 ? .9 : .3, .17, 'triangle')); },
+    lose: () => { [392, 370, 349, 262].forEach((f, i) => t(f, i * .26, .45, .17, 'triangle')); },
+    star: () => { t(988, 0, .08, .14, 'square'); t(1319, .07, .3, .14, 'square'); }
+  };
+  const CH = [[110, 164.8, 220, 261.6], [87.3, 130.8, 174.6, 220], [98, 146.8, 196, 246.9], [82.4, 123.5, 164.8, 207.7]];
+  function beat() { const c = CH[Math.floor(step / 16) % 4], s = step % 16; if (s === 0) { t(c[0], 0, 2.2, .08, 'triangle', mu); t(c[1], 0, 2.2, .04, 'sine', mu); }
+    if (s % 2 === 0) t(c[(s / 2) % 4] * 4, 0, .5, .03, 'sine', mu); if (s % 4 === 2) n(0, .04, .04, 6000, 1.2, mu); step++; }
+  return {
+    play(k, a) { if (fxOn && A()) try { S[k](a); } catch (_) {} },
+    music(on) { if (!A()) return; if (on && muOn) { if (!seq) { mu.gain.cancelScheduledValues(ctx.currentTime); mu.gain.linearRampToValueAtTime(1, ctx.currentTime + 1.5); seq = setInterval(beat, 170); } } else if (seq) { clearInterval(seq); seq = null; mu.gain.value = 0; } },
+    get fxOn() { return fxOn; }, get muOn() { return muOn; },
+    tFx() { fxOn = !fxOn; store.set('rhFx', fxOn ? 'on' : 'off'); }, tMu(p) { muOn = !muOn; store.set('rhMusic', muOn ? 'on' : 'off'); this.music(muOn && p); }
+  };
+})();
+
+// ---------------- canvas world ----------------
+const cv = $('cv'), g = cv.getContext('2d'); let W = 0, H = 0, DPR = 1;
+const STARS = Array.from({ length: 180 }, () => ({ x: Math.random(), y: Math.random(), z: .3 + Math.random() * .7, p: Math.random() * 6 }));
+let parts = [], beams = [], floats = [], shake = 0;
+function resize() { DPR = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; g.setTransform(DPR, 0, 0, DPR, 0, 0); }
+addEventListener('resize', resize); resize();
+const L = () => { const m = Math.max(26, W * .05), unit = (W - 2 * m) / 20; return { m, unit, y: H - Math.max(84, H * .14), x0: W / 2 }; };
+const sx = x => { const l = L(); return l.x0 + x * l.unit; };
+function burst(x, y, cols, n = 30, sp = 6) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = sp * (.3 + Math.random()); parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, dec: .015 + Math.random() * .025, s: 1.5 + Math.random() * 3.5, c: pick(cols) }); } }
+function floatText(x, y, t, c) { floats.push({ x, y, t, c, life: 1 }); }
+
+// ---------------- game state ----------------
+let G = null, mode = 'menu';
+function rock(n) { return Array.from({ length: n }, (_, i) => ({ a: i / n * 6.283, r: .78 + Math.random() * .3 })); }
+function newMeteor() { return { y: -80, shape: rock(14), crat: Array.from({ length: 5 }, () => ({ a: Math.random() * 6.28, d: Math.random() * .55, r: .1 + Math.random() * .14 })), rot: 0, size: 1, hits: 0 }; }
+
+function startLevel(n) {
+  const lv = LEVELS[n - 1]; G = { lv: n, eqs: levelSet(n), i: 0, hearts: 3, score: G && G.lv && n > G.lv && G.carry ? G.score : 0, streak: 0, best: 0, ship: 0, shipX: 0, found: [], hinted: false, solved: 0, log: [], busy: false, warned: false };
+  $('menu').classList.remove('on'); $('end').classList.remove('on'); $('hud').classList.add('on'); $('eq').classList.add('on');
+  $('lvName').textContent = `${n}-ДЕҢГЕЙ · ${lv.t.toUpperCase()}`; mode = 'play'; banner(`${n}-ДЕҢГЕЙ`); AU.music(true); nextEq(true);
+}
+function nextEq(first) {
+  if (G.i >= G.eqs.length) return levelDone();
+  G.eq = G.eqs[G.i]; G.found = []; G.hinted = false; G.busy = false; G.warned = false; G.met = newMeteor(); G.t = 0; G.T = LEVELS[G.lv - 1].T;
+  $('eqText').textContent = G.eq.text; $('eqText').classList.remove('pop'); void $('eqText').offsetWidth; $('eqText').classList.add('pop');
+  $('hint').classList.remove('on'); $('bHint').disabled = false; $('bNone').disabled = false; ui();
+}
+function ui() {
+  $('hearts').innerHTML = [0, 1, 2].map(i => `<span class="${i < G.hearts ? '' : 'x'}">❤️</span>`).join('');
+  $('dots').innerHTML = G.eqs.map((_, i) => `<i class="${i < G.i ? 'd' : i === G.i ? 'c' : ''}"></i>`).join('');
+  const m = mult(); $('combo').textContent = m > 1 ? `×${m} 🔥` : ''; $('combo').classList.toggle('on', m > 1);
+  $('score').textContent = G.score;
+  const need = G.eq.roots.length; $('found').innerHTML = need ? `Табылған түбір: <b>${G.found.length}</b> / ?` : 'Табылған түбір: <b>0</b> / ?';
+}
+const mult = () => 1 + Math.min(4, Math.floor(G.streak / 3));
+let toastT; function toast(t, kind) { const el = $('toast'); el.textContent = t; el.className = 'ui on ' + (kind || ''); clearTimeout(toastT); toastT = setTimeout(() => el.className = 'ui', 2200); }
+function banner(t) { const b = $('banner'); b.textContent = t; b.className = 'ui'; void b.offsetWidth; b.className = 'ui show'; }
+
+function fire(x) {
+  if (mode !== 'play' || G.busy) return; x = Math.max(-10, Math.min(10, Math.round(x)));
+  G.ship = x; AU.play('laser');
+  const e = G.eq, met = G.met, isRoot = e.roots.some(r => r === x), already = G.found.includes(x);
+  const topY = isRoot && !already ? met.y : -20; beams.push({ x, top: topY, life: 1, ok: isRoot });
+  if (already) return toast(`x = ${M(x)} — бұл түбір табылған`, '');
+  if (isRoot) {
+    G.found.push(x); G.streak++; G.best = Math.max(G.best, G.streak); const pts = Math.round(100 * mult() * (G.hinted ? .5 : 1)); G.score += pts;
+    met.hits++; met.size = Math.max(.45, 1 - met.hits * .22); shake = 6; AU.play('hit', G.streak);
+    burst(sx(x), met.y, ['#fde68a', '#fb923c', '#fff', '#67e8f9'], 40, 7); floatText(sx(x), met.y - 40, '+' + pts, '#4ade80');
+    toast(`✓ x = ${M(x)}: ${checkStr(x)} = 0`, 'ok');
+    if (mult() > 1 && G.streak % 3 === 0) setTimeout(() => banner(`КОМБО ×${mult()}!`), 200);
+    if (G.found.length === e.roots.length) solved(); ui();
+  } else {
+    G.streak = 0; AU.play('miss'); const v = fval(e, x); floatText(sx(x), L().y - 60, `${M(v)} ≠ 0`, '#fb7185');
+    toast(`✗ x = ${M(x)}: ${checkStr(x)} = ${M(v)} ≠ 0`, 'bad'); loseHeart(); ui();
+  }
+}
+function checkStr(x) { const e = G.eq, p = x < 0 ? `(${M(x)})` : M(x);
+  const parts = []; if (e.a) parts.push(`${e.a === 1 ? '' : e.a === -1 ? '−' : M(e.a) + '·'}${p}²`); if (e.b) parts.push(`${e.b < 0 ? ' − ' : ' + '}${Math.abs(e.b) === 1 ? '' : Math.abs(e.b) + '·'}${p}`); if (e.c) parts.push(`${e.c < 0 ? ' − ' : ' + '}${Math.abs(e.c)}`);
+  return parts.join(''); }
+function noRoots() {
+  if (mode !== 'play' || G.busy) return;
+  if (!G.eq.roots.length) { G.streak++; G.best = Math.max(G.best, G.streak); const pts = Math.round(150 * mult() * (G.hinted ? .5 : 1)); G.score += pts; AU.play('shield');
+    G.met.shield = 1; floatText(W / 2, G.met.y - 50, '+' + pts, '#a78bfa'); solved(true); ui(); }
+  else { G.streak = 0; AU.play('miss'); toast('✗ Бұл теңдеудің түбірі бар! D ≥ 0', 'bad'); loseHeart(); ui(); }
+}
+function loseHeart() { G.hearts--; shake = 12; flash = 1; if (G.hearts <= 0) { G.busy = true; mode = 'over'; setTimeout(levelFail, 900); } }
+function solved(viaShield) {
+  G.busy = true; const left = Math.max(0, 1 - G.t / G.T), bonus = Math.round(left * 120); G.score += bonus; G.solved++;
+  G.log.push({ eq: G.eq.text, sol: solution(G.eq), ok: true });
+  if (!viaShield) { AU.play('boom'); burst(W / 2, G.met.y, ['#fde68a', '#fb923c', '#f87171', '#fff', '#a78bfa'], 110, 10); shake = 16; G.met.dead = true; }
+  else { G.met.fade = 1; }
+  if (bonus > 10) floatText(W / 2, G.met.y + 30, `жылдамдық +${bonus}`, '#fde68a');
+  G.graph = { e: G.eq, life: 1 }; toast(solution(G.eq), 'ok'); G.i++; ui();
+  setTimeout(() => { if (mode === 'play') nextEq(); }, 2300);
+}
+function impact() {
+  G.busy = true; AU.play('impact'); shake = 24; flash = 1; burst(W / 2, L().y, ['#f87171', '#fb923c', '#fde68a', '#78350f'], 140, 12);
+  G.log.push({ eq: G.eq.text, sol: solution(G.eq), ok: false }); G.graph = { e: G.eq, life: 1 };
+  toast('💥 Метеорит құлады! ' + solution(G.eq), 'bad'); G.met.dead = true; G.streak = 0; G.i++;
+  G.hearts--; ui(); if (G.hearts <= 0) { mode = 'over'; setTimeout(levelFail, 1300); return; }
+  setTimeout(() => { if (mode === 'play') nextEq(); }, 2600);
+}
+
+// ---------------- end screens ----------------
+const starsKey = n => 'rhStars' + n;
+function levelDone() {
+  mode = 'end'; AU.music(false); AU.play('win'); const st = G.hearts, prev = +store.get(starsKey(G.lv)) || 0; if (st > prev) store.set(starsKey(G.lv), st);
+  const best = +store.get('rhBest') || 0, rec = G.score > best; if (rec) store.set('rhBest', G.score);
+  const last = G.lv === LEVELS.length; G.carry = true;
+  $('endBox').innerHTML = `<div class="big">${last ? '🏆' : '🚀'}</div><h1 style="font-size:clamp(28px,6vw,44px)">${last ? 'ЖЕР ҚҰТҚАРЫЛДЫ!' : G.lv + '-ДЕҢГЕЙ ӨТІЛДІ!'}</h1>
+    <div class="stars">${[0, 1, 2].map(i => `<span class="${i < st ? '' : 'x'}">⭐</span>`).join('')}</div><div class="res" id="resN">0</div>
+    ${rec ? '<span class="rec">🏅 ЖАҢА РЕКОРД!</span>' : best ? `<p class="lead">Рекорд: ${best}</p>` : ''}
+    <p class="lead" style="margin-top:8px">Жойылған метеорит: ${G.solved} / ${G.eqs.length} · үздік комбо: ${G.best}</p>
+    <div class="sol">${G.log.map(l => `<div>${l.ok ? '✅' : '💥'} <b>${l.eq}</b> → ${l.sol}</div>`).join('')}</div>
+    <div class="row">${last ? '' : `<button class="go" id="bNext">Келесі деңгей →</button>`}<button class="ghost" id="bAgain">↻ Қайта ойнау</button><button class="ghost" id="bToMenu">☰ Мәзір</button></div>`;
+  showEnd(); if (last) { for (let k = 0; k < 4; k++) setTimeout(() => burst(Math.random() * W, Math.random() * H * .5, ['#fde047', '#f472b6', '#4ade80', '#38bdf8', '#a78bfa'], 70, 9), k * 350); }
+  const nx = $('bNext'); if (nx) nx.onclick = () => startLevel(G.lv + 1);
+}
+function levelFail() {
+  mode = 'end'; AU.music(false); AU.play('lose'); G.carry = false;
+  $('endBox').innerHTML = `<div class="big">🌋</div><h1 style="font-size:clamp(28px,6vw,44px)">ЖҮРЕКТЕР ТАУСЫЛДЫ</h1>
+    <p class="lead">Метеориттер жеңді... Бірақ сен қайта көтеріліп, теңдеулерді шеше аласың!</p><div class="res" id="resN">0</div>
+    <div class="sol">${G.log.map(l => `<div>${l.ok ? '✅' : '💥'} <b>${l.eq}</b> → ${l.sol}</div>`).join('') || 'Кеңес: «💡 Кеңес» батырмасы Виет теоремасын немесе дискриминантты көрсетеді.'}</div>
+    <div class="row"><button class="go" id="bAgain">↻ Қайта ойнау</button><button class="ghost" id="bToMenu">☰ Мәзір</button></div>`;
+  showEnd();
+}
+function showEnd() { $('hud').classList.remove('on'); $('eq').classList.remove('on'); $('end').classList.add('on');
+  $('bAgain').onclick = () => { G.carry = false; startLevel(G.lv); }; $('bToMenu').onclick = menu;
+  const el = $('resN'), to = G.score, t0 = performance.now(); (function f(t) { const k = Math.min(1, (t - t0) / 1000); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(f); })(t0); }
+function menu() { mode = 'menu'; AU.music(false); $('hud').classList.remove('on'); $('eq').classList.remove('on'); $('end').classList.remove('on');
+  $('levels').innerHTML = LEVELS.map(l => { const s = +store.get(starsKey(l.n)) || 0; return `<button class="lvb" data-l="${l.n}"><span class="st">${s ? '⭐'.repeat(s) : ''}</span><div class="n">${l.n}-ДЕҢГЕЙ</div><div class="t">${l.t}</div><div class="e">${l.e}</div></button>`; }).join('');
+  $('levels').querySelectorAll('.lvb').forEach(b => b.onclick = () => { if (G) G.carry = false; AU.play('star'); startLevel(+b.dataset.l); });
+  $('menu').classList.add('on'); }
+
+// ---------------- input ----------------
+let hoverX = null;
+const toX = px => (px - L().x0) / L().unit;
+cv.addEventListener('pointermove', e => { hoverX = Math.max(-10, Math.min(10, Math.round(toX(e.clientX)))); });
+cv.addEventListener('pointerleave', () => hoverX = null);
+cv.addEventListener('pointerdown', e => { if (mode !== 'play') return; e.preventDefault(); fire(toX(e.clientX)); });
+addEventListener('keydown', e => { if (mode !== 'play') return;
+  if (e.key === 'ArrowLeft') { G.ship = Math.max(-10, G.ship - 1); AU.play('move'); e.preventDefault(); }
+  else if (e.key === 'ArrowRight') { G.ship = Math.min(10, G.ship + 1); AU.play('move'); e.preventDefault(); }
+  else if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowUp') { e.preventDefault(); fire(G.ship); }
+  else if (e.key.toLowerCase() === 'n') noRoots(); else if (e.key.toLowerCase() === 'h') $('bHint').click(); });
+$('bNone').onclick = noRoots;
+$('bHint').onclick = () => { if (mode !== 'play' || G.busy) return; G.hinted = true; $('hint').textContent = '💡 ' + hintFor(G.eq); $('hint').classList.add('on'); $('bHint').disabled = true; AU.play('star'); };
+$('bMenu').onclick = () => { if (mode === 'play' && !confirm('Деңгейден шығып, мәзірге ораламыз ба?')) return; menu(); };
+const sync = () => { $('bFx').textContent = AU.fxOn ? '🔊' : '🔇'; $('bFx').classList.toggle('off', !AU.fxOn); $('bMusic').classList.toggle('off', !AU.muOn); };
+$('bFx').onclick = () => { AU.tFx(); sync(); }; $('bMusic').onclick = () => { AU.tMu(mode === 'play'); sync(); }; sync();
+document.addEventListener('visibilitychange', () => { if (document.hidden) AU.music(false); else if (mode === 'play') AU.music(true); });
+
+// ---------------- render loop ----------------
+let last = performance.now(), flash = 0, clock = 0;
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now; clock += dt;
+  const l = L(); g.save(); if (shake > 0) { g.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake); shake *= .88; if (shake < .4) shake = 0; }
+  // space
+  const sky = g.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#030515'); sky.addColorStop(.6, '#0b1033'); sky.addColorStop(1, '#1b0f3a'); g.fillStyle = sky; g.fillRect(-30, -30, W + 60, H + 60);
+  const neb = g.createRadialGradient(W * .78, H * .25, 10, W * .78, H * .25, Math.max(W, H) * .5); neb.addColorStop(0, 'rgba(167,139,250,.18)'); neb.addColorStop(1, 'rgba(167,139,250,0)'); g.fillStyle = neb; g.fillRect(0, 0, W, H);
+  const neb2 = g.createRadialGradient(W * .15, H * .55, 10, W * .15, H * .55, Math.max(W, H) * .4); neb2.addColorStop(0, 'rgba(34,211,238,.12)'); neb2.addColorStop(1, 'rgba(34,211,238,0)'); g.fillStyle = neb2; g.fillRect(0, 0, W, H);
+  for (const s of STARS) { s.y += dt * .01 * s.z; if (s.y > 1) s.y = 0; g.globalAlpha = .35 + .65 * Math.abs(Math.sin(clock * s.z * 1.7 + s.p)); g.fillStyle = '#fff'; g.fillRect(s.x * W, s.y * H, s.z * 1.8, s.z * 1.8); }
+  g.globalAlpha = 1;
+  // planet
+  const R = W * 1.6, pcY = l.y + R - 26; const pl = g.createRadialGradient(W / 2, pcY - R * .6, R * .2, W / 2, pcY, R); pl.addColorStop(0, '#1e6b8f'); pl.addColorStop(.7, '#123a63'); pl.addColorStop(1, '#0a1a33');
+  g.fillStyle = pl; g.beginPath(); g.arc(W / 2, pcY, R, 0, 7); g.fill(); g.strokeStyle = 'rgba(103,232,249,.55)'; g.lineWidth = 3; g.shadowColor = '#22d3ee'; g.shadowBlur = 24; g.stroke(); g.shadowBlur = 0;
+  if (mode !== 'menu') drawPlay(dt, l);
+  // particles & texts
+  parts = parts.filter(p => p.life > 0); for (const p of parts) { p.vy += .12; p.vx *= .985; p.vy *= .985; p.x += p.vx; p.y += p.vy; p.life -= p.dec; g.globalAlpha = Math.max(0, p.life); g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, p.s, 0, 7); g.fill(); }
+  g.globalAlpha = 1; floats = floats.filter(f => f.life > 0);
+  for (const f of floats) { f.life -= dt * .8; f.y -= dt * 50; g.globalAlpha = Math.min(1, f.life * 2); g.font = '900 24px Inter,sans-serif'; g.textAlign = 'center'; g.lineWidth = 5; g.strokeStyle = 'rgba(0,0,0,.6)'; g.strokeText(f.t, f.x, f.y); g.fillStyle = f.c; g.fillText(f.t, f.x, f.y); }
+  g.globalAlpha = 1; g.restore();
+  if (flash > 0) { g.fillStyle = `rgba(251,113,133,${flash * .35})`; g.fillRect(0, 0, W, H); flash = Math.max(0, flash - dt * 2.5); }
+  requestAnimationFrame(frame);
+}
+function drawPlay(dt, l) {
+  // number line
+  g.strokeStyle = 'rgba(232,241,255,.8)'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(l.m - 10, l.y); g.lineTo(W - l.m + 10, l.y); g.stroke();
+  g.textAlign = 'center'; g.font = `800 ${Math.max(11, Math.min(15, l.unit * .42))}px Inter,sans-serif`;
+  for (let x = -10; x <= 10; x++) { const X = sx(x), big = x % 5 === 0; g.strokeStyle = 'rgba(232,241,255,.75)'; g.lineWidth = big ? 2.5 : 1.5; g.beginPath(); g.moveTo(X, l.y - (big ? 9 : 6)); g.lineTo(X, l.y + (big ? 9 : 6)); g.stroke();
+    if (l.unit > 22 || x % 2 === 0) { g.fillStyle = x === 0 ? '#67e8f9' : 'rgba(232,241,255,.85)'; g.fillText(M(x), X, l.y + 28); } }
+  g.fillStyle = 'rgba(232,241,255,.6)'; g.font = 'italic 800 15px Inter,sans-serif'; g.fillText('x', W - l.m + 18, l.y - 8);
+  if (!G) return;
+  // hover column
+  if (hoverX !== null && mode === 'play') { const X = sx(hoverX); const gr = g.createLinearGradient(0, 0, 0, l.y); gr.addColorStop(0, 'rgba(34,211,238,0)'); gr.addColorStop(1, 'rgba(34,211,238,.13)'); g.fillStyle = gr; g.fillRect(X - l.unit / 2, 0, l.unit, l.y);
+    g.fillStyle = '#67e8f9'; g.font = '900 14px Inter,sans-serif'; g.fillText('x = ' + M(hoverX), X, l.y - 64); }
+  // found roots as crystals
+  for (const r of G.found) { const X = sx(r), p = 1 + Math.sin(clock * 5) * .12; g.save(); g.translate(X, l.y); g.scale(p, p); g.shadowColor = '#4ade80'; g.shadowBlur = 20; g.fillStyle = '#4ade80';
+    g.beginPath(); g.moveTo(0, -16); g.lineTo(9, 0); g.lineTo(0, 16); g.lineTo(-9, 0); g.closePath(); g.fill(); g.restore(); g.fillStyle = '#bbf7d0'; g.font = '900 13px Inter,sans-serif'; g.fillText('x = ' + M(r), X, l.y + 46); }
+  // graph of the solved equation, through its roots
+  if (G.graph) { G.graph.life -= dt * .42; if (G.graph.life <= 0) G.graph = null; else { const e = G.graph.e, vx = -e.b / (2 * e.a), vy = Math.abs(fval(e, vx)) || 4, k = Math.min(1, (1 - G.graph.life) * 3);
+      const sc = Math.min((l.y - 200) / Math.max(vy, 1), l.unit * 1.2); g.globalAlpha = Math.min(1, G.graph.life * 2); g.strokeStyle = '#f0abfc'; g.lineWidth = 3.5; g.shadowColor = '#f0abfc'; g.shadowBlur = 14; g.beginPath(); let st = false;
+      for (let x = -10.5; x <= -10.5 + 21 * k; x += .05) { const y = l.y - fval(e, x) * sc; if (y < 120 || y > H) { st = false; continue; } st ? g.lineTo(sx(x), y) : g.moveTo(sx(x), y); st = true; }
+      g.stroke(); g.shadowBlur = 0; g.font = '900 15px Inter,sans-serif'; g.fillStyle = '#f5d0fe'; g.fillText('y = ' + e.text.replace(' = 0', ''), sx(vx), Math.max(140, Math.min(l.y - 80, l.y - fval(e, vx) * sc + (e.a > 0 ? 30 : -16)))); g.globalAlpha = 1; } }
+  // meteor
+  const met = G.met; if (met && mode === 'play' || met && met.dead === undefined && mode === 'over') {
+    if (!G.busy) { G.t += dt; const k = G.t / G.T, top = $('eq').getBoundingClientRect().bottom + Math.min(W, H) * .085 + 40; met.y = top + k * (l.y - 40 - top); if (k > .72 && !G.warned) { G.warned = true; AU.play('warn'); toast('⚠ Метеорит жақындап келеді!', 'bad'); } if (k >= 1) impact(); }
+    met.rot += dt * .5;
+    if (!met.dead) { const r = Math.min(W, H) * .085 * met.size + 26, X = W / 2, Y = met.y; g.globalAlpha = met.fade ? Math.max(0, met.fade -= dt * 1.2) : 1;
+      const tr = g.createLinearGradient(X, Y - r * 3.5, X, Y); tr.addColorStop(0, 'rgba(251,146,60,0)'); tr.addColorStop(1, 'rgba(251,146,60,.55)'); g.fillStyle = tr; g.beginPath(); g.moveTo(X - r * .8, Y); g.lineTo(X, Y - r * 3.8); g.lineTo(X + r * .8, Y); g.fill();
+      g.save(); g.translate(X, Y); g.rotate(met.rot); g.shadowColor = '#f97316'; g.shadowBlur = 30; const rg = g.createRadialGradient(-r * .3, -r * .3, r * .1, 0, 0, r); rg.addColorStop(0, '#a16207'); rg.addColorStop(1, '#451a03'); g.fillStyle = rg;
+      g.beginPath(); met.shape.forEach((p, i) => { const px = Math.cos(p.a) * r * p.r, py = Math.sin(p.a) * r * p.r; i ? g.lineTo(px, py) : g.moveTo(px, py); }); g.closePath(); g.fill(); g.shadowBlur = 0;
+      g.fillStyle = 'rgba(0,0,0,.3)'; met.crat.forEach(c => { g.beginPath(); g.arc(Math.cos(c.a) * c.d * r, Math.sin(c.a) * c.d * r, c.r * r, 0, 7); g.fill(); });
+      g.strokeStyle = 'rgba(253,224,71,.85)'; g.lineWidth = 2.5; for (let h = 0; h < met.hits; h++) { g.beginPath(); const a = h * 2.1 + .5; g.moveTo(0, 0); g.lineTo(Math.cos(a) * r * .45, Math.sin(a) * r * .45); g.lineTo(Math.cos(a + .4) * r * .85, Math.sin(a + .4) * r * .85); g.stroke(); }
+      g.restore(); if (met.shield) { g.strokeStyle = `rgba(167,139,250,${g.globalAlpha})`; g.lineWidth = 4; g.beginPath(); g.arc(X, Y, r * 1.5, 0, 7); g.stroke(); } g.globalAlpha = 1;
+      // danger bar
+      if (!G.busy) { const k = Math.min(1, G.t / G.T); g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(W / 2 - 60, Y + r + 14, 120, 6); g.fillStyle = k > .72 ? '#fb7185' : '#fbbf24'; g.fillRect(W / 2 - 60, Y + r + 14, 120 * (1 - k), 6); } } }
+  // beams
+  beams = beams.filter(b => b.life > 0); for (const b of beams) { b.life -= dt * 3.5; const X = sx(b.x); g.globalAlpha = Math.max(0, b.life); g.strokeStyle = b.ok ? '#67e8f9' : '#fb7185'; g.shadowColor = g.strokeStyle; g.shadowBlur = 20; g.lineWidth = 6 * b.life + 1; g.beginPath(); g.moveTo(X, l.y - 30); g.lineTo(X, b.top); g.stroke(); g.shadowBlur = 0; }
+  g.globalAlpha = 1;
+  // ship (cannon) glides to its column
+  G.shipX += (G.ship - G.shipX) * Math.min(1, dt * 18); const SX = sx(G.shipX), SY = l.y - 18;
+  g.save(); g.translate(SX, SY); g.shadowColor = '#22d3ee'; g.shadowBlur = 18; g.fillStyle = '#e0f2fe'; g.beginPath(); g.moveTo(0, -30); g.lineTo(13, 4); g.lineTo(5, 0); g.lineTo(0, 8); g.lineTo(-5, 0); g.lineTo(-13, 4); g.closePath(); g.fill();
+  g.fillStyle = '#22d3ee'; g.beginPath(); g.arc(0, -10, 4.5, 0, 7); g.fill(); g.fillStyle = `rgba(251,146,60,${.6 + Math.random() * .4})`; g.beginPath(); g.moveTo(-4, 6); g.lineTo(0, 14 + Math.random() * 6); g.lineTo(4, 6); g.fill(); g.restore();
+}
+requestAnimationFrame(frame);
+menu();
+if (location.hostname === 'localhost') window.__rh = { get G() { return G; }, fire, noRoots, startLevel, levelSet, solution, hintFor, get mode() { return mode; } };
+})();
+</script>
+</body>
+</html>
