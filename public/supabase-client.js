@@ -48,7 +48,7 @@ window.GoTABPayGate=async function(){
 // Server-clock subscription deadline, including tabs left open overnight.
 (async function watchSubscription(){
   const page=location.pathname.split('/').pop();
-  if(!['content.html','visuals.html','games.html','quiz-maker.html','quiz-play.html','labs.html','lab-pyramid.html','lab-cube.html','lab-polyhedra.html','lab-distance.html'].includes(page))return;
+  if(!['content.html','visuals.html','games.html','quiz-maker.html','quiz-play.html','labs.html','lab-pyramid.html','lab-cube.html','lab-polyhedra.html','lab-distance.html','lab-sqrt.html'].includes(page))return;
   const {data:{session}}=await sb.auth.getSession();
   if(!session || session.user.email===ADMIN_EMAIL)return;
   const catalogPage=['content.html','games.html','labs.html'].includes(page);

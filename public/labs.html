@@ -31,7 +31,7 @@
   <a href="animations.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4zM9 8l7 4-7 4z"/></svg>Анимациялар</a>
 </div>
 <div class="labs">
-  <h1>Виртуалды зертхана</h1><div class="s">Оқушылар 3D фигураларды өз қолымен құрастырып, зерттейді. Интерактивті тақтада да жұмыс істейді.</div>
+  <h1>Виртуалды зертхана</h1><div class="s">Оқушылар 3D фигураларды құрастырып, функция графиктерін өз қолымен салып, зерттейді. Интерактивті тақтада да жұмыс істейді.</div>
   <div class="lgrid">
     <div class="lcard"><span class="lab-lock"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Жазылым қажет</span><div class="ic"><canvas id="pyrc" width="520" height="300" style="width:260px;height:150px"></canvas></div>
       <h3>Пирамида және оның қимасы</h3><p>Пирамиданы құрастыр, жазықтықпен қимасын сал</p><span class="tag">Геометрия · 10–11-сынып</span><a class="btn-lab-use" href="lab-pyramid.html">Қолдану</a></div>
@@ -41,6 +41,8 @@
       <h3>Дұрыс көпжақтар</h3><p>Бес дұрыс көпжақты жазбасынан бүктеп құрастыр</p><span class="tag">Геометрия · 10–11-сынып</span><a class="btn-lab-use" href="lab-polyhedra.html">Қолдану</a></div>
     <div class="lcard"><span class="lab-lock"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Жазылым қажет</span><div class="ic"><canvas id="distc" width="520" height="300" style="width:260px;height:150px"></canvas></div>
       <h3>Кеңістіктегі арақашықтықтар</h3><p>Призма немесе пирамиданы құрастыр, перпендикулярды өзің түсіріп, қашықтықты тап</p><span class="tag">Геометрия · 10–11-сынып</span><a class="btn-lab-use" href="lab-distance.html">Қолдану</a></div>
+    <div class="lcard"><span class="lab-lock"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Жазылым қажет</span><div class="ic"><canvas id="sqrtc" width="520" height="300" style="width:260px;height:150px"></canvas></div>
+      <h3>y = √x + 1 функциясының графигі</h3><p>Топпен кесте құр, графикті сал, қасиеттерін ата</p><span class="tag">Алгебра · 8-сынып · топтық жұмыс</span><a class="btn-lab-use" href="lab-sqrt.html">Қолдану</a></div>
     <div class="lcard soon"><div class="ic">🧊</div><h3>Призма және жазбасы</h3><p>Жақында</p></div>
     <div class="lcard soon"><div class="ic">⚪</div><h3>Айналу денелері</h3><p>Жақында</p></div>
   </div>
@@ -90,6 +92,15 @@ poly(b,'rgba(90,169,255,.16)');[0,1,2,3].forEach(i=>poly([b[i],b[(i+1)%4],u[(i+1
 [0,1,2,3].forEach(i=>{poly([b[i],b[(i+1)%4]],null,'#1a56db',5);poly([u[i],u[(i+1)%4]],null,'#1a56db',5);poly([b[i],u[i]],null,'#1a56db',5);});
 const k=(Math.sin(t/700)+1)/2,e=[pa[0]+(po[0]-pa[0])*Math.min(1,k*1.6),pa[1]+(po[1]-pa[1])*Math.min(1,k*1.6)];g.strokeStyle='#16a34a';g.lineWidth=7;g.lineCap='round';g.beginPath();g.moveTo(pa[0],pa[1]);g.lineTo(e[0],e[1]);g.stroke();
 g.fillStyle='#e11d48';g.beginPath();g.arc(pa[0],pa[1],8,0,7);g.fill();g.fillStyle='#16a34a';g.beginPath();g.arc(e[0],e[1],7,0,7);g.fill();requestAnimationFrame(frame);}requestAnimationFrame(frame);})();
+</script>
+<script>
+// y = √x + 1 being drawn through its table points on the graph-lab card
+(function(){const c=document.getElementById('sqrtc');if(!c)return;const g=c.getContext('2d'),W=c.width,H=c.height,u=40,ox=70,oy=250,X=x=>ox+x*u,Y=y=>oy-y*u,P=[[0,1],[1,2],[4,3],[9,4]];
+function frame(t){g.clearRect(0,0,W,H);g.lineWidth=1.5;g.strokeStyle='#d3ddef';for(let x=-1;x<=10;x++){g.beginPath();g.moveTo(X(x),Y(-1));g.lineTo(X(x),Y(5.5));g.stroke();}for(let y=-1;y<=5;y++){g.beginPath();g.moveTo(X(-1.5),Y(y));g.lineTo(X(10.8),Y(y));g.stroke();}
+g.strokeStyle='#334155';g.lineWidth=3;g.beginPath();g.moveTo(X(-1.5),Y(0));g.lineTo(X(10.8),Y(0));g.moveTo(X(0),Y(-1));g.lineTo(X(0),Y(5.6));g.stroke();
+const k=(t/3200)%1.25,end=Math.min(1,k)*10.3;g.setLineDash([10,9]);g.strokeStyle='#94a3b8';g.lineWidth=3;g.beginPath();for(let x=0;x<=10.3;x+=.05)x?g.lineTo(X(x),Y(Math.sqrt(x))):g.moveTo(X(x),Y(0));g.stroke();g.setLineDash([]);
+g.strokeStyle='#1a56db';g.lineWidth=7;g.lineCap='round';g.beginPath();for(let x=0;x<=end;x+=.05)x?g.lineTo(X(x),Y(Math.sqrt(x)+1)):g.moveTo(X(0),Y(1));g.stroke();
+P.forEach(([x,y])=>{g.fillStyle='#e11d48';g.beginPath();g.arc(X(x),Y(y),9,0,7);g.fill();});g.font='900 30px Inter,sans-serif';g.fillStyle='#1a56db';g.fillText('y = √x + 1',X(5.3),Y(0.9));requestAnimationFrame(frame);}requestAnimationFrame(frame);})();
 </script>
 <script src="math-bg.js"></script>
 </body>

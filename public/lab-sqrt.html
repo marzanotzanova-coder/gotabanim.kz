@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoTAB — Зертхана: y = √x + 1 функциясының графигі</title>
+<link rel="stylesheet" href="gotab.css">
+<link rel="stylesheet" href="teacher-theme.css?v=20261102">
+<style>
+body{overflow:hidden}
+.lab{display:flex;height:calc(100vh - 64px)}
+#view{flex:1;position:relative;background:var(--bg);touch-action:none}
+#view canvas{display:block;width:100%;height:100%;cursor:crosshair}
+.side{width:410px;flex-shrink:0;background:#fff;border-left:1px solid var(--border);padding:22px;overflow-y:auto}
+.side h2{font-size:20px;font-weight:900;margin-bottom:4px}.side .sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+.st{display:flex;gap:12px;padding:12px 14px;border:1.5px solid var(--border);border-radius:14px;margin-bottom:10px;opacity:.5;transition:all .2s}
+.st.on{opacity:1;border-color:var(--primary);background:var(--surface2);box-shadow:0 4px 14px rgba(26,86,219,.1)}.st.done{opacity:.85}
+.st .n{width:30px;height:30px;border-radius:9px;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.st.on .n{background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff}.st.done .n{background:var(--success);color:#fff}
+.st>div:last-child{flex:1;min-width:0}
+.st b{display:block;font-size:15px;margin-bottom:3px}.st p{font-size:13px;color:var(--muted);line-height:1.45}
+.turn{display:none;margin-top:6px;font-size:12.5px;font-weight:800;color:#7c3aed}.st.on .turn.has{display:block}
+.ctl{display:none;margin-top:10px}.st.on .ctl{display:block}
+.btn{width:100%;padding:11px;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;margin-top:6px;min-height:46px}
+.btn.p{background:linear-gradient(135deg,var(--primary),var(--cyan));color:#fff}.btn.g{background:#fff;border:1.5px solid var(--border);color:var(--text)}
+.btn:disabled{opacity:.4;cursor:default}
+.bar{display:flex;gap:8px;margin-top:6px}.bar .btn{margin-top:0}
+.inp{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:10px;font:600 14px Inter,sans-serif;color:var(--text);background:#fff;margin-top:6px}
+.inp:focus{outline:none;border-color:var(--primary)}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:6px}.roles label{font-size:11.5px;font-weight:800;color:var(--muted);display:block;margin-top:6px}.roles .inp{margin-top:3px}
+table.vt{width:100%;border-collapse:separate;border-spacing:4px;margin-top:4px}
+.vt th,.vt td{text-align:center;font-size:14px;font-weight:800}
+.vt th{background:rgba(26,86,219,.07);border-radius:9px;padding:8px 2px;color:var(--primary)}
+.vt td input{width:100%;min-width:0;height:44px;border:1.5px solid var(--border);border-radius:9px;text-align:center;font:800 16px Inter,sans-serif;color:var(--text);background:#fff}
+.vt td input:focus{outline:none;border-color:var(--primary)}
+.vt td input.ok{border-color:var(--success);background:rgba(16,185,129,.1);color:#047857}.vt td input.no{border-color:#ef4444;background:rgba(239,68,68,.08);color:#b91c1c}
+.keys{display:flex;gap:6px;margin-top:4px}.keys button{flex:1;min-height:40px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font:800 15px Inter,sans-serif;cursor:pointer;color:var(--text)}
+.q{border:1.5px solid var(--border);border-radius:12px;padding:9px 10px;margin-bottom:8px;background:#fff}
+.q.ok{border-color:var(--success);background:rgba(16,185,129,.06)}.q.no{border-color:#ef4444;background:rgba(239,68,68,.05)}
+.q .qt{font-size:13.5px;font-weight:800;margin-bottom:6px;color:var(--text)}
+.opts{display:flex;flex-wrap:wrap;gap:5px}
+.opt{flex:1 1 calc(50% - 5px);min-height:40px;padding:6px 8px;border-radius:10px;border:1.5px solid var(--border);background:#fff;font:700 13px/1.25 Inter,sans-serif;color:var(--text);cursor:pointer}
+.opt.on{border-color:var(--primary);background:rgba(26,86,219,.08);color:var(--primary)}
+.q.ok .opt.on{border-color:var(--success);background:rgba(16,185,129,.12);color:#047857}.q.no .opt.on{border-color:#ef4444;background:rgba(239,68,68,.1);color:#b91c1c}
+.warn{display:none;margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(239,68,68,.1);color:#991b1b;font-size:13px;font-weight:700;line-height:1.4}.warn.on{display:block}
+.msg{margin-top:8px;padding:9px 11px;border-radius:10px;font-size:13.5px;line-height:1.5;display:none}
+.msg.ok{display:block;background:rgba(16,185,129,.12);color:#065f46}.msg.no{display:block;background:rgba(239,68,68,.1);color:#991b1b}.msg.hint{display:block;background:rgba(245,158,11,.13);color:#92400e}
+.note{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:8px}
+#tip{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(15,23,42,.88);color:#fff;border-radius:12px;padding:10px 18px;font-size:15px;font-weight:700;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+#formula{position:absolute;left:16px;top:14px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:8px 14px;font:900 20px Inter,sans-serif;color:var(--primary);box-shadow:0 4px 14px rgba(26,86,219,.08);pointer-events:none}
+#report{display:none;margin-top:4px}
+#report.on{display:block}
+.rep{border:1.5px solid var(--primary);border-radius:16px;padding:16px;background:linear-gradient(180deg,#fff,#f3f7ff)}
+.rep h3{font-size:18px;font-weight:900;margin-bottom:2px}.rep .meta{font-size:12.5px;color:var(--muted);margin-bottom:10px}
+.rep img{width:100%;border:1px solid var(--border);border-radius:12px;margin:6px 0 10px;background:#fff}
+.rep ul{margin:0 0 10px 18px;font-size:13.5px;line-height:1.6}.rep li b{display:inline}
+.rep .sc{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.rep .sc div{background:#fff;border:1px solid var(--border);border-radius:10px;padding:6px 4px;text-align:center;font-size:10.5px;font-weight:700;color:var(--muted)}.rep .sc div b{display:block;font-size:18px;color:var(--text)}
+@media(max-width:820px){.lab{flex-direction:column;height:auto}#view{flex:none;height:62vh}.side{width:auto;border-left:none}body{overflow:auto}#tip{font-size:13px}#formula{font-size:16px}}
+@media(pointer:coarse){#view canvas{-webkit-user-select:none;user-select:none;touch-action:none}}
+@media print{.top-nav,#view,.side>*:not(#report),#gotabLoader,#subscriptionGate{display:none!important}.lab{display:block;height:auto}.side{width:auto;border:0;padding:0;overflow:visible}body{overflow:visible;background:#fff}.rep{border-color:#999}.rep .noprint{display:none}}
+</style>
+</head>
+<body class="teacher-app">
+<script src="gotab-loader.js?v=20261112"></script>
+<nav class="top-nav"><img src="gotab_logo_anim.webp" onerror="this.onerror=null;this.src='gotab_logo.png'" alt="GoTAB"><div class="nav-user"><a href="labs.html" style="font-weight:700;color:var(--primary);text-decoration:none">← Зертханалар</a></div></nav>
+<div class="lab">
+  <div id="view"><canvas id="cv"></canvas><div id="formula">y = √x + 1</div><div id="tip"></div></div>
+  <div class="side">
+    <h2>y = √x + 1 функциясының графигі</h2><div class="sub">Алгебралық зертханалық жұмыс · 8-сынып · топпен кесте құрып, графикті салып, қасиеттерін ата</div>
+
+    <div class="st" data-s="group"><div class="n">1</div><div><b>Топты жаса</b><p>Топтың атын жазып, рөлдерді бөліп ал. Әр қадамда кезек кімде екені көрсетіледі (міндетті емес).</p>
+      <div class="ctl"><input class="inp" id="gName" placeholder="Топтың аты, мысалы: «Пифагорлар»" maxlength="40">
+        <div class="roles" id="roles"></div>
+        <button class="btn p" id="okGroup">Бастау</button></div></div></div>
+
+    <div class="st" data-s="table"><div class="n">2</div><div><b>Мәндер кестесін толтыр</b><p>Әр x үшін y = √x + 1 мәнін есепте. Түбір асты теріс болса, мәні жоқ — <b style="display:inline">∅</b> белгісін қой.</p>
+      <div class="turn" data-r="0"></div>
+      <div class="ctl"><table class="vt"><tr><th>x</th><th>−1</th><th>0</th><th>1</th><th>4</th><th>9</th></tr>
+        <tr><th>y</th><td><input data-i="0" inputmode="decimal" autocomplete="off"></td><td><input data-i="1" inputmode="decimal" autocomplete="off"></td><td><input data-i="2" inputmode="decimal" autocomplete="off"></td><td><input data-i="3" inputmode="decimal" autocomplete="off"></td><td><input data-i="4" inputmode="decimal" autocomplete="off"></td></tr></table>
+        <div class="keys"><button type="button" id="kEmpty" title="Мәні жоқ">∅ мәні жоқ</button><button type="button" id="kSqrt">√</button></div>
+        <div class="bar" style="margin-top:8px"><button class="btn g" id="tHint">💡 Кеңес</button><button class="btn p" id="tCheck">✓ Тексеру</button></div><div class="msg" id="tMsg"></div></div></div></div>
+
+    <div class="st" data-s="points"><div class="n">3</div><div><b>Нүктелерді белгіле</b><p>Кестедегі әр жұпты (x; y) координаталық жазықтыққа қой: тордың түйінін бас. Қате қойған нүктені қайта басса, өшеді.</p>
+      <div class="turn" data-r="1"></div>
+      <div class="ctl"><div class="note" id="pLeft"></div><div class="warn" id="pWarn"></div><button class="btn g" id="pUndo">↶ Соңғы нүктені өшіру</button></div></div></div>
+
+    <div class="st" data-s="draw"><div class="n">4</div><div><b>Графикті сыз</b><p>Саусақпен немесе тінтуірмен нүктелерді бір тегіс сызықпен қос: (0; 1) нүктесінен бастап оңға қарай сыз. Сынық сызық емес, қисық болсын!</p>
+      <div class="turn" data-r="2"></div>
+      <div class="ctl"><div class="bar"><button class="btn g" id="dClear">↺ Өшіру</button><button class="btn p" id="dCheck">✓ Тексеру</button></div><div class="msg" id="dMsg"></div>
+        <button class="btn g" id="dShow" style="margin-top:8px">Дұрыс графикті көрсет</button></div></div></div>
+
+    <div class="st" data-s="props"><div class="n">5</div><div><b>Қасиеттерін ата</b><p>Графикке қарап, топпен талқыла да, әр сұраққа жауап таңда.</p>
+      <div class="turn" data-r="3"></div>
+      <div class="ctl"><div id="qs"></div><button class="btn p" id="qCheck">✓ Тексеру</button><div class="msg" id="qMsg"></div></div></div></div>
+
+    <div class="st" data-s="report"><div class="n">6</div><div><b>Топтың қорытындысы</b><p>Нәтижені тақтада көрсетіп, қасиеттерді сыныпқа баяндаңдар. Басып шығаруға да болады.</p></div></div>
+
+    <div id="report"></div>
+
+    <div class="bar" style="margin-top:14px"><button class="btn g" id="reset">⟲ Басынан бастау</button><button class="btn g" id="demo">Дайын үлгі</button></div>
+    <div class="note">Тордың 1 шаршысы = 1 бірлік. Интерактивті тақтада да жұмыс істейді.</div>
+  </div>
+</div>
+<script>
+const $ = id => document.getElementById(id), cv = $('cv'), g = cv.getContext('2d');
+const f = x => Math.sqrt(x) + 1, f0 = x => Math.sqrt(x);
+const ORDER = ['group', 'table', 'points', 'draw', 'props', 'report'];
+const ROLES = ['Есептеуші', 'Белгілеуші', 'Сызушы', 'Зерттеуші'];
+const XS = [-1, 0, 1, 4, 9], YS = [null, 1, 2, 3, 4], TARGET = [[0, 1], [1, 2], [4, 3], [9, 4]];
+const S = { mode: 'group', pts: [], stroke: [], drawing: false, curve: false, shown: false, err: { table: 0, points: 0, draw: 0, props: 0 }, t0: Date.now(), hint: 0, flash: null };
+const snd = k => window.labSound?.[k]?.();
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const show = (id, html, c) => { const m = $(id); m.className = 'msg ' + (c || ''); m.innerHTML = html || ''; };
+const warn = t => { $('pWarn').textContent = t || ''; $('pWarn').classList.toggle('on', !!t); };
+
+// ---------- coordinate plane ----------
+const WIN = { x0: -2.5, x1: 10.8, y0: -1.6, y1: 5.8 };
+let W = 0, H = 0, U = 40, OX = 0, OY = 0, dpr = 1;
+function resize() { dpr = Math.min(devicePixelRatio || 1, 2); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr;
+  const bw = WIN.x1 - WIN.x0, bh = WIN.y1 - WIN.y0; U = Math.min((W - 30) / bw, (H - 80) / bh);
+  OX = (W - U * bw) / 2 - WIN.x0 * U; OY = (H - 40 - U * bh) / 2 + WIN.y1 * U + 6; draw(); }
+const sx = x => OX + x * U, sy = y => OY - y * U, mx = px => (px - OX) / U, my = py => (OY - py) / U;
+function line(x1, y1, x2, y2, c, w, dash) { g.beginPath(); g.setLineDash(dash || []); g.moveTo(x1, y1); g.lineTo(x2, y2); g.strokeStyle = c; g.lineWidth = w; g.stroke(); g.setLineDash([]); }
+function arrowHead(x, y, ang, c, s = 11) { g.save(); g.translate(x, y); g.rotate(ang); g.beginPath(); g.moveTo(0, 0); g.lineTo(-s, -s * .5); g.lineTo(-s, s * .5); g.closePath(); g.fillStyle = c; g.fill(); g.restore(); }
+function curve(fn, from, to, c, w, dash) { g.beginPath(); g.setLineDash(dash || []); let first = true;
+  for (let x = from; x <= to + 1e-9; x += .01) { const X = sx(x), Y = sy(fn(x)); first ? g.moveTo(X, Y) : g.lineTo(X, Y); first = false; }
+  g.strokeStyle = c; g.lineWidth = w; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(); g.setLineDash([]);
+  const xe = to, ang = Math.atan2(sy(fn(xe)) - sy(fn(xe - .3)), sx(xe) - sx(xe - .3)); if (!dash) arrowHead(sx(xe) + Math.cos(ang) * 6, sy(fn(xe)) + Math.sin(ang) * 6, ang, c, 13); }
+function dot(x, y, c, r = 7, label) { g.beginPath(); g.arc(sx(x), sy(y), r, 0, 7); g.fillStyle = c; g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 2.5; g.stroke();
+  if (label) { g.font = '800 14px Inter,sans-serif'; g.fillStyle = c; g.textAlign = 'left'; g.textBaseline = 'bottom';
+    const t = label, tx = sx(x) + 9, ty = sy(y) - 8; g.lineWidth = 4; g.strokeStyle = '#fff'; g.strokeText(t, tx, ty); g.fillText(t, tx, ty); } }
+function draw() { if (!W) return; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  const gx0 = Math.ceil(WIN.x0), gx1 = Math.floor(WIN.x1), gy0 = Math.ceil(WIN.y0), gy1 = Math.floor(WIN.y1);
+  for (let x = gx0; x <= gx1; x++) line(sx(x), sy(WIN.y0), sx(x), sy(WIN.y1), '#d3ddef', 1);
+  for (let y = gy0; y <= gy1; y++) line(sx(WIN.x0), sy(y), sx(WIN.x1), sy(y), '#d3ddef', 1);
+  // domain and range highlighted in the report
+  if (S.mode === 'report') { line(sx(0), sy(0), sx(WIN.x1) - 14, sy(0), 'rgba(22,163,74,.55)', 9); line(sx(0), sy(1), sx(0), sy(WIN.y1) + 14, 'rgba(124,58,237,.45)', 9); }
+  line(sx(WIN.x0), sy(0), sx(WIN.x1), sy(0), '#334155', 2); arrowHead(sx(WIN.x1), sy(0), 0, '#334155');
+  line(sx(0), sy(WIN.y0), sx(0), sy(WIN.y1), '#334155', 2); arrowHead(sx(0), sy(WIN.y1), -Math.PI / 2, '#334155');
+  g.font = '700 12px Inter,sans-serif'; g.fillStyle = '#64748b'; g.textAlign = 'center'; g.textBaseline = 'top';
+  for (let x = gx0; x <= gx1; x++) if (x) g.fillText(x < 0 ? '−' + (-x) : x, sx(x), sy(0) + 5);
+  g.textAlign = 'right'; g.textBaseline = 'middle'; for (let y = gy0; y <= gy1; y++) if (y) g.fillText(y < 0 ? '−' + (-y) : y, sx(0) - 6, sy(y));
+  g.fillText('0', sx(0) - 6, sy(0) + 10);
+  g.font = '900 16px Inter,sans-serif'; g.fillStyle = '#334155'; g.textAlign = 'right'; g.fillText('x', sx(WIN.x1) - 4, sy(0) - 14); g.textAlign = 'left'; g.fillText('y', sx(0) + 10, sy(WIN.y1) + 8);
+  const after = ['props', 'report'].includes(S.mode);
+  if (after) { curve(f0, 0, WIN.x1 - .4, '#94a3b8', 2.5, [7, 6]); g.font = '800 14px Inter,sans-serif'; g.fillStyle = '#64748b'; g.textAlign = 'left'; g.fillText('y = √x', sx(6.3), sy(f0(6.3)) + 16);
+    [1, 4, 9].forEach(x => { line(sx(x), sy(f0(x)) - 3, sx(x), sy(f(x)) + 9, '#94a3b8', 2); arrowHead(sx(x), sy(f(x)) + 8, -Math.PI / 2, '#94a3b8', 8); }); }
+  if (S.curve || S.shown) curve(f, 0, WIN.x1 - .4, '#1a56db', 4.5);
+  if (S.stroke.length > 1 && !(S.curve || S.shown)) { g.beginPath(); S.stroke.forEach((p, i) => i ? g.lineTo(sx(p[0]), sy(p[1])) : g.moveTo(sx(p[0]), sy(p[1])));
+    g.strokeStyle = '#f97316'; g.lineWidth = 4.5; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(); }
+  const pts = S.mode === 'group' || S.mode === 'table' ? [] : S.pts;
+  pts.forEach(([x, y]) => dot(x, y, '#e11d48', 7, `(${x}; ${y})`));
+  if (S.flash) { const [x, y, t] = S.flash; const k = 1 - Math.min(1, (performance.now() - t) / 700); if (k > 0) { g.beginPath(); g.arc(sx(x), sy(y), 10 + (1 - k) * 14, 0, 7); g.strokeStyle = `rgba(239,68,68,${k})`; g.lineWidth = 3; g.stroke(); requestAnimationFrame(draw); } else S.flash = null; }
+  if (S.mode === 'report' || (after && S.curve)) { g.font = '900 17px Inter,sans-serif'; g.fillStyle = '#1a56db'; g.textAlign = 'left'; g.lineWidth = 4; g.strokeStyle = '#fff'; g.strokeText('y = √x + 1', sx(5.6), sy(f(5.6)) - 14); g.fillText('y = √x + 1', sx(5.6), sy(f(5.6)) - 14); }
+}
+
+// ---------- step 1: group ----------
+$('roles').innerHTML = ROLES.map((r, i) => `<div><label>${i + 1}. ${r}</label><input class="inp" data-role="${i}" placeholder="Оқушының аты" maxlength="30"></div>`).join('');
+const roleName = i => document.querySelector(`[data-role="${i}"]`).value.trim();
+const groupName = () => $('gName').value.trim() || 'Топ';
+function turns() { document.querySelectorAll('.turn').forEach(t => { const i = +t.dataset.r, n = roleName(i); t.textContent = n ? `👤 Кезек: ${n} (${ROLES[i].toLowerCase()})` : ''; t.classList.toggle('has', !!n); }); }
+$('okGroup').onclick = () => { snd('ok'); turns(); go('table'); setTimeout(() => document.querySelector('.vt input')?.focus(), 50); };
+
+// ---------- step 2: table ----------
+const cells = [...document.querySelectorAll('.vt input')]; let lastCell = cells[0];
+cells.forEach(c => { c.onfocus = () => lastCell = c; c.oninput = () => c.classList.remove('ok', 'no'); c.onkeydown = e => { if (e.key === 'Enter') { const n = cells[cells.indexOf(c) + 1]; n ? n.focus() : $('tCheck').click(); } }; });
+$('kEmpty').onclick = () => { lastCell.value = '∅'; lastCell.classList.remove('ok', 'no'); lastCell.focus(); };
+$('kSqrt').onclick = () => { lastCell.value += '√'; lastCell.focus(); };
+function parse(v) { v = v.trim().toLowerCase().replace(/\s/g, '').replace(',', '.').replace('−', '-');
+  if (['∅', 'ø', 'жоқ', '-', '—', 'анықталмаған', 'нет'].includes(v)) return 'none';
+  const m = v.match(/^√(\d+(?:\.\d+)?)\+(\d+(?:\.\d+)?)$/); if (m) return Math.sqrt(+m[1]) + +m[2];
+  return v === '' || isNaN(+v) ? undefined : +v; }
+$('tCheck').onclick = () => { let bad = 0, empty = 0;
+  cells.forEach((c, i) => { const v = parse(c.value), want = YS[i]; if (v === undefined) { empty++; c.classList.remove('ok', 'no'); return; }
+    const ok = want === null ? v === 'none' : typeof v === 'number' && Math.abs(v - want) < 1e-6; c.classList.toggle('ok', ok); c.classList.toggle('no', !ok); if (!ok) bad++; });
+  if (empty) return show('tMsg', 'Кестенің барлық бағанын толтыр.', 'no');
+  if (bad) { S.err.table++; snd('no');
+    const c0 = parse(cells[0].value) !== 'none';
+    return show('tMsg', c0 && bad === 1 ? 'x = −1 болғанда √−1 — анықталмаған: түбір астында теріс сан тұра алмайды. Мұнда ∅ қой.' : `Қызыл ұяшықтарды тексер (${bad} қате). Алдымен √x есепте, сосын 1 қос.`, 'no'); }
+  snd('ok'); show('tMsg', '✓ Кесте дұрыс! x = −1 үшін мәні жоқ, сондықтан графикте ол нүкте болмайды.', 'ok'); setTimeout(() => go('points'), 900); };
+$('tHint').onclick = () => { S.hint++; show('tMsg', S.hint % 2 ? '💡 Мысалы, x = 4: √4 = 2, сонда y = 2 + 1 = 3.' : '💡 √0 = 0, √1 = 1, √9 = 3. Теріс санның арифметикалық квадрат түбірі болмайды.', 'hint'); };
+
+// ---------- step 3: points ----------
+const leftPts = () => TARGET.filter(([x, y]) => !S.pts.some(p => p[0] === x && p[1] === y));
+function pointsInfo() { const n = 4 - leftPts().length; $('pLeft').textContent = `Қойылды: ${n} / 4 нүкте`; }
+function placePoint(x, y) { const i = S.pts.findIndex(p => p[0] === x && p[1] === y);
+  if (i >= 0) { S.pts.splice(i, 1); snd('tap'); warn(); pointsInfo(); return draw(); }
+  if (!TARGET.some(p => p[0] === x && p[1] === y)) { S.err.points++; snd('no'); S.flash = [x, y, performance.now()];
+    const sameX = TARGET.find(p => p[0] === x); warn(x < 0 ? `(${x}; ${y}) — x теріс, ал √x тек x ≥ 0 үшін анықталған.` : sameX ? `x = ${x} болғанда y = ${sameX[1]}, ал сен y = ${y} қойдың. Кестеге қара.` : `(${x}; ${y}) нүктесі кестеде жоқ. Тек кестедегі жұптарды қой.`); return draw(); }
+  S.pts.push([x, y]); snd('tap'); warn(); pointsInfo(); draw();
+  if (!leftPts().length) { snd('ok'); tip('✓ Барлық нүкте орнында! Енді оларды қисықпен қос.'); setTimeout(() => go('draw'), 800); } }
+$('pUndo').onclick = () => { S.pts.pop(); warn(); pointsInfo(); draw(); };
+
+// ---------- step 4: drawing ----------
+const REF = []; for (let x = 0; x <= 10; x += .02) REF.push([x, f(x)]);
+const distRef = (x, y) => { let d = 1e9; for (const [a, b] of REF) { const q = (a - x) ** 2 + (b - y) ** 2; if (q < d) d = q; } return Math.sqrt(d); };
+function judge() { const s = S.stroke; if (s.length < 8) return { t: 'Алдымен графикті сыз: (0; 1) нүктесінен бастап, нүктелер арқылы оңға қарай.' };
+  if (s.some(p => p[0] < -.3)) return { t: 'Графиктің бір бөлігі x < 0 жерге шықты. Бірақ √x тек x ≥ 0 үшін бар — график (0; 1) нүктесінен басталады.' };
+  const xs = s.map(p => p[0]), lo = Math.min(...xs), hi = Math.max(...xs);
+  if (lo > .4) return { t: 'График (0; 1) нүктесінен басталуы керек — бұл оның бастапқы нүктесі.' };
+  if (hi < 8.6) return { t: 'Графикті соңына дейін сыз: (9; 4) нүктесінен де өтіп, оңға қарай жалғасады.' };
+  const ds = s.map(p => distRef(p[0], p[1])).sort((a, b) => a - b), mean = ds.reduce((a, b) => a + b, 0) / ds.length, p90 = ds[Math.floor(ds.length * .9)];
+  if (mean > .28 || p90 > .55) return { t: 'Сызық нүктелерден алыс өтіп кетті. Барлық 4 нүкте арқылы тегіс өтетін қисық сыз.' };
+  return { ok: true }; }
+$('dCheck').onclick = () => { const r = judge(); if (!r.ok) { if (S.stroke.length >= 8) S.err.draw++; snd('no'); return show('dMsg', r.t, 'no'); }
+  S.curve = true; snd('done'); show('dMsg', '✓ Керемет! Бұл — y = √x + 1 графигі. Ол (0; 1) нүктесінен басталып, оңға қарай баяу өсе береді.', 'ok'); draw(); setTimeout(() => go('props'), 1300); };
+$('dClear').onclick = () => { S.stroke = []; show('dMsg'); draw(); };
+$('dShow').onclick = () => { S.shown = true; S.curve = true; snd('tap'); show('dMsg', 'Міне, дұрыс график. Өз сызығыңмен салыстыр да, келесі қадамға өт.', 'hint'); draw(); setTimeout(() => go('props'), 1600); };
+
+let lastP = null;
+cv.addEventListener('pointerdown', e => { const r = cv.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+  if (S.mode === 'points') { placePoint(Math.round(mx(px)), Math.round(my(py))); return; }
+  if (S.mode !== 'draw' || S.curve) return; cv.setPointerCapture(e.pointerId); S.drawing = true; S.stroke = [[mx(px), my(py)]]; show('dMsg'); lastP = [px, py]; draw(); });
+cv.addEventListener('pointermove', e => { if (!S.drawing) return; const r = cv.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+  if (Math.hypot(px - lastP[0], py - lastP[1]) < 3) return; lastP = [px, py]; S.stroke.push([mx(px), my(py)]); draw(); });
+const endStroke = () => { if (!S.drawing) return; S.drawing = false; if (S.stroke.length >= 8) tip('Дайын болса, «✓ Тексеру» бас. Қайта сызу үшін — «↺ Өшіру».'); };
+cv.addEventListener('pointerup', endStroke); cv.addEventListener('pointercancel', endStroke);
+
+// ---------- step 5: properties ----------
+const QS = [
+  { t: 'Анықталу облысы D(y)', o: ['[0; +∞)', '(−∞; +∞)', '(0; +∞)', '[1; +∞)'], a: 0, w: 'Түбір асты өрнек теріс болмауы керек: x ≥ 0.' },
+  { t: 'Мәндер жиыны E(y)', o: ['[1; +∞)', '[0; +∞)', '(1; +∞)', '(−∞; +∞)'], a: 0, w: '√x ≥ 0, сондықтан √x + 1 ≥ 1.' },
+  { t: 'Монотондылығы', o: ['Анықталу облысында өспелі', 'Кемімелі', 'Алдымен кемиді, сосын өседі', 'Тұрақты'], a: 0, w: 'x артқан сайын √x та артады.' },
+  { t: 'Ең кіші мәні', o: ['y = 1 (x = 0 болғанда)', 'y = 0', 'Ең кіші мәні жоқ', 'y = −1'], a: 0, w: 'Графиктің ең төменгі нүктесі — (0; 1).' },
+  { t: 'Ең үлкен мәні', o: ['Жоқ', 'y = 4', 'y = 1', 'y = 10'], a: 0, w: 'График шексіз жоғары көтеріле береді.' },
+  { t: 'Oy осімен қиылысу нүктесі', o: ['(0; 1)', '(1; 0)', '(0; 0)', 'Қиылыспайды'], a: 0, w: 'x = 0 қой: y = √0 + 1 = 1.' },
+  { t: 'Функцияның нөлдері (Ox осімен қиылысуы)', o: ['Нөлдері жоқ', 'x = −1', 'x = 0', 'x = 1'], a: 0, w: '√x + 1 = 0 теңдеуінің шешімі жоқ, себебі √x ≥ 0.' },
+  { t: 'Таңбасы', o: ['Барлық x ≥ 0 үшін y > 0', 'x > 1 болғанда y < 0', 'Таңбасын ауыстырады', 'Барлық x үшін y < 0'], a: 0, w: 'y ≥ 1 > 0.' },
+  { t: 'Жұп-тақтығы', o: ['Жұп та, тақ та емес', 'Жұп', 'Тақ'], a: 0, w: 'Анықталу облысы 0-ге қатысты симметриялы емес.' },
+  { t: 'y = √x графигінен қалай алынады?', o: ['Oy бойымен 1 бірлік жоғары', 'Ox бойымен 1 бірлік оңға', 'Ox бойымен 1 бірлік солға', 'Oy бойымен 1 бірлік төмен'], a: 0, w: 'Әр y мәніне 1 қосылады — график жоғары жылжиды (сұр сызық → көк сызық).' }
+];
+const ANS = QS.map(() => null), shuffled = QS.map(q => { const idx = q.o.map((_, i) => i); for (let i = idx.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; } return idx; });
+$('qs').innerHTML = QS.map((q, k) => `<div class="q" data-q="${k}"><div class="qt">${k + 1}. ${q.t}</div><div class="opts">${shuffled[k].map(i => `<button type="button" class="opt" data-o="${i}">${q.o[i]}</button>`).join('')}</div></div>`).join('');
+$('qs').onclick = e => { const b = e.target.closest('.opt'); if (!b) return; const q = b.closest('.q'), k = +q.dataset.q; ANS[k] = +b.dataset.o; q.classList.remove('ok', 'no'); q.querySelectorAll('.opt').forEach(o => o.classList.toggle('on', o === b)); snd('tap'); };
+$('qCheck').onclick = () => { const left = ANS.filter(a => a === null).length; if (left) return show('qMsg', `Тағы ${left} сұраққа жауап таңда.`, 'no');
+  const wrong = []; QS.forEach((q, k) => { const ok = ANS[k] === q.a, el = document.querySelector(`[data-q="${k}"]`); el.classList.toggle('ok', ok); el.classList.toggle('no', !ok); if (!ok) wrong.push(k); });
+  if (wrong.length) { S.err.props++; snd('no'); return show('qMsg', `${QS.length - wrong.length} / ${QS.length} дұрыс. Қызыл сұрақтарды топпен қайта талқыла.<br>💡 ${QS[wrong[0]].w}`, 'no'); }
+  snd('done'); show('qMsg', `✓ ${QS.length} / ${QS.length} — барлық қасиет дұрыс аталды!`, 'ok'); setTimeout(() => go('report'), 1000); };
+
+// ---------- step 6: report ----------
+function report() { const mins = Math.max(1, Math.round((Date.now() - S.t0) / 60000)), members = ROLES.map((r, i) => roleName(i) ? `${esc(roleName(i))} — ${r.toLowerCase()}` : '').filter(Boolean);
+  draw(); let img = ''; try { img = cv.toDataURL('image/png'); } catch (_) {}
+  const e = S.err, total = e.table + e.points + e.draw + e.props;
+  $('report').innerHTML = `<div class="rep"><h3>«${esc(groupName())}» тобы</h3><div class="meta">${new Date().toLocaleDateString('kk-KZ')} · жұмыс уақыты ≈ ${mins} мин${members.length ? '<br>' + members.join(' · ') : ''}</div>
+    <b style="font-size:14px">Мәндер кестесі</b><table class="vt"><tr><th>x</th>${XS.map(x => `<th>${x < 0 ? '−' + (-x) : x}</th>`).join('')}</tr><tr><th>y</th>${YS.map(y => `<td style="background:#fff;border:1px solid var(--border);border-radius:9px;padding:8px 2px">${y === null ? '∅' : y}</td>`).join('')}</tr></table>
+    ${img ? `<img src="${img}" alt="y = √x + 1 графигі">` : ''}
+    <b style="font-size:14px">y = √x + 1 функциясының қасиеттері</b><ul>${QS.map(q => `<li>${q.t.replace(/\?$/, '')}: <b>${q.o[q.a]}</b></li>`).join('')}</ul>
+    <b style="font-size:14px">Қателер саны</b><div class="sc"><div><b>${e.table}</b>кесте</div><div><b>${e.points}</b>нүктелер</div><div><b>${e.draw}</b>график</div><div><b>${e.props}</b>қасиеттер</div></div>
+    <div style="font-size:13.5px;font-weight:800;color:${total ? '#92400e' : '#047857'};margin-bottom:8px">${S.shown ? 'График көмекпен салынды. ' : ''}${total === 0 ? '🏆 Бірде-бір қатесіз орындалды!' : total <= 3 ? '👍 Жақсы нәтиже!' : 'Жұмыс аяқталды — қателерді талдап шығыңдар.'}</div>
+    <div class="bar noprint"><button class="btn p" onclick="print()">🖨 Басып шығару</button><button class="btn g" id="again">Жаңа топ</button></div></div>`;
+  $('again').onclick = () => { $('gName').value = ''; document.querySelectorAll('[data-role]').forEach(i => i.value = ''); turns(); fresh(); }; $('report').classList.add('on'); $('report').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+
+// ---------- flow ----------
+const TIPS = { group: 'Топтың атын жазып, «Бастау» бас', table: 'Кестені толтыр: y = √x + 1', points: 'Кестедегі нүктелерді тордың түйініне қой', draw: 'Нүктелерді бір тегіс қисықпен қос — (0; 1)-ден бастап', props: 'Графикке қарап, қасиеттерін ата', report: 'Жасыл — анықталу облысы, күлгін — мәндер жиыны' };
+let tipT; function tip(t) { $('tip').textContent = t; clearTimeout(tipT); tipT = setTimeout(() => $('tip').textContent = TIPS[S.mode], 4000); }
+function go(m) { S.mode = m; const k = ORDER.indexOf(m);
+  document.querySelectorAll('.st').forEach(el => { const i = ORDER.indexOf(el.dataset.s); el.classList.toggle('on', i === k); el.classList.toggle('done', i < k); });
+  $('tip').textContent = TIPS[m]; cv.style.cursor = m === 'points' || m === 'draw' ? 'crosshair' : 'default';
+  if (m === 'points') pointsInfo(); draw(); if (m === 'report') report(); else $('report').classList.remove('on'); }
+function fresh() { Object.assign(S, { pts: [], stroke: [], drawing: false, curve: false, shown: false, err: { table: 0, points: 0, draw: 0, props: 0 }, t0: Date.now(), hint: 0, flash: null });
+  cells.forEach(c => { c.value = ''; c.classList.remove('ok', 'no'); }); ANS.fill(null); document.querySelectorAll('.q').forEach(q => { q.classList.remove('ok', 'no'); q.querySelectorAll('.opt').forEach(o => o.classList.remove('on')); });
+  ['tMsg', 'dMsg', 'qMsg'].forEach(id => show(id)); warn(); go('group'); }
+$('reset').onclick = () => { if (S.mode === 'group' || confirm('Барлық жұмыс өшеді. Басынан бастаймыз ба?')) fresh(); };
+$('demo').onclick = () => { snd('tap'); cells.forEach((c, i) => { c.value = YS[i] === null ? '∅' : YS[i]; c.classList.add('ok'); }); S.pts = TARGET.map(p => p.slice()); S.curve = true; S.shown = true;
+  QS.forEach((q, k) => { ANS[k] = q.a; const el = document.querySelector(`[data-q="${k}"]`); el.classList.add('ok'); el.querySelectorAll('.opt').forEach(o => o.classList.toggle('on', +o.dataset.o === q.a)); }); turns(); go('report'); };
+addEventListener('resize', resize); go('group'); resize();
+if (location.hostname === 'localhost') window.__lab = { S, judge, go, f, sx, sy };
+</script>
+<script src="lab-sound.js?v=20261112"></script>
+<script src="supabase.js"></script><script src="supabase-client.js?v=20261117-paid"></script><script src="lab-paywall.js?v=20261114-blue"></script>
+<script>labGate();</script>
+</body>
+</html>
