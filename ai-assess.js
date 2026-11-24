@@ -98,6 +98,32 @@ module.exports = function mountAssess(app, express) {
     } catch (e) { fail(res, e, 'test-generate'); }
   });
 
+  // 1б) Дайын тестті файлдан (PDF, Word, фото) оқып, сұрақтарды толтыру
+  app.post('/api/ai/test-import', big, async (req, res) => {
+    const b = req.body || {};
+    const content = [{ type: 'input_text', text:
+      'Бұл — мұғалімнің дайын тесті. Ондағы әр сұрақты бөліп шығар: сұрақ мәтіні, жауап нұсқалары (A, B, C, D… белгілерінсіз) және дұрыс жауап. ' +
+      'Дұрыс жауап құжатта белгіленген болса (кілт, жауаптар кестесі, жуан/асты сызылған/белгіленген нұсқа), соны ал да "answer_source":"file" қой. ' +
+      'Белгіленбесе, есепті өзің шешіп, дұрыс нұсқаны таңда және "answer_source":"ai" қой. ' +
+      'Нұсқасы жоқ ашық сұрақ болса, оны 4 нұсқалы сұраққа айналдыр (дұрыс жауап + оқушылардың жиі қателеріне негізделген 3 жалған нұсқа) және "converted":true қой. ' +
+      'Сұрақ мәтінін өзгертпе, тек анық қате тереңдікті түзет. Формулаларды қарапайым мәтінмен жаз (x^2, √x, 3/4). Сұрақ санын азайтпа және ойдан қоспа. ' +
+      'JSON: {"title":"тесттің атауы (болса)","topic":"тақырыбы (болса)","questions":[{"q":"...","options":["...","..."],"answer":0,"answer_source":"file|ai","converted":false,"skill":"тексерілетін дағды (2-5 сөз)"}]}' }];
+    if (isDataUrl(b.file, ['application/pdf'])) content.push({ type: 'input_file', filename: str(b.filename, 80) || 'test.pdf', file_data: b.file });
+    else if (isDataUrl(b.file, ['image/'])) content.push({ type: 'input_image', image_url: b.file, detail: 'high' });
+    else if (str(b.text, 40000).trim()) content.push({ type: 'input_text', text: 'Құжат мәтіні:\n' + str(b.text, 40000) });
+    else return res.status(400).json({ error: 'PDF, Word немесе фото жүктеңіз' });
+    if (!(await gate(req, res))) return;
+    try {
+      const out = await askJSON({ system: 'Сен Қазақстан мектебінің тәжірибелі мұғалімісің және тест құжаттарын мұқият оқисың. Тек JSON қайтар.', content, vision: true, maxTokens: 16000 });
+      const questions = (Array.isArray(out.questions) ? out.questions : []).map(q => ({
+        q: str(q.q, 800).trim(), options: (Array.isArray(q.options) ? q.options : []).slice(0, 6).map(o => str(o, 300).trim()).filter(Boolean),
+        answer: clampInt(q.answer, 0, 5, 0), from_file: q.answer_source === 'file' && !q.converted, converted: !!q.converted, skill: str(q.skill, 80).trim()
+      })).filter(q => q.q && q.options.length >= 2 && q.answer < q.options.length).slice(0, 40);
+      if (!questions.length) return res.status(422).json({ error: 'Файлдан сұрақ табылмады. Файл анық па, тест сұрақтары бар ма — тексеріңіз.' });
+      res.json({ title: str(out.title, 200), topic: str(out.topic, 300), questions });
+    } catch (e) { fail(res, e, 'test-import'); }
+  });
+
   // 2) БЖБ/ТЖБ спецификациясынан тапсырмалар кестесін шығару
   app.post('/api/ai/bzhb-extract', big, async (req, res) => {
     const b = req.body || {};
