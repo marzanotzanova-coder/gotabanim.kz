@@ -39,6 +39,29 @@
       ...imgs.map(async el => { const src = el.getAttribute('src'); if (!src || src.startsWith('data:')) return; const data = await toDataUrl(src).catch(() => null); if (data) { el.src = data; await el.decode().catch(() => {}); } })]);
   }
   const frame = () => new Promise(resolve => requestAnimationFrame(resolve));
+  // Most presentations are set in Calibri, which Macs and phones do not have: a wider fallback font made lines wrap
+  // and the extra line was cut off. Carlito has exactly Calibri's metrics, so it is loaded under the name Calibri,
+  // both for the layout and inside each slide snapshot.
+  const FONT_BASE = new URL('vendor/carlito-5.3.0/', document.currentScript?.src || location.href).href;
+  let fontCss;
+  function loadSlideFonts() {
+    if (!fontCss) fontCss = (async () => {
+      const faces = await fetch(FONT_BASE + 'faces.json').then(r => { if (!r.ok) throw Error('fonts'); return r.json(); });
+      const rules = [];
+      await Promise.all(faces.map(async f => {
+        const data = await toDataUrl(FONT_BASE + f.file);
+        for (const family of ['Calibri', 'Calibri Light', 'Carlito']) {
+          const face = new FontFace(family, `url(${data}) format('woff2')`, { weight: String(f.weight), style: f.style, unicodeRange: f.range });
+          document.fonts.add(face); face.load().catch(() => {});
+          rules.push(`@font-face{font-family:'${family}';src:url(${data}) format('woff2');font-weight:${f.weight};font-style:${f.style};unicode-range:${f.range}}`);
+        }
+      }));
+      return rules.join('\n');
+    })().catch(error => { fontCss = null; throw error; });
+    return fontCss;
+  }
+  // Safari leaves pictures out of a slide snapshot the first time it draws them; drawing the slide twice brings them in
+  const isSafari = /Safari\//.test(navigator.userAgent) && !/Chrome|Chromium|Edg\//.test(navigator.userAgent);
   async function convert(file, onProgress = () => {}, signal) {
     if (!/\.pptx$/i.test(file.name || '')) throw Error('Автоматты алдын ала қарау үшін PPTX таңдаңыз. Ескі PPT файлын PowerPoint-та PPTX түрінде сақтаңыз.');
     if (!file.size || file.size > 30 * 1024 * 1024) throw Error('PPTX файлы 30 МБ-тан аспауы керек.');
@@ -46,6 +69,7 @@
     check(); onProgress('Презентация оқылуда…');
     const [{ parseZip, buildPresentation, renderSlide, RECOMMENDED_ZIP_LIMITS }, image] = await loadDependencies();
     check();
+    const embedCss = await loadSlideFonts().catch(() => '');
     const files = await parseZip(await file.arrayBuffer(), RECOMMENDED_ZIP_LIMITS);
     check();
     const presentation = buildPresentation(files);
@@ -79,11 +103,8 @@
           if (!width || !height) throw Error('Слайд өлшемі анықталмады.');
           const scale = Math.min(1600 / width, 1200 / height, 2);
           // a slide that never finishes drawing must not freeze the whole upload
-          let stuck; const canvas = await Promise.race([image.toCanvas(handle.element, {
-            width, height, pixelRatio: scale,
-            fontEmbedCSS: '', skipAutoScale: false,
-            filter: node => !['AUDIO', 'VIDEO'].includes(node.tagName)
-          }), new Promise((_, no) => { stuck = setTimeout(() => no(Error(`${i + 1}-слайдты суретке айналдыру мүмкін болмады. Бұл презентация үшін PDF немесе слайд суреттерін қолдануға болады.`)), 25000); })]).finally(() => clearTimeout(stuck));
+          const options = { width, height, pixelRatio: scale, fontEmbedCSS: embedCss, skipAutoScale: false, filter: node => !['AUDIO', 'VIDEO'].includes(node.tagName) };
+          let stuck; const canvas = await Promise.race([(async () => { if (isSafari) { const first = await image.toCanvas(handle.element, options); first.width = first.height = 0; } return image.toCanvas(handle.element, options); })(), new Promise((_, no) => { stuck = setTimeout(() => no(Error(`${i + 1}-слайдты суретке айналдыру мүмкін болмады. Бұл презентация үшін PDF немесе слайд суреттерін қолдануға болады.`)), 25000); })]).finally(() => clearTimeout(stuck));
           const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
           canvas.width = canvas.height = 0;
           if (!blob) throw Error('Слайд суретін дайындау мүмкін болмады.');
