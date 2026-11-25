@@ -251,7 +251,7 @@
 
   <section class="free-card" id="freeCard" hidden>
     <div class="free-head"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></i>
-      <div><h2>Жаңа сабақты тегін қарап көріңіз</h2><p>Әр сыныптың ең соңғы салынған сабағы тегін: презентация слайдтары мен ҚМЖ (GoTAB белгісімен) және анимацияның алғашқы 15 секунды. Толық нұсқасы мен жүктеп алу — жазылыммен.</p></div></div>
+      <div><h2>Тегін сабақты қарап көріңіз</h2><p>Бұл сабақтар тегін: презентация слайдтары мен ҚМЖ (GoTAB белгісімен) және анимацияның алғашқы 15 секунды. Толық нұсқасы мен жүктеп алу — жазылыммен.</p></div></div>
     <div class="free-row" id="freeRow"></div>
   </section>
 
@@ -288,6 +288,7 @@
 
 <script src="supabase.js"></script>
 <script src="supabase-client.js?v=20261117-paid"></script>
+<script src="free-lessons.js?v=20261125"></script>
 <script>
 // two study directions; each has its own subject rows with grade chips that open the lessons of that grade directly
 const ICON_MATH = '<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
@@ -361,12 +362,9 @@ document.getElementById('heroQuote').textContent = PROVERBS[Math.floor(now / 864
 
 // free first lessons of every class
 async function showFreeLessons() {
-  // the newest lesson of every class is the free one (content.html gives it a watermark and a 15-second animation preview)
+  // the free lessons are listed in free-lessons.js (only lessons whose slides show their diagrams cleanly)
   const { data, error } = await sb.from('materials').select('grade,subject,lesson_num,title,ppt_thumb_url,ppt_url,qmj_url,video_url').neq('subject', 'informatics').order('grade');
-  const newest = {};
-  (data || []).filter(r => r.ppt_url || r.qmj_url || r.video_url).forEach(r => { const k = r.subject + ':' + r.grade; if (!newest[k] || r.lesson_num > newest[k].lesson_num) newest[k] = r; });
-  // a newest lesson without its animation yet is left off the list
-  const rows = Object.values(newest).filter(r => r.video_url).sort((x, y) => x.grade - y.grade || String(x.subject).localeCompare(y.subject));
+  const rows = (data || []).filter(r => window.isGotabFreeLesson?.(r.subject, r.grade, r.lesson_num) && (r.ppt_url || r.qmj_url || r.video_url));
   if (error || !rows.length) return;
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   document.getElementById('freeRow').innerHTML = rows.map(r => `<a class="free-item" href="content.html?grade=${r.grade}&subject=${encodeURIComponent(r.subject)}#sabak-${r.lesson_num}">

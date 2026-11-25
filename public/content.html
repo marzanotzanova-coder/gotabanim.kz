@@ -661,6 +661,7 @@ body.lesson-open .lesson-unit:not(.is-open){display:none}
 <script src="supabase.js"></script>
 <script src="qmj-preview.js?v=20261112-free"></script>
 <script src="supabase-client.js?v=20261117-paid"></script>
+<script src="free-lessons.js?v=20261125"></script>
 <script src="lesson-extras.js?v=20261114-emn"></script>
 <script>
 const GRADES_LABEL = {5:'5-сынып',6:'6-сынып',7:'7-сынып',8:'8-сынып',9:'9-сынып',10:'10-сынып',11:'11-сынып'};
@@ -701,9 +702,8 @@ function changeSubject() {
 initSwitcher();
 
 let userIsPaid = false;
-// the newest lesson of every class is free to look at: slides and ҚМЖ with the GoTAB watermark, the first 15 s of the animation with sound (no watermark on the video); downloads need a subscription
-let newestLessonNum = 0;
-const isFreeLesson = lesson => newestLessonNum > 0 && Number(lesson?.lesson_num) === newestLessonNum;
+// the lessons listed in free-lessons.js are free to look at: slides and ҚМЖ with the GoTAB watermark, the first 15 s of the animation with sound (no watermark on the video); downloads need a subscription
+const isFreeLesson = lesson => !!lesson && window.isGotabFreeLesson?.(subject, grade, Number(lesson.lesson_num));
 const FREE_VIDEO_SECONDS = 15;
 let currentUser = null;
 
@@ -929,7 +929,6 @@ function render(overrideLessons) {
   // only lessons that have something to open or download; empty lessons are not shown
   const lessons = (overrideLessons || []).filter(l => (l.ppt && l.ppt.src) || (l.qmj && l.qmj.src) || (l.video && l.video.src) || GoTABExtras.files(l.extra_files).length);
   const grid = document.getElementById('lessonsGrid');
-  newestLessonNum = lessons.reduce((m, l, i) => Math.max(m, Number(l.lesson_num) || i + 1), 0);
 
   if (!lessons.length) {
     grid.innerHTML = '';
