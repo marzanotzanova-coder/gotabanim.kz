@@ -365,7 +365,8 @@ async function showFreeLessons() {
   const { data, error } = await sb.from('materials').select('grade,subject,lesson_num,title,ppt_thumb_url,ppt_url,qmj_url,video_url').neq('subject', 'informatics').order('grade');
   const newest = {};
   (data || []).filter(r => r.ppt_url || r.qmj_url || r.video_url).forEach(r => { const k = r.subject + ':' + r.grade; if (!newest[k] || r.lesson_num > newest[k].lesson_num) newest[k] = r; });
-  const rows = Object.values(newest).sort((x, y) => x.grade - y.grade || String(x.subject).localeCompare(y.subject));
+  // a newest lesson without its animation yet is left off the list
+  const rows = Object.values(newest).filter(r => r.video_url).sort((x, y) => x.grade - y.grade || String(x.subject).localeCompare(y.subject));
   if (error || !rows.length) return;
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   document.getElementById('freeRow').innerHTML = rows.map(r => `<a class="free-item" href="content.html?grade=${r.grade}&subject=${encodeURIComponent(r.subject)}#sabak-${r.lesson_num}">

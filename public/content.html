@@ -701,7 +701,7 @@ function changeSubject() {
 initSwitcher();
 
 let userIsPaid = false;
-// the newest lesson of every class is free to look at: slides and ҚМЖ with the GoTAB watermark, the first 15 s of the animation with sound; downloads need a subscription
+// the newest lesson of every class is free to look at: slides and ҚМЖ with the GoTAB watermark, the first 15 s of the animation with sound (no watermark on the video); downloads need a subscription
 let newestLessonNum = 0;
 const isFreeLesson = lesson => newestLessonNum > 0 && Number(lesson?.lesson_num) === newestLessonNum;
 const FREE_VIDEO_SECONDS = 15;
@@ -1203,7 +1203,6 @@ function openVideoPlayer(src, title, limit = 0) {
       <div style="width:min(1100px,100%);display:flex;align-items:center;gap:12px;color:#fff"><b id="videoPlayerTitle" style="flex:1;font-size:17px"></b><span id="videoPlayerLimit" style="display:none;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.15);font-size:13px;font-weight:700"></span><button type="button" id="videoPlayerClose" aria-label="Жабу" style="width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:22px;cursor:pointer">✕</button></div>
       <div style="position:relative;width:min(1100px,100%)">
         <video id="videoPlayerEl" controls playsinline controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture oncontextmenu="return false" style="width:100%;max-height:80vh;border-radius:14px;background:#000;display:block"></video>
-        <div id="videoPlayerWm" aria-hidden="true" style="display:none;position:absolute;inset:0;pointer-events:none;border-radius:14px;overflow:hidden;background-image:url(&quot;data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="170"><text x="150" y="95" text-anchor="middle" transform="rotate(-24 150 85)" font-family="Inter,Arial" font-size="30" font-weight="800" fill="white" fill-opacity="0.28">GoTAB.kz</text></svg>')}&quot;)"></div>
         <div id="videoPlayerEnd" style="display:none;position:absolute;inset:0;border-radius:14px;background:rgba(10,18,40,.82);color:#fff;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px">
           <b style="font-size:20px">Алдын ала қарау аяқталды</b><span style="font-size:15px;opacity:.85">Анимацияның толық нұсқасы мен жүктеп алу — жазылыммен</span>
           <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button type="button" id="videoPlayerPay" style="padding:12px 22px;border-radius:12px;border:0;background:#2864df;color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer">Жазылу</button><button type="button" id="videoPlayerReplay" style="padding:12px 22px;border-radius:12px;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer">↻ Қайта көру</button></div>
@@ -1225,7 +1224,6 @@ function openVideoPlayer(src, title, limit = 0) {
   box.dataset.limit = limit || 0;
   document.getElementById('videoPlayerTitle').textContent = title || 'Анимация';
   const badge = document.getElementById('videoPlayerLimit'); badge.style.display = limit ? 'inline-block' : 'none'; badge.textContent = `Алдын ала қарау · ${limit} секунд`;
-  document.getElementById('videoPlayerWm').style.display = limit ? 'block' : 'none';
   document.getElementById('videoPlayerEnd').style.display = 'none';
   const v = document.getElementById('videoPlayerEl'); v.src = src; v.muted = false;
   box.style.display = 'flex'; document.body.style.overflow = 'hidden';
