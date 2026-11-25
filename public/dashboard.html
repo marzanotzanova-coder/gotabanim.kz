@@ -251,7 +251,7 @@
 
   <section class="free-card" id="freeCard" hidden>
     <div class="free-head"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></i>
-      <div><h2>Тегін сабақты қарап көріңіз</h2><p>Әр сыныптың 1-сабағын тегін қарап көріңіз: презентация слайдтары, ҚМЖ және дыбысы бар анимация. Жүктеп алу — жазылыммен.</p></div></div>
+      <div><h2>Жаңа сабақты тегін қарап көріңіз</h2><p>Әр сыныптың ең соңғы салынған сабағы тегін: презентация слайдтары мен ҚМЖ (GoTAB белгісімен) және анимацияның алғашқы 15 секунды. Толық нұсқасы мен жүктеп алу — жазылыммен.</p></div></div>
     <div class="free-row" id="freeRow"></div>
   </section>
 
@@ -361,13 +361,16 @@ document.getElementById('heroQuote').textContent = PROVERBS[Math.floor(now / 864
 
 // free first lessons of every class
 async function showFreeLessons() {
-  const { data, error } = await sb.from('materials').select('grade,subject,lesson_num,title,ppt_thumb_url,ppt_url,qmj_url,video_url').eq('lesson_num', 1).neq('subject', 'informatics').order('grade');
-  const rows = (data || []).filter(r => r.ppt_url || r.qmj_url || r.video_url);
+  // the newest lesson of every class is the free one (content.html gives it a watermark and a 15-second animation preview)
+  const { data, error } = await sb.from('materials').select('grade,subject,lesson_num,title,ppt_thumb_url,ppt_url,qmj_url,video_url').neq('subject', 'informatics').order('grade');
+  const newest = {};
+  (data || []).filter(r => r.ppt_url || r.qmj_url || r.video_url).forEach(r => { const k = r.subject + ':' + r.grade; if (!newest[k] || r.lesson_num > newest[k].lesson_num) newest[k] = r; });
+  const rows = Object.values(newest).sort((x, y) => x.grade - y.grade || String(x.subject).localeCompare(y.subject));
   if (error || !rows.length) return;
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  document.getElementById('freeRow').innerHTML = rows.map(r => `<a class="free-item" href="content.html?grade=${r.grade}&subject=${encodeURIComponent(r.subject)}#sabak-1">
+  document.getElementById('freeRow').innerHTML = rows.map(r => `<a class="free-item" href="content.html?grade=${r.grade}&subject=${encodeURIComponent(r.subject)}#sabak-${r.lesson_num}">
     <div class="free-thumb">${r.ppt_thumb_url ? `<img src="${esc(r.ppt_thumb_url)}" alt="" loading="lazy">` : ''}<em>ТЕГІН</em></div>
-    <div class="free-body"><b>${esc(r.title)}</b><span>${r.grade}-сынып · ${SUBJ[r.subject] || ''}</span></div></a>`).join('');
+    <div class="free-body"><b>${esc(r.title)}</b><span>${r.grade}-сынып · ${SUBJ[r.subject] || ''} · ${r.lesson_num}-сабақ</span></div></a>`).join('');
   document.getElementById('freeCard').hidden = false;
 }
 

@@ -563,7 +563,7 @@ body.lesson-open .lesson-unit:not(.is-open){display:none}
   <div class="lesson-bar" id="lessonBar">
     <button type="button" class="lb-back" id="lbBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Барлық сабақтар</button>
     <h2 id="lbTitle"></h2>
-    <span class="lb-free" id="lbFree">Бұл сабақты тегін қарап көріңіз</span>
+    <span class="lb-free" id="lbFree">Жаңа сабақ · тегін қарап көріңіз</span>
     <button type="button" id="lbPrev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Алдыңғы</button>
     <button type="button" id="lbNext">Келесі<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
   </div>
@@ -701,8 +701,10 @@ function changeSubject() {
 initSwitcher();
 
 let userIsPaid = false;
-// the first lesson of every class is free to view (slides, ҚМЖ and the animation with sound, no watermark); downloads need a subscription
-const isFreeLesson = lesson => Number(lesson?.lesson_num) === 1;
+// the newest lesson of every class is free to look at: slides and ҚМЖ with the GoTAB watermark, the first 15 s of the animation with sound; downloads need a subscription
+let newestLessonNum = 0;
+const isFreeLesson = lesson => newestLessonNum > 0 && Number(lesson?.lesson_num) === newestLessonNum;
+const FREE_VIDEO_SECONDS = 15;
 let currentUser = null;
 
 let catalogLoader;
@@ -927,6 +929,7 @@ function render(overrideLessons) {
   // only lessons that have something to open or download; empty lessons are not shown
   const lessons = (overrideLessons || []).filter(l => (l.ppt && l.ppt.src) || (l.qmj && l.qmj.src) || (l.video && l.video.src) || GoTABExtras.files(l.extra_files).length);
   const grid = document.getElementById('lessonsGrid');
+  newestLessonNum = lessons.reduce((m, l, i) => Math.max(m, Number(l.lesson_num) || i + 1), 0);
 
   if (!lessons.length) {
     grid.innerHTML = '';
@@ -1054,7 +1057,7 @@ function render(overrideLessons) {
   }
 
   setQmjPreviewDocuments(lessons.filter(l=>l.qmj?.src).map(l=>({title:l.title,url:l.qmj.src})));
-  grid.querySelectorAll('[data-qmj-preview]').forEach(button=>button.addEventListener('click',()=>{const lesson=lessons[Number(button.dataset.qmjPreview)];if(lesson?.qmj?.src)openQmjPreview(lesson.qmj.src,lesson.title,{watermark:!isFreeLesson(lesson)});}));
+  grid.querySelectorAll('[data-qmj-preview]').forEach(button=>button.addEventListener('click',()=>{const lesson=lessons[Number(button.dataset.qmjPreview)];if(lesson?.qmj?.src)openQmjPreview(lesson.qmj.src,lesson.title,{watermark:true});}));
   // PPT download
   grid.querySelectorAll('[data-dl-ppt]').forEach(el => {
     el.addEventListener('click', function(e) {
@@ -1079,7 +1082,7 @@ function render(overrideLessons) {
   grid.querySelectorAll('[data-watch]').forEach(el => el.addEventListener('click', () => {
     const lesson = lessons[parseInt(el.dataset.watch)];
     if (!userIsPaid && !isFreeLesson(lesson)) { GoTABPayGate(); return; }
-    openVideoPlayer(lesson.video.src, lesson.title);
+    openVideoPlayer(lesson.video.src, lesson.title, userIsPaid ? 0 : FREE_VIDEO_SECONDS);
   }));
 
   // Video download
@@ -1192,19 +1195,38 @@ addEventListener('hashchange', () => showLessonFromHash());
 addEventListener('popstate', () => showLessonFromHash());
 
 // ── Animation player (sound on, no download button) ──
-function openVideoPlayer(src, title) {
+// the animation player; limit > 0 stops it after that many seconds (free preview of the newest lesson)
+function openVideoPlayer(src, title, limit = 0) {
   let box = document.getElementById('videoPlayer');
   if (!box) {
     document.body.insertAdjacentHTML('beforeend', `<div id="videoPlayer" role="dialog" aria-modal="true" style="position:fixed;inset:0;z-index:9500;background:rgba(10,18,40,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:12px">
-      <div style="width:min(1100px,100%);display:flex;align-items:center;gap:12px;color:#fff"><b id="videoPlayerTitle" style="flex:1;font-size:17px"></b><button type="button" id="videoPlayerClose" aria-label="Жабу" style="width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:22px;cursor:pointer">✕</button></div>
-      <video id="videoPlayerEl" controls playsinline controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture oncontextmenu="return false" style="width:min(1100px,100%);max-height:80vh;border-radius:14px;background:#000"></video></div>`);
+      <div style="width:min(1100px,100%);display:flex;align-items:center;gap:12px;color:#fff"><b id="videoPlayerTitle" style="flex:1;font-size:17px"></b><span id="videoPlayerLimit" style="display:none;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.15);font-size:13px;font-weight:700"></span><button type="button" id="videoPlayerClose" aria-label="Жабу" style="width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:22px;cursor:pointer">✕</button></div>
+      <div style="position:relative;width:min(1100px,100%)">
+        <video id="videoPlayerEl" controls playsinline controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture oncontextmenu="return false" style="width:100%;max-height:80vh;border-radius:14px;background:#000;display:block"></video>
+        <div id="videoPlayerWm" aria-hidden="true" style="display:none;position:absolute;inset:0;pointer-events:none;border-radius:14px;overflow:hidden;background-image:url(&quot;data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="170"><text x="150" y="95" text-anchor="middle" transform="rotate(-24 150 85)" font-family="Inter,Arial" font-size="30" font-weight="800" fill="white" fill-opacity="0.28">GoTAB.kz</text></svg>')}&quot;)"></div>
+        <div id="videoPlayerEnd" style="display:none;position:absolute;inset:0;border-radius:14px;background:rgba(10,18,40,.82);color:#fff;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px">
+          <b style="font-size:20px">Алдын ала қарау аяқталды</b><span style="font-size:15px;opacity:.85">Анимацияның толық нұсқасы мен жүктеп алу — жазылыммен</span>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button type="button" id="videoPlayerPay" style="padding:12px 22px;border-radius:12px;border:0;background:#2864df;color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer">Жазылу</button><button type="button" id="videoPlayerReplay" style="padding:12px 22px;border-radius:12px;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer">↻ Қайта көру</button></div>
+        </div>
+      </div></div>`);
     box = document.getElementById('videoPlayer');
-    const close = () => { const v = document.getElementById('videoPlayerEl'); v.pause(); v.removeAttribute('src'); v.load(); box.style.display = 'none'; document.body.style.overflow = ''; };
+    const v = document.getElementById('videoPlayerEl'), end = document.getElementById('videoPlayerEnd');
+    const close = () => { v.pause(); v.removeAttribute('src'); v.load(); end.style.display = 'none'; box.style.display = 'none'; document.body.style.overflow = ''; };
+    const stopAt = () => { const lim = Number(box.dataset.limit) || 0; if (lim && v.currentTime >= lim) { v.pause(); v.currentTime = lim; end.style.display = 'flex'; } };
+    v.addEventListener('timeupdate', stopAt);
+    v.addEventListener('seeking', () => { const lim = Number(box.dataset.limit) || 0; if (lim && v.currentTime > lim) { v.currentTime = lim; stopAt(); } });
+    v.addEventListener('play', () => { const lim = Number(box.dataset.limit) || 0; if (lim && v.currentTime >= lim - .05) { v.pause(); end.style.display = 'flex'; } });
+    document.getElementById('videoPlayerReplay').onclick = () => { end.style.display = 'none'; v.currentTime = 0; v.play().catch(() => {}); };
+    document.getElementById('videoPlayerPay').onclick = () => { close(); GoTABPayGate(); };
     document.getElementById('videoPlayerClose').onclick = close;
     box.addEventListener('click', e => { if (e.target === box) close(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && box.style.display !== 'none') close(); });
   }
+  box.dataset.limit = limit || 0;
   document.getElementById('videoPlayerTitle').textContent = title || 'Анимация';
+  const badge = document.getElementById('videoPlayerLimit'); badge.style.display = limit ? 'inline-block' : 'none'; badge.textContent = `Алдын ала қарау · ${limit} секунд`;
+  document.getElementById('videoPlayerWm').style.display = limit ? 'block' : 'none';
+  document.getElementById('videoPlayerEnd').style.display = 'none';
   const v = document.getElementById('videoPlayerEl'); v.src = src; v.muted = false;
   box.style.display = 'flex'; document.body.style.overflow = 'hidden';
   v.play().catch(() => {});
@@ -1301,7 +1323,7 @@ async function openPreview(lesson, lessonNum) {
   document.getElementById('previewBadge').textContent = `Сабақ ${lessonNum}`;
   document.getElementById('previewTitle').textContent = lesson.title;
 
-  const wmLabel = isFreeLesson(lesson) ? null : (currentUser?.email || 'GoTAB.kz');
+  const wmLabel = !userIsPaid && isFreeLesson(lesson) ? 'GoTAB.kz' : (currentUser?.email || 'GoTAB.kz');
   const note = document.querySelector('#previewModal .preview-watermark-note'); if (note) note.hidden = !wmLabel;
 
   // Show modal immediately with loading placeholders
