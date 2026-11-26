@@ -17,11 +17,24 @@
   }
   // Safari never finishes drawing a slide whose SVG <image> points at a blob: URL, so every picture is turned into a data: URL first
   const toDataUrl = url => fetch(url).then(r => r.blob()).then(b => new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = no; fr.readAsDataURL(b); }));
+  // a picture is stored at the size it is shown (×2), not at camera resolution: Safari cannot draw a slide whose snapshot carries multi-MB pictures
+  async function shrunkDataUrl(src, boxW, boxH) {
+    const blob = await fetch(src).then(r => r.blob());
+    const pic = new Image(); const url = URL.createObjectURL(blob); pic.src = url;
+    try { await pic.decode(); } catch (_) { URL.revokeObjectURL(url); return toDataUrl(src); }
+    const k = Math.min(1, Math.max(boxW, 1) * 2 / pic.naturalWidth, Math.max(boxH, 1) * 2 / pic.naturalHeight, 1600 / Math.max(pic.naturalWidth, pic.naturalHeight));
+    if (k >= 0.95 && blob.size < 600 * 1024) { URL.revokeObjectURL(url); return toDataUrl(src); }
+    const cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(pic.naturalWidth * k)); cv.height = Math.max(1, Math.round(pic.naturalHeight * k));
+    cv.getContext('2d').drawImage(pic, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
+    const opaque = /jpe?g/i.test(blob.type);
+    const data = cv.toDataURL(opaque ? 'image/jpeg' : 'image/png', 0.9); cv.width = cv.height = 0;
+    return data;
+  }
   async function inlineImages(root) {
     // an <svg> that holds a picture is flattened into a plain PNG <img> first: Safari cannot draw such SVGs inside the page snapshot
     for (const svg of Array.from(root.querySelectorAll('svg')).filter(s => s.querySelector('image'))) {
       const box = svg.getBoundingClientRect(); if (!box.width || !box.height) continue;
-      await Promise.all(Array.from(svg.querySelectorAll('image')).map(async el => { const href = el.getAttribute('href') || el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'); if (!href || href.startsWith('data:')) return; const data = await toDataUrl(href).catch(() => null); if (data) { if (el.hasAttributeNS('http://www.w3.org/1999/xlink', 'href')) el.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', data); el.setAttribute('href', data); } }));
+      await Promise.all(Array.from(svg.querySelectorAll('image')).map(async el => { const href = el.getAttribute('href') || el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'); if (!href) return; const ib = el.getBoundingClientRect(); const data = await shrunkDataUrl(href, ib.width || box.width, ib.height || box.height).catch(() => null); if (data) { if (el.hasAttributeNS('http://www.w3.org/1999/xlink', 'href')) el.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', data); el.setAttribute('href', data); } }));
       const clone = svg.cloneNode(true); clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
       // clip paths used inside this svg may be defined in another svg on the slide: copy them in
       const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
@@ -35,8 +48,8 @@
     }
     const svgImgs = Array.from(root.querySelectorAll('image')), imgs = Array.from(root.querySelectorAll('img'));
     await Promise.all([...svgImgs.map(async el => { const href = el.getAttribute('href') || el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'); if (!href || href.startsWith('data:')) return;
-      const data = await toDataUrl(href).catch(() => null); if (data) { if (el.hasAttributeNS('http://www.w3.org/1999/xlink', 'href')) el.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', data); el.setAttribute('href', data); } }),
-      ...imgs.map(async el => { const src = el.getAttribute('src'); if (!src || src.startsWith('data:')) return; const data = await toDataUrl(src).catch(() => null); if (data) { el.src = data; await el.decode().catch(() => {}); } })]);
+      const box = el.getBoundingClientRect(); const data = await shrunkDataUrl(href, box.width, box.height).catch(() => null); if (data) { if (el.hasAttributeNS('http://www.w3.org/1999/xlink', 'href')) el.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', data); el.setAttribute('href', data); } }),
+      ...imgs.map(async el => { const src = el.getAttribute('src'); if (!src) return; const box = el.getBoundingClientRect(); const data = await shrunkDataUrl(src, box.width, box.height).catch(() => null); if (data && data !== src) { el.src = data; await el.decode().catch(() => {}); } })]);
   }
   const frame = () => new Promise(resolve => requestAnimationFrame(resolve));
   // Most presentations are set in Calibri, which Macs and phones do not have: a wider fallback font made lines wrap
@@ -100,7 +113,8 @@
   const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
   // Safari leaves pictures and fonts out of a snapshot the first times it draws it, so it is drawn again until it is complete
   async function drawSlide(image, element, options) {
-    const attempts = isSafari ? [options, options, options, { ...options, fontEmbedCSS: '' }, { ...options, fontEmbedCSS: '' }] : [options, options, { ...options, fontEmbedCSS: '' }];
+    const small = { ...options, pixelRatio: Math.min(options.pixelRatio, 1.2) }, plain = { ...small, fontEmbedCSS: '' };
+    const attempts = isSafari ? [options, options, options, small, small, plain, plain] : [options, options, small, plain];
     let last;
     for (let k = 0; k < attempts.length; k++) {
       if (last) last.width = last.height = 0;
