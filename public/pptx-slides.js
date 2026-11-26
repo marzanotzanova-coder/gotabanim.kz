@@ -51,7 +51,10 @@
       const box = el.getBoundingClientRect(); const data = await shrunkDataUrl(href, box.width, box.height).catch(() => null); if (data) { if (el.hasAttributeNS('http://www.w3.org/1999/xlink', 'href')) el.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', data); el.setAttribute('href', data); } }),
       ...imgs.map(async el => { const src = el.getAttribute('src'); if (!src) return; const box = el.getBoundingClientRect(); const data = await shrunkDataUrl(src, box.width, box.height).catch(() => null); if (data && data !== src) { el.src = data; await el.decode().catch(() => {}); } })]);
   }
-  const frame = () => new Promise(resolve => requestAnimationFrame(resolve));
+  // a background tab gets no animation frames: waiting for one froze the conversion when the admin switched tabs
+  const nativeFrame = window.requestAnimationFrame.bind(window);
+  const safeFrame = cb => { let done = false; const run = t => { if (!done) { done = true; cb(t); } }; const id = nativeFrame(run); setTimeout(() => run(performance.now()), 100); return id; };
+  const frame = () => new Promise(resolve => safeFrame(resolve));
   // Most presentations are set in Calibri, which Macs and phones do not have: a wider fallback font made lines wrap
   // and the extra line was cut off. Carlito has exactly Calibri's metrics, so it is loaded under the name Calibri,
   // both for the layout and inside each slide snapshot.
@@ -146,6 +149,8 @@
     document.body.appendChild(host);
     const blobs = [];
     const mediaUrlCache = new Map();
+    // the snapshot library also waits for animation frames
+    const pageFrame = window.requestAnimationFrame; window.requestAnimationFrame = safeFrame;
     try {
       for (let i = 0; i < total; i++) {
         check(); onProgress(`Слайд ${i + 1}/${total} дайындалуда…`);
@@ -181,6 +186,7 @@
       }
       return blobs;
     } finally {
+      window.requestAnimationFrame = pageFrame;
       host.remove();
       for (const url of mediaUrlCache.values()) if (typeof url === 'string' && url.startsWith('blob:')) URL.revokeObjectURL(url);
     }
