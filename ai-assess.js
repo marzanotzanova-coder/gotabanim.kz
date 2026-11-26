@@ -128,23 +128,31 @@ module.exports = function mountAssess(app, express) {
     } catch (e) { fail(res, e, 'test-import'); }
   });
 
-  // 2) БЖБ/ТЖБ спецификациясынан тапсырмалар кестесін шығару
+  // 2) БЖБ/ТЖБ спецификациясынан тексеру кілтін шығару: әр тапсырманың дескрипторлары (балымен) және дұрыс жауабы
+  const cleanDesc = d => (Array.isArray(d) ? d : []).slice(0, 20).map(x => typeof x === 'object' && x && !Array.isArray(x)
+    ? { text: str(x.text ?? x.descriptor ?? x.name ?? '', 400).trim(), points: x.points == null && x.score == null ? null : clampInt(x.points ?? x.score, 0, 50, null) }
+    : { text: str(x, 400).trim(), points: null }).filter(x => x.text);
   app.post('/api/ai/bzhb-extract', big, async (req, res) => {
     const b = req.body || {};
     const content = [{ type: 'input_text', text:
-      'Бұл — БЖБ немесе ТЖБ тапсырмалары мен балл қою кестесі (дескрипторлар). Әр тапсырманы бөліп шығар: нөмірі, қысқаша атауы, ' +
-      'максималды балы және бағалау критерийі (дескрипторлар, дұрыс жауап немесе шешім қадамдары, әр қадамның балы). Ешнәрсе ойдан қоспа: ' +
-      'құжатта балл көрсетілмесе, max үшін null қой. Құжатта бірнеше нұсқа (1-нұсқа, 2-нұсқа…) болса, әр тапсырманы бір рет шығар, ал criteria ішіне дескрипторларды, сосын әр нұсқаның шартын және оның дұрыс жауабын жаз (жауап құжатта жоқ болса, есепті өзің мұқият шешіп, «шешім: …» деп қысқаша қадамдарымен жаз). criteria — жай мәтін (string), объект емес; бөлімдерін жаңа жолмен бөл. JSON: {"title":"жұмыстың атауы","tasks":[{"n":"1","title":"Теңдеу","max":3,"criteria":"..."}]}' }];
+      'Бұл — БЖБ немесе ТЖБ: тапсырмалар және балл қою кестесі (дескрипторлар). Тексеру кілтін шығар. Әр тапсырма үшін: нөмірі, қысқа атауы (3-6 сөз), ' +
+      'дескрипторлар тізімі — әрқайсысы бөлек, құжаттағы мәтінімен және балымен, және дұрыс жауабы. ' +
+      'Құжатта бірнеше нұсқа (1-нұсқа, 2-нұсқа…) болса, тапсырманы бір рет шығар; answer ішінде әр нұсқаның жауабын жеке жолмен жаз: «1-нұсқа: …», «2-нұсқа: …». ' +
+      'Жауап құжатта жоқ болса, есепті өзің мұқият шешіп, тек соңғы жауапты жаз (шешімнің 1-2 негізгі қадамын жақшада беруге болады). ' +
+      'Дескриптордың балы құжатта көрсетілмесе, points үшін null қой. Ешнәрсе ойдан қоспа. Барлық мәндер — жай мәтін немесе сан. ' +
+      'JSON: {"title":"жұмыстың атауы","tasks":[{"n":"2","title":"Мәтіндік есеп","descriptors":[{"text":"Есептің қысқаша шартын құрастырады","points":1}],"answer":"1-нұсқа: 1 17/30 т\n2-нұсқа: 11/15 км"}]}' }];
     if (isDataUrl(b.file, ['application/pdf'])) content.push({ type: 'input_file', filename: str(b.filename, 80) || 'bzhb.pdf', file_data: b.file });
     else if (isDataUrl(b.file, ['image/'])) content.push({ type: 'input_image', image_url: b.file, detail: 'high' });
     else if (str(b.text, 30000).trim()) content.push({ type: 'input_text', text: 'Құжат мәтіні:\n' + str(b.text, 30000) });
     else return res.status(400).json({ error: 'PDF, Word немесе фото жүктеңіз' });
     if (!(await gate(req, res))) return;
     try {
-      const out = await askJSON({ system: 'Сен Қазақстан мектебіндегі критериалды бағалау маманысың. Тек JSON қайтар.', content, vision: true });
-      const tasks = (Array.isArray(out.tasks) ? out.tasks : []).slice(0, 30).map((t, i) => ({
-        n: str(t.n ?? i + 1, 10), title: str(t.title, 160).trim(), max: t.max == null ? null : clampInt(t.max, 0, 100, null), criteria: str(t.criteria, 4000).trim()
-      }));
+      const out = await askJSON({ system: 'Сен Қазақстан мектебіндегі критериалды бағалау маманысың және математиканы мұқият шешесің. Тек JSON қайтар.', content, vision: true, maxTokens: 12000 });
+      const tasks = (Array.isArray(out.tasks) ? out.tasks : []).slice(0, 30).map((t, i) => {
+        let descriptors = cleanDesc(t.descriptors);
+        if (!descriptors.length && (t.criteria || t.max != null)) descriptors = [{ text: str(t.criteria, 1000).trim() || 'Тапсырманы дұрыс орындайды', points: t.max == null ? null : clampInt(t.max, 0, 100, null) }];
+        return { n: str(t.n ?? i + 1, 10), title: str(t.title, 160).trim(), descriptors, answer: str(t.answer, 1500).trim() };
+      }).filter(t => t.descriptors.length);
       res.json({ title: str(out.title, 200), tasks });
     } catch (e) { fail(res, e, 'bzhb-extract'); }
   });
@@ -152,25 +160,29 @@ module.exports = function mountAssess(app, express) {
   // 3) Оқушының жауап парағын тексеру (балл — тек ұсыныс, мұғалім бекітеді)
   app.post('/api/ai/bzhb-check', big, async (req, res) => {
     const b = req.body || {};
-    const tasks = (Array.isArray(b.tasks) ? b.tasks : []).slice(0, 30).map((t, i) => ({
-      n: str(t.n ?? i + 1, 10), title: str(t.title, 160), max: clampInt(t.max, 0, 100, 0), criteria: str(t.criteria, 4000) }));
+    const tasks = (Array.isArray(b.tasks) ? b.tasks : []).slice(0, 30).map((t, i) => {
+      let descriptors = cleanDesc(t.descriptors).map(d => ({ ...d, points: d.points ?? 1 }));
+      if (!descriptors.length) descriptors = [{ text: str(t.criteria, 2000) || 'Тапсырманы дұрыс орындайды', points: clampInt(t.max, 0, 100, 0) }];
+      return { n: str(t.n ?? i + 1, 10), title: str(t.title, 160), descriptors, answer: str(t.answer, 1500), max: descriptors.reduce((a, d) => a + d.points, 0) };
+    });
     const images = (Array.isArray(b.images) ? b.images : []).filter(x => isDataUrl(x, ['image/'])).slice(0, 6);
-    if (!tasks.length || !tasks.some(t => t.max > 0)) return res.status(400).json({ error: 'Алдымен тапсырмалар кестесін толтырыңыз (балдарымен)' });
+    if (!tasks.length || !tasks.some(t => t.max > 0)) return res.status(400).json({ error: 'Алдымен тексеру кілтін балдарымен толтырыңыз' });
     if (!images.length) return res.status(400).json({ error: 'Оқушы жұмысының фотосын жүктеңіз' });
     if (!(await gate(req, res))) return;
-    const rubric = tasks.map(t => `№${t.n}. ${t.title} — макс ${t.max} балл.\nКритерий/дұрыс жауап: ${t.criteria || '(берілмеген)'}`).join('\n\n');
+    const rubric = tasks.map(t => `№${t.n}. ${t.title} — барлығы ${t.max} балл. Дескрипторлар:\n` +
+      t.descriptors.map((d, k) => `  ${k + 1}) ${d.text} — ${d.points} балл`).join('\n') + (t.answer ? `\n  Дұрыс жауап: ${t.answer}` : '')).join('\n\n');
     try {
       const out = await askJSON({
         vision: true, maxTokens: 12000,
-        system: 'Сен Қазақстан мектебінде БЖБ/ТЖБ жұмыстарын критерий бойынша тексеретін мұқият мұғалімнің көмекшісісің. ' +
+        system: 'Сен Қазақстан мектебінде БЖБ/ТЖБ жұмыстарын дескриптор бойынша тексеретін мұқият мұғалімнің көмекшісісің. ' +
           'Сенің бағаң — тек ұсыныс, оны мұғалім тексереді. Қолжазбаны анық оқи алмасаң, болжама: confidence "low" қойып, не көрінбейтінін жаз. ' +
-          'Критерийде жоқ талапты ойдан қоспа. Тек JSON қайтар, түсіндірмелер қазақ тілінде.',
+          'Дескрипторда жоқ талапты ойдан қоспа. Тек JSON қайтар, түсіндірмелер қазақ тілінде.',
         content: [
-          { type: 'input_text', text: `Жұмыс: ${str(b.title, 200) || 'БЖБ'}\n\nТапсырмалар мен критерийлер:\n${rubric}\n\n` +
-            (str(b.key, 4000).trim() ? `Мұғалімнің қосымша кілті/ескертпесі:\n${str(b.key, 4000)}\n\n` : '') +
+          { type: 'input_text', text: `Жұмыс: ${str(b.title, 200) || 'БЖБ'}\n\nТексеру кілті:\n${rubric}\n\n` +
+            (str(b.key, 4000).trim() ? `Мұғалімнің қосымша ескертпесі:\n${str(b.key, 4000)}\n\n` : '') +
             'Төмендегі суреттер — бір оқушының жауап парағы (бірнеше бет болуы мүмкін). Жұмыс бірнеше нұсқалы болса, алдымен оқушының қай нұсқаны орындағанын шарттағы сандарынан анықта да, сол нұсқаның жауабымен салыстыр. ' +
-            'Әр дескриптор бойынша бөлек тексеріп, тапсырманың балын дескрипторлар қосындысы ретінде ұсын. ' +
-            'JSON: {"variant":"оқушы орындаған нұсқа (анықталса)","tasks":[{"n":"1","score":2,"max":3,"seen":"оқушы не жазғаны (қысқа)","explanation":"қай критерий орындалды/орындалмады, қате неде","confidence":"high|medium|low"}],' +
+            'Әр дескрипторды бөлек тексер: marks — әр дескрипторға қойылған балл, дескрипторлар ретімен (0-ден сол дескриптордың балына дейін). ' +
+            'JSON: {"variant":"оқушы орындаған нұсқа (анықталса)","tasks":[{"n":"2","marks":[1,1,0],"seen":"оқушы не жазғаны (қысқа)","explanation":"қай дескриптор орындалды/орындалмады, қате неде","confidence":"high|medium|low"}],' +
             '"summary":"оқушының күшті және әлсіз тұстары, 2-3 сөйлем","advice":"оқушыға нақты ұсыныс, 1-2 сөйлем"}' },
           ...images.map(url => ({ type: 'input_image', image_url: url, detail: 'high' }))
         ]
@@ -178,8 +190,12 @@ module.exports = function mountAssess(app, express) {
       const got = Array.isArray(out.tasks) ? out.tasks : [];
       const result = tasks.map(t => {
         const g = got.find(x => String(x.n) === t.n) || {};
+        const marks = t.descriptors.map((d, k) => clampInt(Array.isArray(g.marks) ? g.marks[k] : null, 0, d.points, 0));
+        const hasMarks = Array.isArray(g.marks) && g.marks.length;
+        const score = hasMarks ? marks.reduce((a, m) => a + m, 0) : clampInt(g.score, 0, t.max, 0);
         const conf = ['high', 'medium', 'low'].includes(g.confidence) ? g.confidence : 'low';
-        return { n: t.n, title: t.title, max: t.max, score: clampInt(g.score, 0, t.max, 0), seen: str(g.seen, 600), explanation: str(g.explanation, 1200) || 'AI бұл тапсырманы таба алмады — қолмен тексеріңіз.', confidence: g.explanation ? conf : 'low' };
+        return { n: t.n, title: t.title, max: t.max, score, descriptors: t.descriptors.map((d, k) => ({ text: d.text, points: d.points, got: hasMarks ? marks[k] : null })),
+          seen: str(g.seen, 600), explanation: str(g.explanation, 1200) || 'AI бұл тапсырманы таба алмады — қолмен тексеріңіз.', confidence: g.explanation ? conf : 'low' };
       });
       res.json({ tasks: result, variant: str(out.variant, 60), summary: str(out.summary, 1500), advice: str(out.advice, 800) });
     } catch (e) { fail(res, e, 'bzhb-check'); }

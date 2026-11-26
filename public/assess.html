@@ -177,6 +177,28 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
 .thumb{position:relative;width:92px;height:120px;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
 .thumb img{width:100%;height:100%;object-fit:cover}
 .thumb button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:none;background:#0f172acc;color:#fff;cursor:pointer;font-size:14px;line-height:1}
+.rub2{width:100%;border-collapse:collapse;font-size:14px;min-width:640px}
+.rub2 th{text-align:left;font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:10px 8px;background:#f4f7ff;border:1px solid var(--border)}
+.rub2 td{border:1px solid var(--border);padding:6px 8px;vertical-align:top;background:#fff}
+.rub2 tbody.tk:nth-of-type(even) td{background:#fbfcff}
+.rub2 td.tn{text-align:center;font-weight:900;color:#1a56db;font-size:16px}
+.rub2 input,.rub2 textarea{width:100%;box-sizing:border-box;border:1.5px solid transparent;border-radius:8px;padding:7px 8px;font:500 14px/1.45 Inter,sans-serif;background:transparent;color:var(--text);resize:none;overflow:hidden}
+.rub2 input:hover,.rub2 textarea:hover{border-color:var(--border)}
+.rub2 input:focus,.rub2 textarea:focus{outline:none;border-color:var(--primary);background:#fff}
+.rub2 td.tn input{text-align:center;font-weight:900;color:#1a56db;padding:7px 2px}
+.rub2 td.tt textarea{font-weight:700}
+.rub2 td.pt input{text-align:center;font-weight:800}
+.rub2 .tsum{font-size:12px;color:var(--muted);font-weight:700;padding:2px 8px}
+.rub2 tr.ans td{background:#f0fdf4!important}
+.rub2 tr.ans .lbl{font-size:12px;font-weight:800;color:#047857;padding:4px 8px 0}
+.rub2 .mini{border:none;background:none;color:#94a3b8;cursor:pointer;padding:6px;border-radius:8px;display:flex}
+.rub2 .mini:hover{color:#dc2626;background:#fef2f2}
+.rub2 .mini svg{width:16px;height:16px}
+.rub2 .add-d{border:none;background:none;color:#1a56db;font:700 12.5px Inter,sans-serif;cursor:pointer;padding:4px 8px}
+.res .dl{list-style:none;margin:6px 0 0;padding:0}
+.res .dl li{font-size:13px;color:#cbd5e1;display:flex;gap:8px;align-items:baseline;margin-top:3px}
+.res .dl li b{min-width:30px;font-weight:800}
+.res .dl li.y b{color:#4ade80}.res .dl li.n b{color:#f87171}
 .rub td.crit{width:46%}.rub td textarea{line-height:1.5;overflow:hidden;min-height:64px}
 .rub td input,.rub td textarea{border:1.5px solid var(--border);border-radius:9px;padding:7px 9px;font:500 13.5px Inter,sans-serif;width:100%;box-sizing:border-box;background:#fbfcff}
 .rub td input:focus,.rub td textarea:focus{outline:none;border-color:var(--primary);background:#fff}
@@ -307,8 +329,8 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
   <!-- ═════════ 3. БЖБ/ТЖБ ═════════ -->
   <section class="pane" id="pane-bzhb" hidden>
     <div class="card">
-      <h2><i style="background:#e0ecff;color:#1a56db">1</i>Тапсырма және дескрипторлар</h2>
-      <p class="sub">БЖБ/ТЖБ файлын (PDF, Word немесе фото) жүктеңіз — AI тапсырмалар мен балдар кестесін толтырады. Кестені тексеріп, қажет болса түзетіңіз: ол бүкіл сыныпқа «кілт» болады.<br><b>«Дескриптор / дұрыс жауап»</b> бағанында — әр тапсырманың дескрипторлары мен балдары, және әр нұсқаның дұрыс жауабы. AI оқушы жұмысын осымен салыстырады. Мұғалім тек қарап шығады: қате болса — сол жерде түзетеді.</p>
+      <h2><i style="background:#e0ecff;color:#1a56db">1</i>Тексеру кілті</h2>
+      <p class="sub">БЖБ/ТЖБ файлын (PDF, Word немесе фото) жүктеңіз — AI одан қағаздағыдай кесте жасайды: әр тапсырманың дескрипторлары, балдары және дұрыс жауабы. Сіз тек қарап шығасыз, қате болса — сол жерде түзетесіз. Бұл кілт бүкіл сыныпқа ортақ: AI әр оқушының жұмысын осымен салыстырады.</p>
       <div class="grid2">
         <label class="fld">Жұмыс атауы<input id="bTitle" maxlength="200" placeholder="Мысалы: Алгебра 7-сынып, 2-тоқсан БЖБ №1"></label>
         <label class="fld">Сынып<input id="bClass" maxlength="20" placeholder="Мысалы: 7А"></label>
@@ -320,10 +342,10 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
         <button class="btn btn-ai" id="bExtract" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>AI кестені толтырсын</button>
       </div>
       <div class="msg" id="bExMsg"></div>
-      <table class="tb rub" style="margin-top:14px">
-        <thead><tr><th style="width:60px">№</th><th>Тапсырма</th><th style="width:90px">Макс балл</th><th>Дескриптор / дұрыс жауап</th><th style="width:40px"></th></tr></thead>
-        <tbody id="rubBody"></tbody>
-      </table>
+      <div style="overflow-x:auto;margin-top:14px"><table class="rub2">
+        <thead><tr><th style="width:48px">№</th><th style="width:26%">Тапсырма</th><th>Дескриптор</th><th style="width:78px;text-align:center">Балл</th><th style="width:36px"></th></tr></thead>
+        
+      </table></div>
       <div class="row" style="margin-top:10px">
         <button class="btn btn-g" id="addTask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Тапсырма қосу</button>
         <span class="spacer"></span><b id="rubTotal" class="meta"></b>
@@ -719,20 +741,46 @@ let specFile = null, photos = [], lastCheck = null;
 $('#bTitle').value = rubric.title; $('#bClass').value = rubric.cls;
 function saveRub() { rubric.title = $('#bTitle').value; rubric.cls = $('#bClass').value; store.set('gotab_bzhb_rubric', rubric); }
 ['#bTitle', '#bClass'].forEach(s => $(s).addEventListener('input', () => { saveRub(); renderChecks(); }));
+// Кілттің бір тапсырмасы: {n, title, descriptors:[{text, points}], answer}. Ескі түрі {max, criteria} автоматты ауысады.
+function normTask(t) {
+  if (Array.isArray(t.descriptors)) return {n: t.n ?? '', title: t.title ?? '', descriptors: t.descriptors.length ? t.descriptors : [{text:'', points:''}], answer: t.answer ?? ''};
+  return {n: t.n ?? '', title: t.title ?? '', descriptors: [{text: t.criteria ?? '', points: t.max ?? ''}], answer: ''};
+}
+const taskMax = t => t.descriptors.reduce((a, d) => a + (+d.points || 0), 0);
 function renderRub() {
-  if (!rubric.tasks.length) rubric.tasks = [{n:'1', title:'', max:'', criteria:''}];
-  $('#rubBody').innerHTML = rubric.tasks.map((t, i) => `<tr data-i="${i}"><td><input data-k="n" value="${esc(t.n)}"></td><td><input data-k="title" value="${esc(t.title)}" placeholder="Мысалы: Теңдеу"></td>
-    <td><input data-k="max" type="number" min="0" max="100" value="${esc(t.max ?? '')}"></td><td class="crit"><textarea data-k="criteria" rows="2" placeholder="Дескриптор, дұрыс жауап, әр қадамның балы">${esc(t.criteria)}</textarea></td>
-    <td><button class="btn btn-d" data-del title="Өшіру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></td></tr>`).join('');
-  rubTotal(); grow('#rubBody textarea');
+  rubric.tasks = rubric.tasks.map(normTask);
+  if (!rubric.tasks.length) rubric.tasks = [normTask({n:'1', descriptors:[]})];
+  const T = document.querySelector('.rub2');
+  T.querySelectorAll('tbody').forEach(b => b.remove());
+  T.insertAdjacentHTML('beforeend', rubric.tasks.map((t, i) => { const rs = t.descriptors.length + 1;
+    return `<tbody class="tk" data-t="${i}">` + t.descriptors.map((d, k) => `<tr>
+      ${k ? '' : `<td class="tn" rowspan="${rs}"><input data-k="n" value="${esc(t.n)}" aria-label="Тапсырма нөмірі"></td>
+      <td class="tt" rowspan="${rs}"><textarea data-k="title" rows="1" placeholder="Тапсырма атауы">${esc(t.title)}</textarea><div class="tsum">Барлығы: <span data-sum>${taskMax(t)}</span> балл</div></td>`}
+      <td><textarea data-d="${k}" data-k="text" rows="1" placeholder="Дескриптор (оқушы не істейді)">${esc(d.text)}</textarea></td>
+      <td class="pt"><input data-d="${k}" data-k="points" type="number" min="0" max="50" value="${esc(d.points ?? '')}" aria-label="Балл"></td>
+      <td><button class="mini" data-deld="${k}" title="Дескрипторды өшіру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></td></tr>`).join('') +
+      `<tr class="ans"><td colspan="3"><div class="lbl">✓ Дұрыс жауап</div><textarea data-k="answer" rows="1" placeholder="Мысалы: 1-нұсқа: 1 17/30 т; 2-нұсқа: 11/15 км">${esc(t.answer)}</textarea>
+        <div class="row" style="gap:4px"><button class="add-d" data-addd>+ дескриптор қосу</button><span class="spacer"></span><button class="add-d" data-delt style="color:#dc2626">тапсырманы өшіру</button></div></td></tr></tbody>`; }).join(''));
+  rubTotal(); grow('#rubBody textarea, .rub2 textarea');
 }
 // textarea өз мәтініне қарай биіктейді: дескриптор мен дұрыс жауап толық көрінеді
-function grow(sel) { document.querySelectorAll(sel).forEach(t => { if (!t.offsetParent) return; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight + 4, 600) + 'px'; }); }
-document.addEventListener('input', e => { if (e.target.matches('#rubBody textarea, #qList textarea')) { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight + 4, 600) + 'px'; } });
-function rubTotal() { const s = rubric.tasks.reduce((a, t) => a + (+t.max || 0), 0); $('#rubTotal').textContent = s ? `Барлығы: ${s} балл` : ''; }
-$('#rubBody').addEventListener('input', e => { const i = +e.target.closest('tr').dataset.i; rubric.tasks[i][e.target.dataset.k] = e.target.value; saveRub(); rubTotal(); });
-$('#rubBody').addEventListener('click', e => { if (!e.target.closest('[data-del]')) return; rubric.tasks.splice(+e.target.closest('tr').dataset.i, 1); saveRub(); renderRub(); });
-$('#addTask').onclick = () => { rubric.tasks.push({n: String(rubric.tasks.length + 1), title:'', max:'', criteria:''}); saveRub(); renderRub(); };
+function grow(sel) { sel = sel.replace('#rubBody textarea', '.rub2 textarea'); document.querySelectorAll(sel).forEach(t => { if (!t.offsetParent) return; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight + 4, 600) + 'px'; }); }
+document.addEventListener('input', e => { if (e.target.matches('.rub2 textarea, #qList textarea')) { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight + 4, 600) + 'px'; } });
+function rubTotal() { const s = rubric.tasks.reduce((a, t) => a + taskMax(t), 0); $('#rubTotal').textContent = s ? `Барлығы: ${s} балл` : ''; }
+const rubTable = () => document.querySelector('.rub2');
+rubTable().addEventListener('input', e => {
+  const tb = e.target.closest('tbody.tk'); if (!tb) return; const t = rubric.tasks[+tb.dataset.t], k = e.target.dataset.k;
+  if (e.target.dataset.d != null) t.descriptors[+e.target.dataset.d][k] = e.target.value; else t[k] = e.target.value;
+  saveRub(); rubTotal(); const sum = tb.querySelector('[data-sum]'); if (sum) sum.textContent = taskMax(t);
+});
+rubTable().addEventListener('click', e => {
+  const tb = e.target.closest('tbody.tk'); if (!tb) return; const i = +tb.dataset.t, t = rubric.tasks[i];
+  if (e.target.closest('[data-addd]')) { t.descriptors.push({text:'', points:1}); saveRub(); renderRub(); return; }
+  const dd = e.target.closest('[data-deld]');
+  if (dd) { t.descriptors.splice(+dd.dataset.deld, 1); if (!t.descriptors.length) rubric.tasks.splice(i, 1); saveRub(); renderRub(); return; }
+  if (e.target.closest('[data-delt]') && confirm(`№${t.n} тапсырма өшірілсін бе?`)) { rubric.tasks.splice(i, 1); saveRub(); renderRub(); }
+});
+$('#addTask').onclick = () => { rubric.tasks.push(normTask({n: String(rubric.tasks.length + 1), descriptors: [{text:'', points:1}]})); saveRub(); renderRub(); };
 $('#bSpec').onchange = () => { specFile = $('#bSpec').files[0] || null; $('#bSpecName').textContent = specFile ? specFile.name : 'PDF, DOCX немесе фото'; $('#bExtract').disabled = !specFile; };
 const readDataUrl = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsDataURL(f); });
 // Фотоны сығу: ұзын жағы 1600px, JPEG — Vercel-дің сұраныс шегіне сыяды
@@ -791,11 +839,11 @@ $('#bExtract').onclick = async () => {
     else throw new Error('Бұл файл түрі қолдау көрсетілмейді');
     const d = await api('bzhb-extract', body);
     if (!d.tasks.length) throw new Error('Құжаттан тапсырмалар табылмады — кестені қолмен толтырыңыз.');
-    rubric.tasks = d.tasks.map(t => ({n: t.n, title: t.title, max: t.max ?? '', criteria: t.criteria}));
+    rubric.tasks = d.tasks.map(t => normTask({n: t.n, title: t.title, descriptors: t.descriptors.map(x => ({text: x.text, points: x.points ?? ''})), answer: t.answer}));
     if (!$('#bTitle').value.trim() && d.title) $('#bTitle').value = d.title;
     saveRub(); renderRub(); renderChecks();
-    const miss = rubric.tasks.filter(t => t.max === '').length;
-    say($('#bExMsg'), `${d.tasks.length} тапсырма табылды.` + (miss ? ` ${miss} тапсырманың балы құжатта көрсетілмеген — толтырыңыз.` : ' Кестені тексеріп шығыңыз.'), miss ? 'err' : 'ok');
+    const miss = rubric.tasks.reduce((a, t) => a + t.descriptors.filter(x => x.points === '').length, 0);
+    say($('#bExMsg'), `${d.tasks.length} тапсырма табылды.` + (miss ? ` ${miss} дескриптордың балы құжатта көрсетілмеген — «Балл» бағанын толтырыңыз.` : ' Кестені тексеріп шығыңыз.'), miss ? 'err' : 'ok');
   } catch (e) { say($('#bExMsg'), e.message, 'err'); }
   busy(btn, false);
 };
@@ -816,9 +864,11 @@ async function addPhotos(files) {
 function renderThumbs() { $('#thumbs').innerHTML = photos.map((p, i) => `<div class="thumb"><img src="${p}" alt="${i + 1}-бет"><button data-i="${i}" title="Алып тастау">×</button></div>`).join(''); }
 $('#thumbs').onclick = e => { const b = e.target.closest('button'); if (!b) return; photos.splice(+b.dataset.i, 1); renderThumbs(); };
 $('#bCheck').onclick = async () => {
-  const tasks = rubric.tasks.map(t => ({n: String(t.n).trim(), title: t.title.trim(), max: +t.max || 0, criteria: t.criteria.trim()})).filter(t => t.n && t.max > 0);
+  const tasks = rubric.tasks.map(normTask).map(t => ({n: String(t.n).trim(), title: t.title.trim(), answer: t.answer.trim(),
+    descriptors: t.descriptors.filter(d => d.text.trim() || +d.points).map(d => ({text: d.text.trim() || 'Тапсырманы дұрыс орындайды', points: +d.points || 0}))}))
+    .map(t => ({...t, max: taskMax(t)})).filter(t => t.n && t.max > 0);
   if (!$('#bTitle').value.trim()) return say($('#bCheckMsg'), 'Жұмыс атауын жазыңыз (1-қадам).', 'err');
-  if (!tasks.length) return say($('#bCheckMsg'), 'Тапсырмалар кестесін балдарымен толтырыңыз (1-қадам).', 'err');
+  if (!tasks.length) return say($('#bCheckMsg'), 'Тексеру кілтін балдарымен толтырыңыз (1-қадам).', 'err');
   if (!$('#bStudent').value.trim()) return say($('#bCheckMsg'), 'Оқушының аты немесе нөмірін жазыңыз.', 'err');
   if (!photos.length) return say($('#bCheckMsg'), 'Оқушы жұмысының фотосын қосыңыз.', 'err');
   const btn = $('#bCheck'); busy(btn, true, 'Тексеріп жатыр…'); say($('#bCheckMsg'), 'AI жұмысты тексеріп жатыр, 30–90 секунд. Бетті жаппаңыз.');
@@ -841,6 +891,7 @@ function renderResult() {
     <div class="pbar"><i id="rBar" style="width:${p}%"></i></div>
     <table><thead><tr><th>Тапсырма</th><th style="text-align:right">Балл</th></tr></thead><tbody>
     ${c.tasks.map((t, i) => `<tr class="${t.confidence === 'low' ? 'low' : ''}"><td><b style="color:#fff">№${esc(t.n)}. ${esc(t.title)}</b>
+      ${(t.descriptors || []).some(d => d.got != null) ? `<ul class="dl">${t.descriptors.map(d => `<li class="${d.got >= d.points ? 'y' : 'n'}"><b>${d.got >= d.points ? '✓' : '✗'} ${d.got}/${d.points}</b><span>${esc(d.text)}</span></li>`).join('')}</ul>` : ''}
       <div class="why">${esc(t.explanation)}</div>${t.seen ? `<div class="why"><i>Оқушы жазғаны:</i> ${esc(t.seen)}</div>` : ''}${t.confidence === 'low' ? '<span class="warn">AI сенімсіз — қолмен тексеріңіз</span>' : ''}</td>
       <td><div class="sc"><input type="number" min="0" max="${t.max}" value="${t.score}" data-i="${i}">/${t.max}</div></td></tr>`).join('')}
     </tbody></table>
