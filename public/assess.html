@@ -177,6 +177,7 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
 .thumb{position:relative;width:92px;height:120px;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
 .thumb img{width:100%;height:100%;object-fit:cover}
 .thumb button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:none;background:#0f172acc;color:#fff;cursor:pointer;font-size:14px;line-height:1}
+.rub td.crit{width:46%}.rub td textarea{line-height:1.5;overflow:hidden;min-height:64px}
 .rub td input,.rub td textarea{border:1.5px solid var(--border);border-radius:9px;padding:7px 9px;font:500 13.5px Inter,sans-serif;width:100%;box-sizing:border-box;background:#fbfcff}
 .rub td input:focus,.rub td textarea:focus{outline:none;border-color:var(--primary);background:#fff}
 .res{border-radius:22px;background:#0f172a;color:#e2e8f0;padding:24px;margin-bottom:18px}
@@ -307,7 +308,7 @@ table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
   <section class="pane" id="pane-bzhb" hidden>
     <div class="card">
       <h2><i style="background:#e0ecff;color:#1a56db">1</i>Тапсырма және дескрипторлар</h2>
-      <p class="sub">БЖБ/ТЖБ файлын (PDF, Word немесе фото) жүктеңіз — AI тапсырмалар мен балдар кестесін толтырады. Кестені тексеріп, қажет болса түзетіңіз: ол бүкіл сыныпқа «кілт» болады.</p>
+      <p class="sub">БЖБ/ТЖБ файлын (PDF, Word немесе фото) жүктеңіз — AI тапсырмалар мен балдар кестесін толтырады. Кестені тексеріп, қажет болса түзетіңіз: ол бүкіл сыныпқа «кілт» болады.<br><b>«Дескриптор / дұрыс жауап»</b> бағанында — әр тапсырманың дескрипторлары мен балдары, және әр нұсқаның дұрыс жауабы. AI оқушы жұмысын осымен салыстырады. Мұғалім тек қарап шығады: қате болса — сол жерде түзетеді.</p>
       <div class="grid2">
         <label class="fld">Жұмыс атауы<input id="bTitle" maxlength="200" placeholder="Мысалы: Алгебра 7-сынып, 2-тоқсан БЖБ №1"></label>
         <label class="fld">Сынып<input id="bClass" maxlength="20" placeholder="Мысалы: 7А"></label>
@@ -426,6 +427,7 @@ function showTab(t) {
   document.querySelectorAll('.pane').forEach(p => p.hidden = p.id !== 'pane-' + t);
   try { history.replaceState(null, '', '#' + t); } catch (_) {}
   if (t === 'diag') renderTrend();
+  if (t === 'bzhb') grow('#rubBody textarea'); if (t === 'tests') grow('#qList textarea');
 }
 document.querySelectorAll('.as-tab').forEach(b => b.onclick = () => showTab(b.dataset.tab));
 
@@ -442,6 +444,7 @@ function renderQs() {
     <div class="opts">${q.options.map((o, j) => `<label class="opt${q.answer === j ? ' right' : ''}"><input type="radio" name="r${i}" data-ans="${j}" ${q.answer === j ? 'checked' : ''} title="Дұрыс жауап"><input type="text" data-opt="${j}" value="${esc(o)}" placeholder="${String.fromCharCode(65 + j)} нұсқасы"></label>`).join('')}</div>
     ${q.skill ? `<div class="skill">Дағды: ${esc(q.skill)}</div>` : ''}
     ${q.flag ? `<div class="qflag${q.flag === 'file' ? ' ok' : ''}">${q.flag === 'file' ? '✓ Дұрыс жауап файлдан алынды' : q.flag === 'converted' ? '⚠ Ашық сұрақ еді — нұсқаларды AI қосты, тексеріңіз' : '⚠ Дұрыс жауапты AI анықтады — тексеріңіз'}</div>` : ''}</div>`).join('');
+  grow('#qList textarea');
 }
 $('#qList').addEventListener('input', e => {
   const c = e.target.closest('.qcard'); if (!c) return; const q = draft[+c.dataset.i];
@@ -721,8 +724,11 @@ function renderRub() {
   $('#rubBody').innerHTML = rubric.tasks.map((t, i) => `<tr data-i="${i}"><td><input data-k="n" value="${esc(t.n)}"></td><td><input data-k="title" value="${esc(t.title)}" placeholder="Мысалы: Теңдеу"></td>
     <td><input data-k="max" type="number" min="0" max="100" value="${esc(t.max ?? '')}"></td><td class="crit"><textarea data-k="criteria" rows="2" placeholder="Дескриптор, дұрыс жауап, әр қадамның балы">${esc(t.criteria)}</textarea></td>
     <td><button class="btn btn-d" data-del title="Өшіру"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></td></tr>`).join('');
-  rubTotal();
+  rubTotal(); grow('#rubBody textarea');
 }
+// textarea өз мәтініне қарай биіктейді: дескриптор мен дұрыс жауап толық көрінеді
+function grow(sel) { document.querySelectorAll(sel).forEach(t => { if (!t.offsetParent) return; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight + 4, 600) + 'px'; }); }
+document.addEventListener('input', e => { if (e.target.matches('#rubBody textarea, #qList textarea')) { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight + 4, 600) + 'px'; } });
 function rubTotal() { const s = rubric.tasks.reduce((a, t) => a + (+t.max || 0), 0); $('#rubTotal').textContent = s ? `Барлығы: ${s} балл` : ''; }
 $('#rubBody').addEventListener('input', e => { const i = +e.target.closest('tr').dataset.i; rubric.tasks[i][e.target.dataset.k] = e.target.value; saveRub(); rubTotal(); });
 $('#rubBody').addEventListener('click', e => { if (!e.target.closest('[data-del]')) return; rubric.tasks.splice(+e.target.closest('tr').dataset.i, 1); saveRub(); renderRub(); });
