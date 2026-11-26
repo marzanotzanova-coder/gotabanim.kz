@@ -737,10 +737,42 @@ function shrink(file, side = 1600, q = .78) {
       URL.revokeObjectURL(url); ok(c.toDataURL('image/jpeg', q)); };
     img.onerror = () => { URL.revokeObjectURL(url); no(new Error('Суретті ашу мүмкін болмады: ' + file.name)); }; img.src = url; });
 }
+// Word (.docx) мәтіні: формулалар (бөлшек, дәреже, түбір) оқылатын мәтінге айналады, суреттің орналасу сандары алынбайды
 async function docxText(file) {
   const zip = await JSZip.loadAsync(file); const xml = await zip.file('word/document.xml').async('string');
-  const doc = new DOMParser().parseFromString(xml.replace(/<\/w:p>/g, '</w:p>\n').replace(/<w:tab\/>/g, '\t'), 'text/xml');
-  return doc.documentElement.textContent.replace(/\n{3,}/g, '\n\n').trim();
+  const doc = new DOMParser().parseFromString(xml, 'text/xml');
+  const tag = n => n.localName, pre = n => n.prefix;
+  const kids = (n, name) => [...n.childNodes].filter(c => c.nodeType === 1 && (!name || tag(c) === name));
+  const one = (n, name) => kids(n, name)[0];
+  const wrapIf = t => (t = t.trim(), /^[\w.,]+$|^[\p{L}\d.,]+$/u.test(t) ? t : '(' + t + ')');
+  const SKIP = new Set(['posOffset', 'align', 'docPr', 'cNvGraphicFramePr', 'extent', 'effectExtent', 'simplePos', 'rPr', 'pPr', 'sectPr', 'instrText', 'fldData', 'ctrlPr', 'fPr', 'radPr', 'sSupPr', 'sSubPr', 'dPr', 'naryPr', 'del']);
+  function walk(n) {
+    if (n.nodeType !== 1) return '';
+    const t = tag(n);
+    if (SKIP.has(t)) return '';
+    if (t === 'AlternateContent') { const c = one(n, 'Choice') || one(n, 'Fallback'); return c ? walk(c) : ''; }
+    if (t === 'drawing' || t === 'pict') { const boxes = [...n.getElementsByTagNameNS('*', 'txbxContent')]; return boxes.length ? '\n' + boxes.map(walk).join('\n') + '\n' : ''; }
+    if (t === 't') return n.textContent;
+    if (t === 'tab') return '\t';
+    if (t === 'br' || t === 'cr') return '\n';
+    if (pre(n) === 'm') {
+      const e = name => { const c = one(n, name); return c ? kids(c).map(walk).join('') : ''; };
+      if (t === 'f') return '\u0001' + wrapIf(e('num')) + '/' + wrapIf(e('den')); // \u0001: аралас санның бүтін бөлігінен бөлу белгісі
+      if (t === 'sSup') return wrapIf(e('e')) + '^' + wrapIf(e('sup'));
+      if (t === 'sSub') return e('e') + '_' + wrapIf(e('sub'));
+      if (t === 'sSubSup') return e('e') + '_' + wrapIf(e('sub')) + '^' + wrapIf(e('sup'));
+      if (t === 'rad') { const d = e('deg').trim(); return (d ? d + '√' : '√') + wrapIf(e('e')); }
+      if (t === 'd') { const pr = one(n, 'dPr'), g = name => { const c = pr && one(pr, name); return c ? c.getAttribute('m:val') ?? c.getAttribute('val') : null; };
+        return (g('begChr') ?? '(') + kids(n, 'e').map(walk).join(g('sepChr') ?? ', ') + (g('endChr') ?? ')'); }
+      if (t === 'nary') { const pr = one(n, 'naryPr'), c = pr && one(pr, 'chr'); return (c ? c.getAttribute('m:val') : '∫') + e('sub') + (e('sup') ? '^' + e('sup') : '') + ' ' + e('e'); }
+      if (t === 'oMath') { const s = kids(n).map(walk).join(''); return ' ' + s + ' '; }
+    }
+    if (t === 'tr') return kids(n, 'tc').map(c => walk(c).replace(/\s*\n\s*/g, ' ').trim()).join(' | ') + '\n';
+    if (t === 'p') return kids(n).map(walk).join('') + '\n';
+    return kids(n).map(walk).join('');
+  }
+  const body = doc.getElementsByTagNameNS('*', 'body')[0] || doc.documentElement;
+  return walk(body).replace(/(\d)\u0001/g, '$1 ').replace(/\u0001/g, '').replace(/(\d) +(?=\d+\/)/g, '$1 ').replace(/[ \t]+\n/g, '\n').replace(/[ \t]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
 }
 $('#bExtract').onclick = async () => {
   const btn = $('#bExtract'), f = specFile; if (!f) return;
@@ -786,7 +818,7 @@ $('#bCheck').onclick = async () => {
   const btn = $('#bCheck'); busy(btn, true, 'Тексеріп жатыр…'); say($('#bCheckMsg'), 'AI жұмысты тексеріп жатыр, 30–90 секунд. Бетті жаппаңыз.');
   try {
     const d = await api('bzhb-check', {title: $('#bTitle').value.trim(), tasks, key: $('#bKey').value, images: photos});
-    lastCheck = {student: $('#bStudent').value.trim(), tasks: d.tasks, summary: [d.summary, d.advice && ('Ұсыныс: ' + d.advice)].filter(Boolean).join('\n\n'), rubric: tasks};
+    lastCheck = {student: $('#bStudent').value.trim(), tasks: d.tasks, summary: [d.variant && ('Нұсқа: ' + d.variant), d.summary, d.advice && ('Ұсыныс: ' + d.advice)].filter(Boolean).join('\n\n'), rubric: tasks};
     say($('#bCheckMsg'), ''); renderResult();
     $('#resultBox').scrollIntoView({behavior:'smooth', block:'start'});
   } catch (e) { say($('#bCheckMsg'), e.message, 'err'); }

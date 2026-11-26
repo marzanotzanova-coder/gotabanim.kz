@@ -130,7 +130,7 @@ module.exports = function mountAssess(app, express) {
     const content = [{ type: 'input_text', text:
       'Бұл — БЖБ немесе ТЖБ тапсырмалары мен балл қою кестесі (дескрипторлар). Әр тапсырманы бөліп шығар: нөмірі, қысқаша атауы, ' +
       'максималды балы және бағалау критерийі (дескрипторлар, дұрыс жауап немесе шешім қадамдары, әр қадамның балы). Ешнәрсе ойдан қоспа: ' +
-      'құжатта балл көрсетілмесе, max үшін null қой. JSON: {"title":"жұмыстың атауы","tasks":[{"n":"1","title":"Теңдеу","max":3,"criteria":"..."}]}' }];
+      'құжатта балл көрсетілмесе, max үшін null қой. Құжатта бірнеше нұсқа (1-нұсқа, 2-нұсқа…) болса, әр тапсырманы бір рет шығар, ал criteria ішіне дескрипторларды, сосын әр нұсқаның шартын және оның дұрыс жауабын жаз (жауап құжатта жоқ болса, есепті өзің мұқият шешіп, «шешім: …» деп қысқаша қадамдарымен жаз). JSON: {"title":"жұмыстың атауы","tasks":[{"n":"1","title":"Теңдеу","max":3,"criteria":"..."}]}' }];
     if (isDataUrl(b.file, ['application/pdf'])) content.push({ type: 'input_file', filename: str(b.filename, 80) || 'bzhb.pdf', file_data: b.file });
     else if (isDataUrl(b.file, ['image/'])) content.push({ type: 'input_image', image_url: b.file, detail: 'high' });
     else if (str(b.text, 30000).trim()) content.push({ type: 'input_text', text: 'Құжат мәтіні:\n' + str(b.text, 30000) });
@@ -139,7 +139,7 @@ module.exports = function mountAssess(app, express) {
     try {
       const out = await askJSON({ system: 'Сен Қазақстан мектебіндегі критериалды бағалау маманысың. Тек JSON қайтар.', content, vision: true });
       const tasks = (Array.isArray(out.tasks) ? out.tasks : []).slice(0, 30).map((t, i) => ({
-        n: str(t.n ?? i + 1, 10), title: str(t.title, 160).trim(), max: t.max == null ? null : clampInt(t.max, 0, 100, null), criteria: str(t.criteria, 2000).trim()
+        n: str(t.n ?? i + 1, 10), title: str(t.title, 160).trim(), max: t.max == null ? null : clampInt(t.max, 0, 100, null), criteria: str(t.criteria, 4000).trim()
       }));
       res.json({ title: str(out.title, 200), tasks });
     } catch (e) { fail(res, e, 'bzhb-extract'); }
@@ -149,7 +149,7 @@ module.exports = function mountAssess(app, express) {
   app.post('/api/ai/bzhb-check', big, async (req, res) => {
     const b = req.body || {};
     const tasks = (Array.isArray(b.tasks) ? b.tasks : []).slice(0, 30).map((t, i) => ({
-      n: str(t.n ?? i + 1, 10), title: str(t.title, 160), max: clampInt(t.max, 0, 100, 0), criteria: str(t.criteria, 2000) }));
+      n: str(t.n ?? i + 1, 10), title: str(t.title, 160), max: clampInt(t.max, 0, 100, 0), criteria: str(t.criteria, 4000) }));
     const images = (Array.isArray(b.images) ? b.images : []).filter(x => isDataUrl(x, ['image/'])).slice(0, 6);
     if (!tasks.length || !tasks.some(t => t.max > 0)) return res.status(400).json({ error: 'Алдымен тапсырмалар кестесін толтырыңыз (балдарымен)' });
     if (!images.length) return res.status(400).json({ error: 'Оқушы жұмысының фотосын жүктеңіз' });
@@ -164,8 +164,9 @@ module.exports = function mountAssess(app, express) {
         content: [
           { type: 'input_text', text: `Жұмыс: ${str(b.title, 200) || 'БЖБ'}\n\nТапсырмалар мен критерийлер:\n${rubric}\n\n` +
             (str(b.key, 4000).trim() ? `Мұғалімнің қосымша кілті/ескертпесі:\n${str(b.key, 4000)}\n\n` : '') +
-            'Төмендегі суреттер — бір оқушының жауап парағы (бірнеше бет болуы мүмкін). Әр тапсырманы критериймен салыстырып, балл ұсын. ' +
-            'JSON: {"tasks":[{"n":"1","score":2,"max":3,"seen":"оқушы не жазғаны (қысқа)","explanation":"қай критерий орындалды/орындалмады, қате неде","confidence":"high|medium|low"}],' +
+            'Төмендегі суреттер — бір оқушының жауап парағы (бірнеше бет болуы мүмкін). Жұмыс бірнеше нұсқалы болса, алдымен оқушының қай нұсқаны орындағанын шарттағы сандарынан анықта да, сол нұсқаның жауабымен салыстыр. ' +
+            'Әр дескриптор бойынша бөлек тексеріп, тапсырманың балын дескрипторлар қосындысы ретінде ұсын. ' +
+            'JSON: {"variant":"оқушы орындаған нұсқа (анықталса)","tasks":[{"n":"1","score":2,"max":3,"seen":"оқушы не жазғаны (қысқа)","explanation":"қай критерий орындалды/орындалмады, қате неде","confidence":"high|medium|low"}],' +
             '"summary":"оқушының күшті және әлсіз тұстары, 2-3 сөйлем","advice":"оқушыға нақты ұсыныс, 1-2 сөйлем"}' },
           ...images.map(url => ({ type: 'input_image', image_url: url, detail: 'high' }))
         ]
@@ -176,7 +177,7 @@ module.exports = function mountAssess(app, express) {
         const conf = ['high', 'medium', 'low'].includes(g.confidence) ? g.confidence : 'low';
         return { n: t.n, title: t.title, max: t.max, score: clampInt(g.score, 0, t.max, 0), seen: str(g.seen, 600), explanation: str(g.explanation, 1200) || 'AI бұл тапсырманы таба алмады — қолмен тексеріңіз.', confidence: g.explanation ? conf : 'low' };
       });
-      res.json({ tasks: result, summary: str(out.summary, 1500), advice: str(out.advice, 800) });
+      res.json({ tasks: result, variant: str(out.variant, 60), summary: str(out.summary, 1500), advice: str(out.advice, 800) });
     } catch (e) { fail(res, e, 'bzhb-check'); }
   });
 
