@@ -4,7 +4,11 @@ const SUPA_URL = process.env.SUPABASE_URL || 'https://eknjslyvcwtusbqvygxx.supab
 const SUPA_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_4AKv-8WUdjo_ZdYvlHPC4w_v-aNINNL';
 const DAILY_LIMIT = Number(process.env.AI_DAILY_LIMIT) || 60;
 
-const str = (v, max) => String(v ?? '').slice(0, max);
+// AI кейде мәтіннің орнына тізім не объект қайтарады: оны оқылатын мәтінге айналдырамыз ("[object Object]" шықпауы үшін)
+const flat = v => v == null ? '' : typeof v !== 'object' ? String(v)
+  : Array.isArray(v) ? v.map(flat).filter(Boolean).join('\n')
+  : Object.entries(v).map(([k, x]) => { const t = flat(x); return t ? (/^\d+$/.test(k) ? '' : k + ': ') + (t.includes('\n') ? '\n' + t : t) : ''; }).filter(Boolean).join('\n');
+const str = (v, max) => flat(v).slice(0, max);
 const clampInt = (v, lo, hi, d) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d; };
 const isDataUrl = (s, kinds) => typeof s === 'string' && kinds.some(k => s.startsWith('data:' + k));
 
@@ -130,7 +134,7 @@ module.exports = function mountAssess(app, express) {
     const content = [{ type: 'input_text', text:
       'Бұл — БЖБ немесе ТЖБ тапсырмалары мен балл қою кестесі (дескрипторлар). Әр тапсырманы бөліп шығар: нөмірі, қысқаша атауы, ' +
       'максималды балы және бағалау критерийі (дескрипторлар, дұрыс жауап немесе шешім қадамдары, әр қадамның балы). Ешнәрсе ойдан қоспа: ' +
-      'құжатта балл көрсетілмесе, max үшін null қой. Құжатта бірнеше нұсқа (1-нұсқа, 2-нұсқа…) болса, әр тапсырманы бір рет шығар, ал criteria ішіне дескрипторларды, сосын әр нұсқаның шартын және оның дұрыс жауабын жаз (жауап құжатта жоқ болса, есепті өзің мұқият шешіп, «шешім: …» деп қысқаша қадамдарымен жаз). JSON: {"title":"жұмыстың атауы","tasks":[{"n":"1","title":"Теңдеу","max":3,"criteria":"..."}]}' }];
+      'құжатта балл көрсетілмесе, max үшін null қой. Құжатта бірнеше нұсқа (1-нұсқа, 2-нұсқа…) болса, әр тапсырманы бір рет шығар, ал criteria ішіне дескрипторларды, сосын әр нұсқаның шартын және оның дұрыс жауабын жаз (жауап құжатта жоқ болса, есепті өзің мұқият шешіп, «шешім: …» деп қысқаша қадамдарымен жаз). criteria — жай мәтін (string), объект емес; бөлімдерін жаңа жолмен бөл. JSON: {"title":"жұмыстың атауы","tasks":[{"n":"1","title":"Теңдеу","max":3,"criteria":"..."}]}' }];
     if (isDataUrl(b.file, ['application/pdf'])) content.push({ type: 'input_file', filename: str(b.filename, 80) || 'bzhb.pdf', file_data: b.file });
     else if (isDataUrl(b.file, ['image/'])) content.push({ type: 'input_image', image_url: b.file, detail: 'high' });
     else if (str(b.text, 30000).trim()) content.push({ type: 'input_text', text: 'Құжат мәтіні:\n' + str(b.text, 30000) });
