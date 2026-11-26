@@ -43,25 +43,76 @@
   // and the extra line was cut off. Carlito has exactly Calibri's metrics, so it is loaded under the name Calibri,
   // both for the layout and inside each slide snapshot.
   const FONT_BASE = new URL('vendor/carlito-5.3.0/', document.currentScript?.src || location.href).href;
-  let fontCss;
+  let fontFaces;
   function loadSlideFonts() {
-    if (!fontCss) fontCss = (async () => {
+    if (!fontFaces) fontFaces = (async () => {
       const faces = await fetch(FONT_BASE + 'faces.json').then(r => { if (!r.ok) throw Error('fonts'); return r.json(); });
-      const rules = [];
-      await Promise.all(faces.map(async f => {
+      return Promise.all(faces.map(async f => {
         const data = await toDataUrl(FONT_BASE + f.file);
-        for (const family of ['Calibri', 'Calibri Light', 'Carlito']) {
+        for (const family of SLIDE_FAMILIES) {
           const face = new FontFace(family, `url(${data}) format('woff2')`, { weight: String(f.weight), style: f.style, unicodeRange: f.range });
           document.fonts.add(face); face.load().catch(() => {});
-          rules.push(`@font-face{font-family:'${family}';src:url(${data}) format('woff2');font-weight:${f.weight};font-style:${f.style};unicode-range:${f.range}}`);
         }
+        const ranges = f.range.split(',').map(r => r.trim().replace(/^U\+/i, '').split('-').map(h => parseInt(h, 16))).map(([a, b]) => [a, b ?? a]);
+        return { ...f, data, ranges };
       }));
-      return rules.join('\n');
-    })().catch(error => { fontCss = null; throw error; });
-    return fontCss;
+    })().catch(error => { fontFaces = null; throw error; });
+    return fontFaces;
   }
-  // Safari leaves pictures out of a slide snapshot the first time it draws them; drawing the slide twice brings them in
+  const SLIDE_FAMILIES = ['Calibri', 'Calibri Light', 'Carlito'];
+  // Only the font pieces a slide really uses go into its snapshot: all of them made every snapshot several MB,
+  // and Safari then drew the slide as a blank white page.
+  function slideFontCss(root, faces) {
+    if (!faces?.length) return '';
+    const used = new Map(), chars = new Set();
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let node; (node = walker.nextNode());) {
+      const text = node.nodeValue; if (!text.trim() || !node.parentElement) continue;
+      const style = getComputedStyle(node.parentElement);
+      const family = SLIDE_FAMILIES.find(name => style.fontFamily.split(',').some(f => f.trim().replace(/['"]/g, '').toLowerCase() === name.toLowerCase()));
+      if (!family) continue;
+      const key = `${family}|${Number(style.fontWeight) >= 600 ? 700 : 400}|${/italic|oblique/.test(style.fontStyle) ? 'italic' : 'normal'}`;
+      if (!used.has(key)) used.set(key, new Set());
+      for (const ch of text) { const code = ch.codePointAt(0); used.get(key).add(code); chars.add(code); }
+    }
+    const rules = [];
+    for (const [key, codes] of used) {
+      const [family, weight, style] = key.split('|');
+      for (const f of faces) {
+        if (String(f.weight) !== weight || f.style !== style) continue;
+        if (![...codes].some(c => f.ranges.some(([a, b]) => c >= a && c <= b))) continue;
+        rules.push(`@font-face{font-family:'${family}';src:url(${f.data}) format('woff2');font-weight:${f.weight};font-style:${f.style};unicode-range:${f.range}}`);
+      }
+    }
+    return rules.join('\n');
+  }
+  // a snapshot that came out as one flat colour although the slide has text or pictures failed to draw
+  function looksBlank(canvas, root) {
+    if (!(root.textContent.trim() || root.querySelector('img,image,svg,canvas'))) return false;
+    const small = document.createElement('canvas'); small.width = 32; small.height = 18;
+    const ctx = small.getContext('2d', { willReadFrequently: true }); ctx.drawImage(canvas, 0, 0, 32, 18);
+    const px = ctx.getImageData(0, 0, 32, 18).data; let min = 255, max = 0;
+    for (let k = 0; k < px.length; k += 4) for (let c = 0; c < 3; c++) { min = Math.min(min, px[k + c]); max = Math.max(max, px[k + c]); }
+    small.width = small.height = 0;
+    return max - min < 6;
+  }
   const isSafari = /Safari\//.test(navigator.userAgent) && !/Chrome|Chromium|Edg\//.test(navigator.userAgent);
+  const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+  // Safari leaves pictures and fonts out of a snapshot the first times it draws it, so it is drawn again until it is complete
+  async function drawSlide(image, element, options) {
+    const attempts = isSafari ? [options, options, options, { ...options, fontEmbedCSS: '' }, { ...options, fontEmbedCSS: '' }] : [options, options, { ...options, fontEmbedCSS: '' }];
+    let last;
+    for (let k = 0; k < attempts.length; k++) {
+      if (last) last.width = last.height = 0;
+      last = await image.toCanvas(element, attempts[k]);
+      // Safari's first draw is only a warm-up
+      if (isSafari && k === 0) { await pause(120); continue; }
+      if (!looksBlank(last, element)) return last;
+      await pause(250);
+    }
+    if (last) last.width = last.height = 0;
+    return null;
+  }
   async function convert(file, onProgress = () => {}, signal) {
     if (!/\.pptx$/i.test(file.name || '')) throw Error('Автоматты алдын ала қарау үшін PPTX таңдаңыз. Ескі PPT файлын PowerPoint-та PPTX түрінде сақтаңыз.');
     if (!file.size || file.size > 30 * 1024 * 1024) throw Error('PPTX файлы 30 МБ-тан аспауы керек.');
@@ -69,7 +120,7 @@
     check(); onProgress('Презентация оқылуда…');
     const [{ parseZip, buildPresentation, renderSlide, RECOMMENDED_ZIP_LIMITS }, image] = await loadDependencies();
     check();
-    const embedCss = await loadSlideFonts().catch(() => '');
+    const faces = await loadSlideFonts().catch(() => null);
     const files = await parseZip(await file.arrayBuffer(), RECOMMENDED_ZIP_LIMITS);
     check();
     const presentation = buildPresentation(files);
@@ -103,8 +154,11 @@
           if (!width || !height) throw Error('Слайд өлшемі анықталмады.');
           const scale = Math.min(1600 / width, 1200 / height, 2);
           // a slide that never finishes drawing must not freeze the whole upload
-          const options = { width, height, pixelRatio: scale, fontEmbedCSS: embedCss, skipAutoScale: false, filter: node => !['AUDIO', 'VIDEO'].includes(node.tagName) };
-          let stuck; const canvas = await Promise.race([(async () => { if (isSafari) { const first = await image.toCanvas(handle.element, options); first.width = first.height = 0; } return image.toCanvas(handle.element, options); })(), new Promise((_, no) => { stuck = setTimeout(() => no(Error(`${i + 1}-слайдты суретке айналдыру мүмкін болмады. Бұл презентация үшін PDF немесе слайд суреттерін қолдануға болады.`)), 25000); })]).finally(() => clearTimeout(stuck));
+          const options = { width, height, pixelRatio: scale, fontEmbedCSS: slideFontCss(handle.element, faces), skipAutoScale: false, filter: node => !['AUDIO', 'VIDEO'].includes(node.tagName) };
+          const failed = `${i + 1}-слайдты суретке айналдыру мүмкін болмады. Chrome браузерінде қайталап көріңіз немесе PDF жүктеңіз.`;
+          let stuck; const canvas = await Promise.race([drawSlide(image, handle.element, options), new Promise((_, no) => { stuck = setTimeout(() => no(Error(failed)), 45000); })]).finally(() => clearTimeout(stuck));
+          // a white page is never uploaded
+          if (!canvas) throw Error(failed);
           const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
           canvas.width = canvas.height = 0;
           if (!blob) throw Error('Слайд суретін дайындау мүмкін болмады.');
