@@ -838,7 +838,7 @@ $('#bExtract').onclick = async () => {
     else if (f.type.startsWith('image/')) body = {file: await shrink(f, 2000, .8)};
     else throw new Error('Бұл файл түрі қолдау көрсетілмейді');
     const d = await api('bzhb-extract', body);
-    if (!d.tasks.length) throw new Error('Құжаттан тапсырмалар табылмады — кестені қолмен толтырыңыз.');
+    if (!d.tasks.length) throw new Error('Бұл файлдан БЖБ тапсырмалары мен дескрипторлары табылмады. Егер бұл оқушының жұмысы болса — оны төмендегі «2. Оқушы жұмысы» бөліміне жүктеңіз. Мұнда тек БЖБ/ТЖБ тапсырмаларының файлы жүктеледі.');
     rubric.tasks = d.tasks.map(t => normTask({n: t.n, title: t.title, descriptors: t.descriptors.map(x => ({text: x.text, points: x.points ?? ''})), answer: t.answer}));
     if (!$('#bTitle').value.trim() && d.title) $('#bTitle').value = d.title;
     saveRub(); renderRub(); renderChecks();
