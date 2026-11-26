@@ -867,7 +867,8 @@ $('#bCheck').onclick = async () => {
   const tasks = rubric.tasks.map(normTask).map(t => ({n: String(t.n).trim(), title: t.title.trim(), answer: t.answer.trim(),
     descriptors: t.descriptors.filter(d => d.text.trim() || +d.points).map(d => ({text: d.text.trim() || 'Тапсырманы дұрыс орындайды', points: +d.points || 0}))}))
     .map(t => ({...t, max: taskMax(t)})).filter(t => t.n && t.max > 0);
-  if (!$('#bTitle').value.trim()) return say($('#bCheckMsg'), 'Жұмыс атауын жазыңыз (1-қадам).', 'err');
+  if (!tasks.length) return say($('#bCheckMsg'), 'Алдымен жоғарыдағы «1. Тексеру кілті» бөлімінде БЖБ/ТЖБ файлын жүктеп, «AI кестені толтырсын» басыңыз.', 'err');
+  if (!$('#bTitle').value.trim()) $('#bTitle').value = 'БЖБ ' + new Date().toLocaleDateString('kk-KZ'), saveRub();
   if (!tasks.length) return say($('#bCheckMsg'), 'Тексеру кілтін балдарымен толтырыңыз (1-қадам).', 'err');
   if (!$('#bStudent').value.trim()) return say($('#bCheckMsg'), 'Оқушының аты немесе нөмірін жазыңыз.', 'err');
   if (!photos.length) return say($('#bCheckMsg'), 'Оқушы жұмысының фотосын қосыңыз.', 'err');
